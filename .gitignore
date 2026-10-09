@@ -1,0 +1,23 @@
+node_modules/
+.expo/
+dist/
+web-build/
+ios/
+android/
+*.log
+.DS_Store
+Thumbs.db
+
+# env and secrets
+.env
+.env.*
+!.env.example
+
+# supabase local
+supabase/.branches/
+supabase/.temp/
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
