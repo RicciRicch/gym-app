@@ -4,9 +4,11 @@ import { FullScreenLoader } from './components/ui'
 import { useAuth } from './features/auth/auth-context'
 import { useProfile } from './features/auth/useProfile'
 import { AuthPage } from './pages/AuthPage'
+import { CalendarPage } from './pages/CalendarPage'
 import { ComingSoonPage } from './pages/ComingSoonPage'
 import { OnboardingPage } from './pages/OnboardingPage'
 import { ProfilePage } from './pages/ProfilePage'
+import { SplitPage } from './pages/SplitPage'
 import { TodayPage } from './pages/TodayPage'
 
 export function App() {
@@ -34,8 +36,9 @@ export function App() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<TodayPage />} />
-        <Route path="calendar" element={<ComingSoonPage title="Calendar" milestone="M3" />} />
-        <Route path="split" element={<ComingSoonPage title="Split" milestone="M3" />} />
+        <Route path="calendar" element={<CalendarPage />} />
+        <Route path="split" element={<SplitPage />} />
+        <Route path="workout" element={<ComingSoonPage title="Workout" milestone="M4" />} />
         <Route path="progress" element={<ComingSoonPage title="Progress" milestone="M5" />} />
         <Route path="library" element={<ComingSoonPage title="Library" milestone="M5" />} />
         <Route path="profile" element={<ProfilePage />} />

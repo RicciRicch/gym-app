@@ -43,6 +43,10 @@ npm test           # vitest (schedule logic etc.)
 - M2 app shell + auth: code done. Schema + RLS applied (`init_schema`), security advisors clean.
   Browser-verified: auth screen, wrong-credentials error. NOT yet browser-verified: sign-up
   confirmation, onboarding, signed-in shell (needs a real/test account).
+- M3 split + calendar + Today: code done (presets, split editor, weekly layout, week/month
+  calendar, current-week swaps via overrides, Today screen). Build, typecheck, lint and unit
+  tests pass. NOT browser-verified: every signed-in screen (no test account yet). `/workout`
+  is still a placeholder until M4.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard
   (no MCP tool for auth config) — do in M6 at the latest.
 - GitHub Actions deploy workflow: not added yet (M6).
