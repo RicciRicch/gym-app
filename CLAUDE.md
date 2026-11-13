@@ -41,12 +41,13 @@ npm test           # vitest (schedule logic etc.)
     nano_banana_pro 2. Prompts for the 3 style tests are in `docs/prompts.md`.
   - Next step once tools load: generate the 3 style tests, inspect, show the user, wait for choice.
 - M2 app shell + auth: code done. Schema + RLS applied (`init_schema`), security advisors clean.
-  Browser-verified: auth screen, wrong-credentials error. NOT yet browser-verified: sign-up
-  confirmation, onboarding, signed-in shell (needs a real/test account).
+  Browser-verified: auth screen, wrong-credentials error, signed-in shell. The user signed up
+  and onboarded themselves (account + profile exist), so that flow works end to end.
 - M3 split + calendar + Today: code done (presets, split editor, weekly layout, week/month
   calendar, current-week swaps via overrides, Today screen). Build, typecheck, lint and unit
-  tests pass. NOT browser-verified: every signed-in screen (no test account yet). `/workout`
-  is still a placeholder until M4.
+  tests pass. Browser-verified at 375px with the user's account: preset creation, weekday
+  trade, sets stepper, week swap + reset, month view, Today. Not exercised: from-scratch split,
+  add/rename/delete day, add/remove exercise. `/workout` is still a placeholder until M4.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard
   (no MCP tool for auth config) — do in M6 at the latest.
 - GitHub Actions deploy workflow: not added yet (M6).
