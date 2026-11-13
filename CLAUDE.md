@@ -30,9 +30,16 @@ npm test           # vitest (schedule logic etc.)
 
 ## Status
 
-- M1 style checkpoint: BLOCKED — the Higgsfield MCP connector is read-only (no generate tool).
-  Generation must go through higgsfield.ai in the browser pane, which needs the user's sign-in.
-  Account showed 10 credits (ultra plan; nano_banana_2 / nano_banana_pro / gpt_image_2 are "unlim").
+- M1 style checkpoint: NOT STARTED, waiting on Higgsfield auth. Findings:
+  - The claude.ai "Higgsfield AI" connector points at `claude-mcp.higgsfield.ai` and is read-only.
+  - The trial only generates through the MCP: the website and `@higgsfield/cli` both refuse
+    (`only_mcp_usage_on_trial_is_available`).
+  - The user added the full server as claude.ai custom connector "Higgsfield"
+    (https://mcp.higgsfield.ai/mcp, connected). It only loads in sessions started after it was
+    added. Unverified: whether it exposes generate tools and accepts the trial.
+  - Budget: 10 credits. CLI cost estimates per image: z_image 0.15, nano_banana / flux_2 1,
+    nano_banana_pro 2. Prompts for the 3 style tests are in `docs/prompts.md`.
+  - Next step once tools load: generate the 3 style tests, inspect, show the user, wait for choice.
 - M2 app shell + auth: code done. Schema + RLS applied (`init_schema`), security advisors clean.
   Browser-verified: auth screen, wrong-credentials error. NOT yet browser-verified: sign-up
   confirmation, onboarding, signed-in shell (needs a real/test account).
