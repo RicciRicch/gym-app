@@ -1,0 +1,16 @@
+{
+  "name": "Gym App",
+  "short_name": "Gym App",
+  "description": "Mobile-first workout tracker: splits, calendar, logging and progress.",
+  "start_url": "/gym-app/",
+  "scope": "/gym-app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0D10",
+  "theme_color": "#0B0D10",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
