@@ -15,7 +15,7 @@ const STEPS: Step[] = [
   {
     title: 'Welcome to Gym App',
     body: 'Plan your week, log every set and watch your lifts go up. Here is how it works in four quick steps.',
-    art: <Mascot className="size-44 rounded-3xl" />,
+    art: <Mascot className="h-52" />,
   },
   {
     title: '1. Pick your split',

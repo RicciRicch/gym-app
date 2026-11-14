@@ -74,3 +74,13 @@ near-black charcoal background as the reference image[, but no barbell]."
 | `assets/avatars/avatar-3.webp` | `8fe28f33-2ce3-4bb0-911f-0bb768e8442d` | …cheerful fit older man with short grey hair and a grey stubble, slate grey t-shirt with a lime-green collar, warm smile… |
 | `assets/avatars/avatar-4.webp` | `b4d64fb8-b5d1-4e47-af40-8fe99f65d95e` | …energetic young woman athlete with dark skin and curly black hair, bright lime-green tank top, big smile… |
 | `icons/*`, `favicon.ico` | `a913467e-eea1-49a4-be18-21c3f7e685a2` | Mobile app icon: a single chunky dumbbell with bright lime-green round weight plates and a silver handle, tilted diagonally at 30 degrees, centered, occupying about 60 percent of the frame, bold simple silhouette readable at small sizes. Soft 3D clay render, flat plain near-black charcoal background filling the whole square edge to edge, no border. No text. |
+
+### Mascot cut-out (2026-11-14, no credits)
+
+The mascot was turned into a transparent-background character so it reads as a
+character, not a picture in a box. Done locally with `scripts/cutout-mascot.py`
+(numpy + Pillow: quadratic background model, low local texture + low saturation
+= background, flood fill from the border, enclosed floor patch between the legs
+removed, mask eroded and feathered). Output trimmed to 451x640 RGBA WebP.
+`process-assets.py` would re-create the boxed version from the raw PNG, so
+re-run the cut-out after it if the mascot is ever regenerated.
