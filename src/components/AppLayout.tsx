@@ -1,6 +1,10 @@
 import { Suspense, type ReactNode } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useAuth } from '../features/auth/auth-context'
 import { useProfile } from '../features/auth/useProfile'
+import { GuideOverlay } from '../features/guide/GuideOverlay'
+import { closeGuide, useGuideOpen } from '../features/guide/guide-store'
+import { useActiveSplit } from '../features/split/api'
 import { Avatar, Spinner, Wordmark } from './ui'
 
 const icon = (path: ReactNode) => (
@@ -32,6 +36,9 @@ const tabs = [
 
 export function AppLayout() {
   const { data: profile } = useProfile()
+  const { user } = useAuth()
+  const guideOpen = useGuideOpen(user?.id)
+  const split = useActiveSplit()
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
       <header className="sticky top-0 z-10 flex items-center justify-between bg-bg/85 px-5 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 backdrop-blur">
@@ -71,6 +78,8 @@ export function AppLayout() {
           </NavLink>
         ))}
       </nav>
+
+      {guideOpen && user && <GuideOverlay hasSplit={!!split.data} onClose={() => closeGuide(user.id)} />}
     </div>
   )
 }

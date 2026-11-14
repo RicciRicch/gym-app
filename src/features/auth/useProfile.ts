@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from './auth-context'
+import { openGuide } from '../guide/guide-store'
 
 export const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/
 
@@ -46,6 +47,10 @@ export function useCreateProfile() {
       if (error) throw error
       return data
     },
-    onSuccess: (profile) => queryClient.setQueryData(profileKey(user?.id), profile),
+    onSuccess: (profile) => {
+      // A brand-new account: show the first-run guide once the app shell mounts.
+      if (user) openGuide(user.id)
+      queryClient.setQueryData(profileKey(user?.id), profile)
+    },
   })
 }

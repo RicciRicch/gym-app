@@ -66,6 +66,11 @@ npm test           # vitest (schedule logic etc.)
   live at https://ricciricch.github.io/gym-app/ (deep links work via 404.html, served with
   HTTP 404 status, which is expected). Still to do: auth redirect URLs in the Supabase
   dashboard (user), README screenshots. PWA manifest + icons done.
+- Auth extras: "Keep me logged in" checkbox (default on) picks localStorage vs sessionStorage
+  for the Supabase session via `src/lib/auth-storage.ts` (unit-tested). First-run guide
+  (`src/features/guide/`): 5 steps, queued per user in localStorage when a new profile is
+  created, closed with Skip/finish, reopenable from Profile ("How to use the app").
+  Browser-verified: checkbox, guide from profile, first-run flag on reload, close clears flag.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard

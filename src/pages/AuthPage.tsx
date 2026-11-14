@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { authRedirectUrl, supabase } from '../lib/supabase'
+import { authRedirectUrl, authStorage, supabase } from '../lib/supabase'
 import { Button, Field, Wordmark } from '../components/ui'
 
 type Mode = 'sign-in' | 'sign-up'
@@ -13,6 +13,7 @@ export function AuthPage() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [confirmSentTo, setConfirmSentTo] = useState<string | null>(null)
+  const [remember, setRemember] = useState(() => authStorage.remember())
 
   const isSignUp = mode === 'sign-up'
 
@@ -24,6 +25,8 @@ export function AuthPage() {
       return
     }
     setBusy(true)
+    // Decide where the session is stored before Supabase writes it.
+    authStorage.setRemember(remember)
     try {
       if (isSignUp) {
         const { data, error } = await supabase.auth.signUp({
@@ -98,6 +101,26 @@ export function AuthPage() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder={isSignUp ? `At least ${MIN_PASSWORD} characters` : 'Your password'}
           />
+          <label className="-my-1 flex min-h-11 cursor-pointer items-center gap-3 self-start select-none">
+            <input
+              type="checkbox"
+              name="remember"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="peer sr-only"
+            />
+            <span
+              aria-hidden="true"
+              className="grid size-6 place-items-center rounded-lg border-2 border-line bg-surface text-accent-ink transition peer-checked:border-accent peer-checked:bg-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent"
+            >
+              {remember && (
+                <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m5 12 5 5L20 7" />
+                </svg>
+              )}
+            </span>
+            <span className="text-sm font-medium text-muted">Keep me logged in</span>
+          </label>
           {error && (
             <p role="alert" className="rounded-2xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
               {error}
