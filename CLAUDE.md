@@ -64,8 +64,7 @@ npm test           # vitest (schedule logic etc.)
   rename / delete day and add / remove exercise browser-verified (net-zero on the user's split).
   Repo variables set and Pages source = GitHub Actions (user approved); first deploy green,
   live at https://ricciricch.github.io/gym-app/ (deep links work via 404.html, served with
-  HTTP 404 status, which is expected). Still to do: auth redirect URLs in the Supabase
-  dashboard (user), README screenshots. PWA manifest + icons done.
+  HTTP 404 status, which is expected). Still to do: README screenshots. PWA manifest + icons done.
 - Auth extras: "Keep me logged in" checkbox (default on) picks localStorage vs sessionStorage
   for the Supabase session via `src/lib/auth-storage.ts` (unit-tested). First-run guide
   (`src/features/guide/`): 5 steps, queued per user in localStorage when a new profile is
@@ -75,8 +74,7 @@ npm test           # vitest (schedule logic etc.)
   (`redirectTo` = app URL); the link signs the user in and `NewPasswordPage` asks for a new
   password (`recovering` in AuthProvider, from `type=recovery` in the URL hash or the
   PASSWORD_RECOVERY event). Expired-link errors show on the login screen. Browser-verified:
-  reset form, expired-link message. Not exercised: a real reset email (needs redirect URLs
-  set + email rate limit).
+  reset form, expired-link message. Not exercised: a real reset email end to end.
 - Delete account: Profile -> "Delete account" sheet calls the `delete-account` Edge Function
   (`supabase/functions/delete-account`, verify_jwt on, service role inside, deletes the
   caller via `auth.admin.deleteUser`; all tables cascade). Deploy it with the Supabase MCP
@@ -124,8 +122,10 @@ npm test           # vitest (schedule logic etc.)
   onboarding with a photo (needs a new account), a real phone camera / HEIC.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
-- Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard
-  (no MCP tool for auth config) — do in M6 at the latest.
+- Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL
+  + redirect URLs (localhost + GitHub Pages), email confirmation handled, leaked password
+  protection toggled (the security advisor still reported it off right after; may need the Pro
+  plan or a refresh).
 - GitHub Actions deploy workflow: `.github/workflows/deploy.yml`, deploys on every push to main.
 
 ## Future features (NOT in MVP — do not build yet)
