@@ -70,13 +70,15 @@ npm test           # vitest (schedule logic etc.)
   build) and deploys to Pages, reading `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`
   from repository *variables*. README drafted (screenshots pending). Split editor add /
   rename / delete day and add / remove exercise browser-verified (net-zero on the user's split).
-  Still to do: repo variables + Pages source "GitHub Actions" (needs the user's OK), auth
-  redirect URLs in the Supabase dashboard, PWA manifest + icons, screenshots.
+  Repo variables set and Pages source = GitHub Actions (user approved); first deploy green,
+  live at https://ricciricch.github.io/gym-app/ (deep links work via 404.html, served with
+  HTTP 404 status, which is expected). Still to do: auth redirect URLs in the Supabase
+  dashboard (user), PWA manifest + icons, screenshots.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard
   (no MCP tool for auth config) — do in M6 at the latest.
-- GitHub Actions deploy workflow: added (`.github/workflows/deploy.yml`), not yet run.
+- GitHub Actions deploy workflow: `.github/workflows/deploy.yml`, deploys on every push to main.
 
 ## Future features (NOT in MVP — do not build yet)
 
