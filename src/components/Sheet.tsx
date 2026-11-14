@@ -1,6 +1,10 @@
 import { useEffect, useId, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
-/** Bottom sheet dialog. Closes on backdrop tap and Escape. */
+/**
+ * Bottom sheet dialog. Closes on backdrop tap and Escape. Rendered into <body>
+ * so animated (transformed) ancestors cannot trap its fixed positioning.
+ */
 export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
   const titleId = useId()
 
@@ -15,7 +19,7 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
     }
   }, [onClose])
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-30 flex items-end justify-center" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <button aria-label="Close" className="absolute inset-0 cursor-default bg-black/60" onClick={onClose} />
       <div className="relative flex max-h-[85dvh] w-full max-w-md animate-fade-up flex-col rounded-t-3xl border-t border-line bg-surface pb-[max(1rem,env(safe-area-inset-bottom))]">
@@ -32,7 +36,8 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
         </div>
         <div className="overflow-y-auto px-5 pb-2">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

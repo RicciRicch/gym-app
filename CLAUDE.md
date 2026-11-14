@@ -55,8 +55,12 @@ npm test           # vitest (schedule logic etc.)
 - M4 workout logging: code done (start from Today or /workout, prefill from last session,
   reps x weight, one-tap done, add/remove sets and exercises, rest timer with auto-start,
   +/-15s, vibration, localStorage draft per user, "Update default for [day]?" on finish).
-  Typecheck, lint, 28 unit tests and build pass. NOT browser-verified yet: the pane lost the
-  sign-in, waiting for the user to log in again.
+  Browser-verified at 375px: start, set logging (comma decimals), rest timer +15/skip and
+  survival across reload, add/remove exercise, finish -> "Update default" prompt (kept old),
+  saved rows in DB, prefill from last session, discard. Not exercised: the "Update default"
+  write path, rest duration picker, vibration (needs a real phone).
+- Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
+  animate-fade-up (a transform), which traps position: fixed.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard
   (no MCP tool for auth config) — do in M6 at the latest.
 - GitHub Actions deploy workflow: not added yet (M6).

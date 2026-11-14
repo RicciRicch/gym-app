@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { formatClock } from '../../lib/workout'
 import { useNow } from './useNow'
 
@@ -33,7 +34,8 @@ export function RestTimer({
   const progress = Math.min(1, Math.max(0, remainingMs / (Math.max(totalSeconds, remaining) * 1000)))
   const chip = 'grid min-h-11 min-w-12 place-items-center rounded-xl bg-surface-2 px-2 text-sm font-bold transition active:scale-90'
 
-  return (
+  // Portal: the page wrapper animates with a transform, which would trap `fixed`.
+  return createPortal(
     <div
       role="timer"
       aria-label="Rest timer"
@@ -59,6 +61,7 @@ export function RestTimer({
           <div className="h-full bg-accent transition-[width] duration-200 ease-linear" style={{ width: `${progress * 100}%` }} />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
