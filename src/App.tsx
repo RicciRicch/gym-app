@@ -1,22 +1,23 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './components/AppLayout'
-import { FullScreenLoader, Spinner } from './components/ui'
+import { FullScreenLoader } from './components/ui'
 import { useAuth } from './features/auth/auth-context'
 import { useProfile } from './features/auth/useProfile'
 import { AuthPage } from './pages/AuthPage'
-import { CalendarPage } from './pages/CalendarPage'
-import { ExercisePage } from './pages/ExercisePage'
-import { LibraryPage } from './pages/LibraryPage'
-import { OnboardingPage } from './pages/OnboardingPage'
-import { ProgressPage } from './pages/ProgressPage'
-import { ProfilePage } from './pages/ProfilePage'
-import { SplitPage } from './pages/SplitPage'
 import { TodayPage } from './pages/TodayPage'
-import { WorkoutPage } from './pages/WorkoutPage'
 
-// Recharts is heavy; keep it out of the main bundle.
+// Today (the landing screen) and auth stay in the main bundle; every other
+// route is its own chunk. AppLayout wraps the outlet in <Suspense>.
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage').then((m) => ({ default: m.OnboardingPage })))
+const CalendarPage = lazy(() => import('./pages/CalendarPage').then((m) => ({ default: m.CalendarPage })))
+const SplitPage = lazy(() => import('./pages/SplitPage').then((m) => ({ default: m.SplitPage })))
+const WorkoutPage = lazy(() => import('./pages/WorkoutPage').then((m) => ({ default: m.WorkoutPage })))
+const ProgressPage = lazy(() => import('./pages/ProgressPage').then((m) => ({ default: m.ProgressPage })))
 const ExerciseProgressPage = lazy(() => import('./pages/ExerciseProgressPage'))
+const LibraryPage = lazy(() => import('./pages/LibraryPage').then((m) => ({ default: m.LibraryPage })))
+const ExercisePage = lazy(() => import('./pages/ExercisePage').then((m) => ({ default: m.ExercisePage })))
+const ProfilePage = lazy(() => import('./pages/ProfilePage').then((m) => ({ default: m.ProfilePage })))
 
 export function App() {
   const { session } = useAuth()
@@ -37,7 +38,13 @@ export function App() {
       </main>
     )
   }
-  if (!profile.data) return <OnboardingPage />
+  if (!profile.data) {
+    return (
+      <Suspense fallback={<FullScreenLoader />}>
+        <OnboardingPage />
+      </Suspense>
+    )
+  }
 
   return (
     <Routes>
@@ -47,14 +54,7 @@ export function App() {
         <Route path="split" element={<SplitPage />} />
         <Route path="workout" element={<WorkoutPage />} />
         <Route path="progress" element={<ProgressPage />} />
-        <Route
-          path="progress/:exerciseId"
-          element={
-            <Suspense fallback={<div className="grid place-items-center pt-24 text-accent"><Spinner /></div>}>
-              <ExerciseProgressPage />
-            </Suspense>
-          }
-        />
+        <Route path="progress/:exerciseId" element={<ExerciseProgressPage />} />
         <Route path="library" element={<LibraryPage />} />
         <Route path="library/:exerciseId" element={<ExercisePage />} />
         <Route path="profile" element={<ProfilePage />} />

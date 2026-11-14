@@ -64,13 +64,19 @@ npm test           # vitest (schedule logic etc.)
   per-exercise chart (lazy-loaded Recharts; first session is baseline, PR = strictly heavier
   top set, or more reps for bodyweight). Browser-verified at 375px with seeded sample
   workouts (since deleted). Images fall back to a gradient icon until M1 assets land in
-  `public/assets/exercises/<slug>.webp`, `public/assets/mascot.webp`. Main chunk is ~595 kB;
-  consider more code splitting in M6.
+  `public/assets/exercises/<slug>.webp`, `public/assets/mascot.webp`.
+- M6 (partial, while waiting for M1 art): every route except Today/Auth is lazy-loaded
+  (main chunk ~285 kB, no size warning); `.github/workflows/deploy.yml` builds (lint, test,
+  build) and deploys to Pages, reading `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`
+  from repository *variables*. README drafted (screenshots pending). Split editor add /
+  rename / delete day and add / remove exercise browser-verified (net-zero on the user's split).
+  Still to do: repo variables + Pages source "GitHub Actions" (needs the user's OK), auth
+  redirect URLs in the Supabase dashboard, PWA manifest + icons, screenshots.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard
   (no MCP tool for auth config) — do in M6 at the latest.
-- GitHub Actions deploy workflow: not added yet (M6).
+- GitHub Actions deploy workflow: added (`.github/workflows/deploy.yml`), not yet run.
 
 ## Future features (NOT in MVP — do not build yet)
 

@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react'
+import { Suspense, type ReactNode } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useProfile } from '../features/auth/useProfile'
-import { Avatar, Wordmark } from './ui'
+import { Avatar, Spinner, Wordmark } from './ui'
 
 const icon = (path: ReactNode) => (
   <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -42,7 +42,15 @@ export function AppLayout() {
       </header>
 
       <main className="flex-1 px-5 pb-28">
-        <Outlet />
+        <Suspense
+          fallback={
+            <div className="grid place-items-center pt-24 text-accent">
+              <Spinner />
+            </div>
+          }
+        >
+          <Outlet />
+        </Suspense>
       </main>
 
       <nav
