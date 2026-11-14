@@ -1,8 +1,10 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Spinner } from '../components/ui'
 import { useProfile } from '../features/auth/useProfile'
 import { useCompletedWorkouts, useOverrides } from '../features/schedule/api'
 import { useActiveSplit, type SplitDay } from '../features/split/api'
+import { useStartWorkout } from '../features/workout/api'
+import { useWorkoutDraft } from '../features/workout/draft-store'
 import { WEEKDAY_LONG, WEEKDAY_SHORT, addDays, fromISODate, resolveDay, toISODate, weekDates, weekdayOf } from '../lib/schedule'
 
 const primaryLink =
@@ -15,6 +17,9 @@ export function TodayPage() {
   // Look one week ahead so a rest day can point at the next session.
   const rangeEnd = addDays(week[6], 7)
 
+  const navigate = useNavigate()
+  const { draft } = useWorkoutDraft()
+  const start = useStartWorkout()
   const split = useActiveSplit()
   const overrides = useOverrides(week[0], rangeEnd)
   const completed = useCompletedWorkouts(week[0], week[6])
@@ -79,7 +84,18 @@ export function TodayPage() {
             })}
           </ul>
 
-          {doneToday ? (
+          {draft ? (
+            <section className="mt-5 rounded-3xl border border-accent/40 bg-accent/10 p-6">
+              <p className="text-sm font-semibold tracking-widest text-accent uppercase">Workout in progress</p>
+              <h2 className="mt-1 text-3xl font-black tracking-tight">{draft.dayName}</h2>
+              <p className="mt-1 text-muted">
+                {draft.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0)} sets done so far.
+              </p>
+              <Link to="/workout" className={`${primaryLink} mt-5 min-h-16 text-xl`}>
+                Resume workout
+              </Link>
+            </section>
+          ) : doneToday ? (
             <section className="mt-5 rounded-3xl border border-accent/40 bg-accent/10 p-6">
               <p className="text-sm font-semibold tracking-widest text-accent uppercase">Done for today</p>
               <h2 className="mt-1 text-2xl font-black">{doneToday.day_name}</h2>
@@ -105,9 +121,18 @@ export function TodayPage() {
                   <li className="py-2.5 text-muted">No default exercises yet. You can add them as you go.</li>
                 )}
               </ul>
-              <Link to="/workout" className={`${primaryLink} mt-5 min-h-16 text-xl`}>
-                Start workout
-              </Link>
+              <button
+                disabled={start.isPending}
+                onClick={() => start.mutate(todayDay, { onSuccess: () => navigate('/workout') })}
+                className={`${primaryLink} mt-5 min-h-16 text-xl disabled:opacity-60`}
+              >
+                {start.isPending ? 'Loading…' : 'Start workout'}
+              </button>
+              {start.isError && (
+                <p role="alert" className="mt-3 text-sm text-danger">
+                  Could not start the workout — check your connection and try again
+                </p>
+              )}
             </section>
           ) : (
             <section className="mt-5 rounded-3xl border border-line bg-surface p-6">
@@ -118,9 +143,14 @@ export function TodayPage() {
                   ? `Recover. Next up: ${nextSession.day.name} on ${WEEKDAY_LONG[weekdayOf(nextSession.date)]}.`
                   : 'No training days are scheduled. Put a day on your week to get going.'}
               </p>
-              <Link to={nextSession ? '/calendar' : '/split'} className="mt-4 inline-flex min-h-11 items-center font-bold text-accent">
-                {nextSession ? 'Swap days this week →' : 'Edit your split →'}
-              </Link>
+              <div className="mt-3 flex flex-wrap gap-x-6">
+                <Link to={nextSession ? '/calendar' : '/split'} className="inline-flex min-h-11 items-center font-bold text-accent">
+                  {nextSession ? 'Swap days this week →' : 'Edit your split →'}
+                </Link>
+                <Link to="/workout" className="inline-flex min-h-11 items-center font-bold text-muted">
+                  Train anyway
+                </Link>
+              </div>
             </section>
           )}
         </>

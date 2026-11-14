@@ -10,6 +10,7 @@ import { OnboardingPage } from './pages/OnboardingPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { SplitPage } from './pages/SplitPage'
 import { TodayPage } from './pages/TodayPage'
+import { WorkoutPage } from './pages/WorkoutPage'
 
 export function App() {
   const { session } = useAuth()
@@ -38,7 +39,7 @@ export function App() {
         <Route index element={<TodayPage />} />
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="split" element={<SplitPage />} />
-        <Route path="workout" element={<ComingSoonPage title="Workout" milestone="M4" />} />
+        <Route path="workout" element={<WorkoutPage />} />
         <Route path="progress" element={<ComingSoonPage title="Progress" milestone="M5" />} />
         <Route path="library" element={<ComingSoonPage title="Library" milestone="M5" />} />
         <Route path="profile" element={<ProfilePage />} />

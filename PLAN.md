@@ -9,7 +9,7 @@ Mobile-first workout tracker. Polished MVP for real gym use and a portfolio piec
 | M1 | Higgsfield style checkpoint (mascot + 1 exercise, 2–3 tests) | blocked (sign-in) |
 | M2 | App shell, schema, RLS, auth, onboarding                     | done |
 | M3 | Split (presets / scratch), calendar (week + month), Today    | done |
-| M4 | Workout logging, rest timer, localStorage draft              | todo        |
+| M4 | Workout logging, rest timer, localStorage draft              | built, not browser-verified |
 | M5 | Remaining assets, exercise library, progress + PRs           | todo        |
 | M6 | Polish, GitHub Pages deploy, README                          | todo        |
 
