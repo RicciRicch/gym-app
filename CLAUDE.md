@@ -59,6 +59,13 @@ npm test           # vitest (schedule logic etc.)
   survival across reload, add/remove exercise, finish -> "Update default" prompt (kept old),
   saved rows in DB, prefill from last session, discard. Not exercised: the "Update default"
   write path, rest duration picker, vibration (needs a real phone).
+- M5 library + progress: code done. Library (12 core + custom text-only exercises, duplicate
+  names rejected), exercise detail with cues, Progress history with per-workout PR badges,
+  per-exercise chart (lazy-loaded Recharts; first session is baseline, PR = strictly heavier
+  top set, or more reps for bodyweight). Browser-verified at 375px with seeded sample
+  workouts (since deleted). Images fall back to a gradient icon until M1 assets land in
+  `public/assets/exercises/<slug>.webp`, `public/assets/mascot.webp`. Main chunk is ~595 kB;
+  consider more code splitting in M6.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard

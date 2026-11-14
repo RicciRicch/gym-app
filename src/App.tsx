@@ -1,16 +1,22 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './components/AppLayout'
-import { FullScreenLoader } from './components/ui'
+import { FullScreenLoader, Spinner } from './components/ui'
 import { useAuth } from './features/auth/auth-context'
 import { useProfile } from './features/auth/useProfile'
 import { AuthPage } from './pages/AuthPage'
 import { CalendarPage } from './pages/CalendarPage'
-import { ComingSoonPage } from './pages/ComingSoonPage'
+import { ExercisePage } from './pages/ExercisePage'
+import { LibraryPage } from './pages/LibraryPage'
 import { OnboardingPage } from './pages/OnboardingPage'
+import { ProgressPage } from './pages/ProgressPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { SplitPage } from './pages/SplitPage'
 import { TodayPage } from './pages/TodayPage'
 import { WorkoutPage } from './pages/WorkoutPage'
+
+// Recharts is heavy; keep it out of the main bundle.
+const ExerciseProgressPage = lazy(() => import('./pages/ExerciseProgressPage'))
 
 export function App() {
   const { session } = useAuth()
@@ -40,8 +46,17 @@ export function App() {
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="split" element={<SplitPage />} />
         <Route path="workout" element={<WorkoutPage />} />
-        <Route path="progress" element={<ComingSoonPage title="Progress" milestone="M5" />} />
-        <Route path="library" element={<ComingSoonPage title="Library" milestone="M5" />} />
+        <Route path="progress" element={<ProgressPage />} />
+        <Route
+          path="progress/:exerciseId"
+          element={
+            <Suspense fallback={<div className="grid place-items-center pt-24 text-accent"><Spinner /></div>}>
+              <ExerciseProgressPage />
+            </Suspense>
+          }
+        />
+        <Route path="library" element={<LibraryPage />} />
+        <Route path="library/:exerciseId" element={<ExercisePage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
