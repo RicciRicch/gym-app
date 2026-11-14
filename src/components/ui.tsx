@@ -75,8 +75,20 @@ export function Loader({ label, className = 'size-14' }: { label?: string; class
   return (
     <div role="status" className="flex flex-col items-center gap-4">
       <span className={`relative grid place-items-center ${className}`}>
-        <span className="absolute inset-0 rounded-full border-[3px] border-line" />
-        <span className="absolute inset-0 animate-spin rounded-full border-[3px] border-transparent border-t-accent border-r-accent [animation-duration:0.8s]" />
+        <svg viewBox="0 0 48 48" className="absolute inset-0 size-full" aria-hidden="true">
+          <circle cx="24" cy="24" r="20" fill="none" strokeWidth="3.5" className="stroke-line" />
+        </svg>
+        <svg viewBox="0 0 48 48" className="absolute inset-0 size-full animate-loader-rotate" aria-hidden="true">
+          <circle
+            cx="24"
+            cy="24"
+            r="20"
+            fill="none"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            className="animate-loader-dash stroke-accent drop-shadow-[0_0_4px_rgb(200_255_46_/_0.45)]"
+          />
+        </svg>
         <DumbbellMark className="w-1/2 animate-lift text-accent" />
       </span>
       {label ? <span className="text-sm font-semibold text-muted">{label}</span> : <span className="sr-only">Loading</span>}
