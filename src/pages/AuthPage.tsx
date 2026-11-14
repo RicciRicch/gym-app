@@ -150,6 +150,8 @@ function friendlyAuthError(err: unknown): string {
   if (/invalid login credentials/i.test(message)) return 'Wrong email or password'
   if (/email not confirmed/i.test(message)) return 'Confirm your email first — check your inbox for the link'
   if (/already registered/i.test(message)) return 'An account with this email already exists'
+  if (/rate limit/i.test(message))
+    return 'Too many sign-ups right now, so we could not send the confirmation email. Try again in an hour.'
   if (/failed to fetch|network/i.test(message)) return 'No connection — check your internet and try again'
   return message || 'Something went wrong — try again'
 }
