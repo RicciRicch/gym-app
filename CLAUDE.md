@@ -113,6 +113,15 @@ npm test           # vitest (schedule logic etc.)
   run, so check canvas/RAF animations with headless Chrome over CDP instead.
   Browser-verified end to end: finish with a heavier squat -> "NEW PR!", gain, stats, streak
   card on Today (test rows deleted). Not exercised: vibration, a real phone.
+- Profile photos: onboarding and Profile (tap the avatar -> "Change avatar" sheet) offer the 4
+  presets or your own photo (`src/features/avatar/`). The photo is centre-cropped and shrunk on
+  the phone to <= 320px WebP (JPEG where the browser can't encode WebP; `src/lib/avatar.ts`,
+  unit-tested) and uploaded to the public `avatars` bucket at `<user id>/<uuid>.<ext>`
+  (migration `avatar_photos`: `profiles.avatar_path`, owner-folder-only storage policies, 512 KB,
+  webp/jpeg only). Old files are removed on change; `delete-account` removes the folder first.
+  Browser-verified: upload, header + profile photo, switch back to a preset (file deleted),
+  RLS blocks other folders / root / SVG / pointing at another user's path. Not exercised:
+  onboarding with a photo (needs a new account), a real phone camera / HEIC.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard

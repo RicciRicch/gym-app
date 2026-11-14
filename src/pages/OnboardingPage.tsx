@@ -1,12 +1,14 @@
 import { useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
-import { Avatar, Button, Field } from '../components/ui'
+import { Button, Field } from '../components/ui'
 import { AVATAR_KEYS, USERNAME_PATTERN, UsernameTakenError, useCreateProfile } from '../features/auth/useProfile'
+import { AvatarPicker } from '../features/avatar/AvatarPicker'
+import type { AvatarChoice } from '../features/avatar/api'
 
 export function OnboardingPage() {
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
-  const [avatarKey, setAvatarKey] = useState<string>(AVATAR_KEYS[0])
+  const [avatar, setAvatar] = useState<AvatarChoice>({ preset: AVATAR_KEYS[0], photo: null, usePhoto: false })
   const [touched, setTouched] = useState(false)
   const createProfile = useCreateProfile()
 
@@ -19,14 +21,16 @@ export function OnboardingPage() {
         : null
   const otherError =
     createProfile.error && !(createProfile.error instanceof UsernameTakenError)
-      ? 'Could not save your profile — try again'
+      ? avatar.usePhoto && avatar.photo
+        ? 'Could not save your profile or upload your photo. Check your connection and try again.'
+        : 'Could not save your profile — try again'
       : null
 
   function submit(e: FormEvent) {
     e.preventDefault()
     setTouched(true)
     if (!usernameValid || !displayName.trim()) return
-    createProfile.mutate({ username, display_name: displayName.trim(), avatar_key: avatarKey })
+    createProfile.mutate({ username, display_name: displayName.trim(), avatar })
   }
 
   return (
@@ -40,24 +44,7 @@ export function OnboardingPage() {
       <form onSubmit={submit} className="mt-8 flex flex-1 animate-fade-up flex-col gap-5" noValidate>
         <fieldset>
           <legend className="mb-2 text-sm font-medium text-muted">Avatar</legend>
-          <div className="grid grid-cols-4 gap-3" role="radiogroup" aria-label="Avatar">
-            {AVATAR_KEYS.map((key, i) => {
-              const selected = key === avatarKey
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  aria-label={`Avatar ${i + 1}`}
-                  onClick={() => setAvatarKey(key)}
-                  className={`grid aspect-square place-items-center rounded-3xl border-2 bg-surface p-2 transition active:scale-95 ${selected ? 'animate-pop border-accent shadow-[0_0_24px_-8px] shadow-accent' : 'border-line opacity-70'}`}
-                >
-                  <Avatar avatarKey={key} className="size-full" />
-                </button>
-              )
-            })}
-          </div>
+          <AvatarPicker value={avatar} onChange={setAvatar} />
         </fieldset>
 
         <Field

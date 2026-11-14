@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from './auth-context'
 import { openGuide } from '../guide/guide-store'
+import { removeAvatarPhoto, resolveAvatarChoice, type AvatarChoice } from '../avatar/api'
 
 export const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/
 
@@ -36,12 +37,14 @@ export function useCreateProfile() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (input: { username: string; display_name: string; avatar_key: string }) => {
+    mutationFn: async ({ avatar, ...input }: { username: string; display_name: string; avatar: AvatarChoice }) => {
+      const { uploaded, ...avatarColumns } = await resolveAvatarChoice(user!.id, avatar)
       const { data, error } = await supabase
         .from('profiles')
-        .insert({ id: user!.id, ...input })
+        .insert({ id: user!.id, ...input, ...avatarColumns })
         .select()
         .single()
+      if (error) await removeAvatarPhoto(uploaded)
       // 23505 = unique_violation on profiles.username
       if (error?.code === '23505') throw new UsernameTakenError()
       if (error) throw error

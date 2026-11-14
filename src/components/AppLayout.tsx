@@ -9,6 +9,7 @@ import { closeGuide, useGuideOpen } from '../features/guide/guide-store'
 import { useActiveSplit } from '../features/split/api'
 import { useOnline } from '../features/offline/online'
 import { Avatar, PageLoader, TopProgressBar, Wordmark } from './ui'
+import { avatarPhotoUrl } from '../features/avatar/api'
 
 const icon = (path: ReactNode) => (
   <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -51,7 +52,7 @@ export function AppLayout() {
       <header className="sticky top-0 z-10 flex items-center justify-between bg-bg/85 px-5 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 backdrop-blur">
         <Wordmark className="text-lg" />
         <Link to="/profile" aria-label="Profile" className="grid size-11 place-items-center rounded-full transition active:scale-95">
-          {profile && <Avatar avatarKey={profile.avatar_key} className="size-9 ring-2 ring-line" />}
+          {profile && <Avatar avatarKey={profile.avatar_key} photoUrl={avatarPhotoUrl(profile.avatar_path)} className="size-9 ring-2 ring-line" />}
         </Link>
       </header>
       {!online && (

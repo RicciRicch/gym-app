@@ -145,10 +145,23 @@ const avatarFallbacks: Record<string, string> = {
   'avatar-4': 'from-fuchsia-300 to-violet-600',
 }
 
-/** Avatar from public/assets/avatars; falls back to a gradient until the image exists. */
-export function Avatar({ avatarKey, className = 'size-10' }: { avatarKey: string; className?: string }) {
-  const [failed, setFailed] = useState(false)
-  if (failed) {
+/**
+ * The user's uploaded photo when there is one, otherwise the preset from
+ * public/assets/avatars; falls back to a gradient if an image fails to load.
+ */
+export function Avatar({
+  avatarKey,
+  photoUrl,
+  className = 'size-10',
+}: {
+  avatarKey: string
+  photoUrl?: string | null
+  className?: string
+}) {
+  const [failed, setFailed] = useState<string | null>(null)
+  const preset = `${import.meta.env.BASE_URL}assets/avatars/${avatarKey}.webp`
+  const src = photoUrl && failed !== photoUrl ? photoUrl : preset
+  if (failed === preset) {
     return (
       <span
         className={`inline-block rounded-full bg-gradient-to-br ${avatarFallbacks[avatarKey] ?? 'from-surface-2 to-line'} ${className}`}
@@ -157,9 +170,9 @@ export function Avatar({ avatarKey, className = 'size-10' }: { avatarKey: string
   }
   return (
     <img
-      src={`${import.meta.env.BASE_URL}assets/avatars/${avatarKey}.webp`}
+      src={src}
       alt=""
-      onError={() => setFailed(true)}
+      onError={() => setFailed(src)}
       className={`rounded-full bg-surface-2 object-cover ${className}`}
     />
   )

@@ -19,6 +19,7 @@ export type Database = {
           username: string
           display_name: string
           avatar_key: string
+          avatar_path: string | null
           created_at: string
         }
         Insert: {
@@ -26,12 +27,14 @@ export type Database = {
           username: string
           display_name: string
           avatar_key: string
+          avatar_path?: string | null
           created_at?: string
         }
         Update: {
           username?: string
           display_name?: string
           avatar_key?: string
+          avatar_path?: string | null
         }
         Relationships: []
       }

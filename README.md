@@ -31,6 +31,8 @@ and watch your top sets climb.
 - **Progress** – workout history, and a top-set chart per exercise with PR markers.
 - **Exercise library** – 12 core lifts with target muscles and three form cues each,
   plus your own custom exercises.
+- **Your look** – pick a character avatar or upload your own photo (cropped and shrunk on
+  the phone before upload); change it any time from your profile.
 
 ## Stack
 
@@ -58,7 +60,9 @@ before running the app.
   public URL and key from repository variables.
 - Supabase security advisors are run after every schema change.
 - Account deletion runs in an Edge Function with the service role, which never reaches the
-  client; it deletes only the user identified by the request's JWT.
+  client; it deletes only the user identified by the request's JWT, photos included.
+- Profile photos live in a storage bucket where each user can only write to their own
+  folder; only small WebP/JPEG images are accepted.
 
 ## How I built it
 
