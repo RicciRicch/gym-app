@@ -11,11 +11,14 @@ import { useExercises } from '../features/split/api'
 import { buildDraftExercise, useFinishWorkout, useStartWorkout, useUpdateDayDefault } from '../features/workout/api'
 import { saveRestSeconds, useWorkoutDraft } from '../features/workout/draft-store'
 import { RestTimer } from '../features/workout/RestTimer'
+import { voiceSupported } from '../features/workout/voice'
+import { VoiceSheet } from '../features/workout/VoiceSheet'
 import { WorkoutSummaryScreen, type StreakChange } from '../features/workout/WorkoutSummaryScreen'
 import { useNow } from '../features/workout/useNow'
 import { resolveDay, toISODate } from '../lib/schedule'
 import { trainingDaysPerWeek, weeklyStreak } from '../lib/streak'
 import { summarizeWorkout, type WorkoutSummary } from '../lib/summary'
+import type { SpokenSet } from '../lib/voice-set'
 import {
   REST_OPTIONS,
   exercisesDiffer,
@@ -36,6 +39,8 @@ export function WorkoutPage() {
   const navigate = useNavigate()
   const [sheet, setSheet] = useState<SheetState>(null)
   const [askDefault, setAskDefault] = useState<DefaultPrompt | null>(null)
+  const [voiceFor, setVoiceFor] = useState<string | null>(null)
+  const [canUseVoice] = useState(voiceSupported)
   const [finished, setFinished] = useState<{
     summary: WorkoutSummary
     streak: StreakChange | null
@@ -116,6 +121,33 @@ export function WorkoutPage() {
     }))
   }
 
+  /** The set a spoken set goes into: the first one not done yet, or a new one after the last. */
+  const voiceTarget = (exercise: DraftExercise) => {
+    const index = exercise.sets.findIndex((s) => !s.done)
+    return index === -1 ? exercise.sets.length : index
+  }
+
+  /** Fills and completes the next set of an exercise from a spoken set; returns how it reads. */
+  function logSpokenSet(exerciseId: string, spoken: SpokenSet & { reps: number }): string {
+    const exercise = draft!.exercises.find((e) => e.exerciseId === exerciseId)
+    if (!exercise) return ''
+    const index = voiceTarget(exercise)
+    const base = exercise.sets[index] ?? { weight: exercise.sets.at(-1)?.weight ?? '', reps: '', done: false }
+    const weight = spoken.weight === null ? base.weight : spoken.weight === 0 ? '' : String(spoken.weight)
+    const filled: DraftSet = { weight, reps: String(spoken.reps), done: true }
+    update((d) => ({
+      ...d,
+      restEndsAt: Date.now() + d.restSeconds * 1000,
+      exercises: d.exercises.map((e) => {
+        if (e.exerciseId !== exerciseId) return e
+        const sets = [...e.sets]
+        sets[index] = filled
+        return { ...e, sets }
+      }),
+    }))
+    return `${weight === '' ? 'Bodyweight' : `${weight.replace('.', ',')} kg`} × ${spoken.reps}`
+  }
+
   async function finishWorkout() {
     const current = draft!
     if (toSetRows(current).length === 0) return setSheet('finish-empty')
@@ -170,7 +202,19 @@ export function WorkoutPage() {
         {draft.exercises.map((exercise, exerciseIndex) => (
           <article key={exercise.exerciseId} className="rounded-3xl border border-line bg-surface px-4 pt-3 pb-4">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="min-w-0 truncate text-lg font-bold">{exercise.name}</h2>
+              <h2 className="min-w-0 flex-1 truncate text-lg font-bold">{exercise.name}</h2>
+              {canUseVoice && (
+                <button
+                  onClick={() => setVoiceFor(exercise.exerciseId)}
+                  aria-label={`Say the next ${exercise.name} set`}
+                  className="grid size-11 shrink-0 place-items-center rounded-full bg-accent/10 text-accent active:scale-90"
+                >
+                  <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="9" y="3" width="6" height="11" rx="3" />
+                    <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+                  </svg>
+                </button>
+              )}
               <button
                 onClick={() => update((d) => ({ ...d, exercises: d.exercises.filter((_, i) => i !== exerciseIndex) }))}
                 aria-label={`Remove ${exercise.name}`}
@@ -255,6 +299,21 @@ export function WorkoutPage() {
           onDone={clearRest}
         />
       )}
+
+      {(() => {
+        const exercise = voiceFor ? draft.exercises.find((e) => e.exerciseId === voiceFor) : undefined
+        return (
+          exercise && (
+            <VoiceSheet
+              key={exercise.exerciseId}
+              exerciseName={exercise.name}
+              setNumber={voiceTarget(exercise) + 1}
+              onLog={(spoken) => logSpokenSet(exercise.exerciseId, spoken)}
+              onClose={() => setVoiceFor(null)}
+            />
+          )
+        )
+      })()}
 
       {sheet === 'add-exercise' && (
         <ExercisePicker

@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { Confetti } from '../../components/Confetti'
+import { LiftedCard } from '../../components/LiftedCard'
 import { Mascot } from '../../components/ExerciseImage'
 import { Button } from '../../components/ui'
 import { prefersReducedMotion } from '../../lib/motion'
@@ -166,11 +167,18 @@ export function WorkoutSummaryScreen({
           ))}
         </dl>
 
+        <LiftedCard
+          kg={summary.volumeKg}
+          heading="Today"
+          className="rise-in mt-3 w-full"
+          style={delay(afterPrs + 0.35)}
+        />
+
         {streak && (
-          <div className="rise-in mt-3 w-full" style={delay(afterPrs + 0.4)}>
+          <div className="rise-in mt-3 w-full" style={delay(afterPrs + 0.5)}>
             <StreakCard streak={streak.after} />
             {streakUp && (
-              <p className="pop-in mt-3 font-bold text-balance text-orange-400" style={delay(afterPrs + 0.8)}>
+              <p className="pop-in mt-3 font-bold text-balance text-orange-400" style={delay(afterPrs + 0.9)}>
                 Week complete. Your streak just grew to {streak.after.weeks} {streak.after.weeks === 1 ? 'week' : 'weeks'}!
               </p>
             )}

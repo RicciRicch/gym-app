@@ -29,6 +29,10 @@ and watch your top sets climb.
 - **Streak** – a burning flame for every week in a row that you hit all your planned
   workouts; rest days never break it.
 - **Progress** – workout history, and a top-set chart per exercise with PR markers.
+- **What you lifted** – your volume in real-world things: "That's like lifting 3 rhinos"
+  after a workout, and a year-to-date total (grand pianos, blue whales, Eiffel Towers…).
+- **Voice input** – tap the mic and say "sto kila puta pet" (or "100 kilos times 5"): the
+  next set is filled in and ticked off. Serbian, Croatian and English.
 - **Exercise library** – 12 core lifts with target muscles and three form cues each,
   plus your own custom exercises.
 - **Your look** – pick a character avatar or upload your own photo (cropped and shrunk on

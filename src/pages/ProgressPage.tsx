@@ -6,6 +6,8 @@ import { Sheet } from '../components/Sheet'
 import { Button, PageLoader } from '../components/ui'
 import { useDeleteWorkout, useLoggedSets, useWorkoutHistory, type HistoryWorkout } from '../features/progress/api'
 import { useExercises } from '../features/split/api'
+import { LiftedCard } from '../components/LiftedCard'
+import { formatMass, totalVolume } from '../lib/lifted'
 import { formatTopSet, progressByExercise, prsByWorkout } from '../lib/progress'
 import { fromISODate } from '../lib/schedule'
 import { formatClock } from '../lib/workout'
@@ -20,6 +22,11 @@ export function ProgressPage() {
 
   const progress = useMemo(() => progressByExercise(sets.data ?? []), [sets.data])
   const prs = useMemo(() => prsByWorkout(progress), [progress])
+  const year = new Date().getFullYear()
+  const volume = useMemo(
+    () => ({ year: totalVolume(sets.data ?? [], year), allTime: totalVolume(sets.data ?? []) }),
+    [sets.data, year],
+  )
 
   const loading = history.isPending || sets.isPending
   const empty = !loading && (history.data?.length ?? 0) === 0
@@ -74,6 +81,15 @@ export function ProgressPage() {
         </div>
       ) : tab === 'history' ? (
         <ul className="mt-4 flex flex-col gap-3">
+          {volume.allTime > 0 && (
+            <li>
+              <LiftedCard
+                kg={volume.year > 0 ? volume.year : volume.allTime}
+                heading={volume.year > 0 ? `${year} so far · ${formatMass(volume.year)}` : `All time · ${formatMass(volume.allTime)}`}
+                footer={volume.year > 0 && volume.allTime > volume.year ? `All time: ${formatMass(volume.allTime)}` : undefined}
+              />
+            </li>
+          )}
           {history.data!.map((w) => (
             <WorkoutCard key={w.id} workout={w} prExercises={prs.get(w.id)} />
           ))}

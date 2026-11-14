@@ -120,6 +120,18 @@ npm test           # vitest (schedule logic etc.)
   Browser-verified: upload, header + profile photo, switch back to a preset (file deleted),
   RLS blocks other folders / root / SVG / pointing at another user's path. Not exercised:
   onboarding with a photo (needs a new account), a real phone camera / HEIC.
+- "What you lifted": `src/lib/lifted.ts` (unit-tested) turns volume into the biggest thing it
+  covers at least twice (watermelon ... Titanic). `LiftedCard` shows it on the workout summary
+  ("Today") and at the top of Progress history (this year, plus all time). Browser-verified.
+- Voice input: mic button on each exercise in a workout opens `VoiceSheet`; the Web Speech API
+  (`src/features/workout/voice.ts`, hidden where unsupported, e.g. Firefox) listens in sr-RS /
+  hr-HR / en-US (saved in localStorage). `src/lib/voice-set.ts` (unit-tested) parses Serbian
+  (Latin or Cyrillic), Croatian and English number words or digits, "i po" / "and a half",
+  "zarez" / "point", kg / reps / "puta" / "x", "bez tega". The result fills and completes the
+  first unfinished set (or a new one) and starts the rest timer; reps only keeps the set's
+  weight. Browser-verified with a mocked recognizer (the Browser pane blocks the mic; the
+  blocked-mic message shows). Not exercised: a real microphone / phone. Chrome sends audio
+  to Google for recognition.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL
