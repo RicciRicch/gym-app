@@ -10,8 +10,8 @@ Mobile-first workout tracker. Polished MVP for real gym use and a portfolio piec
 | M2 | App shell, schema, RLS, auth, onboarding                     | done |
 | M3 | Split (presets / scratch), calendar (week + month), Today    | done |
 | M4 | Workout logging, rest timer, localStorage draft              | done |
-| M5 | Remaining assets, exercise library, progress + PRs           | done (assets pending M1) |
-| M6 | Polish, GitHub Pages deploy, README                          | todo        |
+| M5 | Remaining assets, exercise library, progress + PRs           | done |
+| M6 | Polish, GitHub Pages deploy, README                          | nearly done (screenshots, auth URLs) |
 
 After every milestone: build + typecheck + lint, mobile-viewport browser test,
 schedule unit tests, clean commit + push.
