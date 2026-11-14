@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import type { LoggedSet } from '../../lib/progress'
 import { useAuth } from '../auth/auth-context'
@@ -74,5 +74,19 @@ export function useWorkoutHistory() {
       )
       return workouts
     },
+  })
+}
+
+/** Deletes a finished workout; its sets go with it (on delete cascade). */
+export function useDeleteWorkout() {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (workoutId: string) => {
+      const { data, error } = await supabase.from('workouts').delete().eq('id', workoutId).select('id')
+      if (error) throw error
+      if (data.length === 0) throw new Error('Workout not found')
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts', user?.id] }),
   })
 }

@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ExerciseImage, Mascot } from '../components/ExerciseImage'
 import { PrBadge } from '../components/PrBadge'
-import { PageLoader } from '../components/ui'
-import { useLoggedSets, useWorkoutHistory, type HistoryWorkout } from '../features/progress/api'
+import { Sheet } from '../components/Sheet'
+import { Button, PageLoader } from '../components/ui'
+import { useDeleteWorkout, useLoggedSets, useWorkoutHistory, type HistoryWorkout } from '../features/progress/api'
 import { useExercises } from '../features/split/api'
 import { formatTopSet, progressByExercise, prsByWorkout } from '../lib/progress'
 import { fromISODate } from '../lib/schedule'
@@ -110,6 +111,7 @@ export function ProgressPage() {
 
 function WorkoutCard({ workout, prExercises }: { workout: HistoryWorkout; prExercises: Set<string> | undefined }) {
   const [open, setOpen] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const groups: { exerciseId: string; name: string; sets: HistoryWorkout['workout_sets'] }[] = []
   for (const s of workout.workout_sets) {
     const last = groups.at(-1)
@@ -155,8 +157,58 @@ function WorkoutCard({ workout, prExercises }: { workout: HistoryWorkout; prExer
               </p>
             </div>
           ))}
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="-mx-2 mt-1 flex min-h-11 items-center gap-2 px-2 text-sm font-semibold text-danger/80"
+          >
+            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+            </svg>
+            Delete workout
+          </button>
         </div>
       )}
+      {confirmDelete && (
+        <DeleteWorkoutSheet workout={workout} date={date} hasPRs={!!prExercises?.size} onClose={() => setConfirmDelete(false)} />
+      )}
     </li>
+  )
+}
+
+function DeleteWorkoutSheet({
+  workout,
+  date,
+  hasPRs,
+  onClose,
+}: {
+  workout: HistoryWorkout
+  date: string
+  hasPRs: boolean
+  onClose: () => void
+}) {
+  const remove = useDeleteWorkout()
+  return (
+    <Sheet title="Delete this workout?" onClose={remove.isPending ? () => {} : onClose}>
+      <p className="text-muted">
+        <span className="font-semibold text-text">
+          {workout.day_name} · {date}
+        </span>{' '}
+        and its {workout.workout_sets.length} sets will be removed for good. Your charts and PRs are recalculated without it.
+        {hasPRs && ' The PRs from this session go with it.'}
+      </p>
+      {remove.isError && (
+        <p role="alert" className="mt-4 rounded-2xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+          {navigator.onLine ? 'Could not delete the workout. Try again.' : 'You are offline. Try again when you are back online.'}
+        </p>
+      )}
+      <div className="mt-5 flex flex-col gap-2">
+        <Button variant="danger" className="w-full" loading={remove.isPending} onClick={() => remove.mutate(workout.id, { onSuccess: onClose })}>
+          Delete workout
+        </Button>
+        <Button variant="ghost" className="w-full" disabled={remove.isPending} onClick={onClose}>
+          Keep it
+        </Button>
+      </div>
+    </Sheet>
   )
 }
