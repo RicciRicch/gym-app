@@ -2,6 +2,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { PageLoader, Spinner } from '../components/ui'
 import { useProfile } from '../features/auth/useProfile'
 import { useCompletedWorkouts, useOverrides } from '../features/schedule/api'
+import { useStreak } from '../features/streak/api'
+import { StreakCard } from '../features/streak/StreakCard'
 import { useActiveSplit, type SplitDay } from '../features/split/api'
 import { useStartWorkout } from '../features/workout/api'
 import { useWorkoutDraft } from '../features/workout/draft-store'
@@ -23,6 +25,7 @@ export function TodayPage() {
   const split = useActiveSplit()
   const overrides = useOverrides(week[0], rangeEnd)
   const completed = useCompletedWorkouts(week[0], week[6])
+  const streak = useStreak()
 
   const days: SplitDay[] = split.data?.split_days ?? []
   const planned = (date: string) => resolveDay(date, days, overrides.data ?? [])
@@ -81,6 +84,8 @@ export function TodayPage() {
               )
             })}
           </ul>
+
+          {streak && <StreakCard streak={streak} className="mt-3" />}
 
           {draft ? (
             <section className="mt-5 rounded-3xl border border-accent/40 bg-accent/10 p-6">

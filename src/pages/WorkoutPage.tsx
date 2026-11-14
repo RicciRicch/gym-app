@@ -2,15 +2,20 @@ import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, PageLoader, Spinner } from '../components/ui'
 import { Sheet, SheetOption } from '../components/Sheet'
+import { useLoggedSets } from '../features/progress/api'
 import { useOverrides } from '../features/schedule/api'
+import { useWorkoutDates } from '../features/streak/api'
 import { useActiveSplit, type SplitDay } from '../features/split/api'
 import { ExercisePicker } from '../features/split/SplitEditor'
 import { useExercises } from '../features/split/api'
 import { buildDraftExercise, useFinishWorkout, useStartWorkout, useUpdateDayDefault } from '../features/workout/api'
 import { saveRestSeconds, useWorkoutDraft } from '../features/workout/draft-store'
 import { RestTimer } from '../features/workout/RestTimer'
+import { WorkoutSummaryScreen, type StreakChange } from '../features/workout/WorkoutSummaryScreen'
 import { useNow } from '../features/workout/useNow'
 import { resolveDay, toISODate } from '../lib/schedule'
+import { trainingDaysPerWeek, weeklyStreak } from '../lib/streak'
+import { summarizeWorkout, type WorkoutSummary } from '../lib/summary'
 import {
   REST_OPTIONS,
   exercisesDiffer,
@@ -23,18 +28,41 @@ import {
 } from '../lib/workout'
 
 type SheetState = 'add-exercise' | 'rest' | 'discard' | 'finish-empty' | null
+type DefaultPrompt = { day: SplitDay; exercises: DraftExercise[] }
 
 export function WorkoutPage() {
   const { draft, setDraft } = useWorkoutDraft()
   const split = useActiveSplit()
   const navigate = useNavigate()
   const [sheet, setSheet] = useState<SheetState>(null)
-  const [askDefault, setAskDefault] = useState<{ day: SplitDay; exercises: DraftExercise[] } | null>(null)
+  const [askDefault, setAskDefault] = useState<DefaultPrompt | null>(null)
+  const [finished, setFinished] = useState<{
+    summary: WorkoutSummary
+    streak: StreakChange | null
+    askDefault: DefaultPrompt | null
+  } | null>(null)
+  // Loaded while training so the summary can tell PRs and the streak right at the finish.
+  const history = useLoggedSets()
+  const workoutDates = useWorkoutDates()
   const finish = useFinishWorkout()
   const updateDefault = useUpdateDayDefault()
   const { data: library } = useExercises()
 
   const clearRest = useCallback(() => setDraft((d) => ({ ...d, restEndsAt: null })), [setDraft])
+
+  if (finished) {
+    return (
+      <WorkoutSummaryScreen
+        summary={finished.summary}
+        streak={finished.streak}
+        onDone={() => {
+          if (finished.askDefault) setAskDefault(finished.askDefault)
+          else navigate('/', { replace: true })
+          setFinished(null)
+        }}
+      />
+    )
+  }
 
   if (askDefault) {
     const done = () => navigate('/', { replace: true })
@@ -91,6 +119,9 @@ export function WorkoutPage() {
   async function finishWorkout() {
     const current = draft!
     if (toSetRows(current).length === 0) return setSheet('finish-empty')
+    // Snapshot what was known before this workout: PRs and the streak are measured against it.
+    const setsBefore = history.data
+    const datesBefore = workoutDates.data
     try {
       await finish.mutateAsync(current)
     } catch {
@@ -98,9 +129,19 @@ export function WorkoutPage() {
     }
     const day = split.data?.split_days.find((d) => d.id === current.splitDayId)
     const changed = day && exercisesDiffer(current, day.split_day_exercises.map((e) => e.exercise_id))
-    if (day && changed && current.exercises.length > 0) setAskDefault({ day, exercises: current.exercises })
+    const today = toISODate(new Date())
+    const target = trainingDaysPerWeek(split.data?.split_days ?? [])
+    setFinished({
+      summary: summarizeWorkout(current, new Date().toISOString(), setsBefore),
+      streak: datesBefore
+        ? {
+            before: weeklyStreak(datesBefore, target, today),
+            after: weeklyStreak([...datesBefore, current.date], target, today),
+          }
+        : null,
+      askDefault: day && changed && current.exercises.length > 0 ? { day, exercises: current.exercises } : null,
+    })
     setDraft(null)
-    if (!(day && changed && current.exercises.length > 0)) navigate('/', { replace: true })
   }
 
   const doneSets = draft.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0)

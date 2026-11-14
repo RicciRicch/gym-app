@@ -97,6 +97,22 @@ npm test           # vitest (schedule logic etc.)
   so errors show "Something went wrong / Reload" instead of a black page. Browser-verified
   by renaming a built chunk. No Prettier config in the repo: don't run `npx prettier` with
   defaults (style = single quotes, no semicolons, width 120).
+- Workout summary + PR celebration: finishing a workout shows `WorkoutSummaryScreen`
+  (`src/features/workout/`): totals (time, volume, sets, exercises, count-up), PR cards with
+  the gain over the previous best (`src/lib/summary.ts`, unit-tested; measured against the
+  sets loaded before the finish), the streak, then the "Update default" prompt if needed.
+  With PRs: canvas confetti (`src/components/Confetti.tsx`, no dependency), sunburst,
+  shockwaves, "NEW PR!" stamp, flash, screen shake, vibration. Without: small confetti.
+  Reduced motion: no confetti, static end states.
+- Streak (user asked for it, so no longer a future feature): weekly, `src/lib/streak.ts`
+  (unit-tested). A week counts when days trained >= the split's training days; the running
+  week counts once met and never breaks the streak early. `Flame` (CSS-animated SVG, levels
+  0-3) + `StreakCard` on Today and on the summary. `useWorkoutDates` feeds it.
+- Dev playground: `/dev/celebration` (dev server only, no sign-in; `?prs=0|1|2` opens the
+  summary directly). The Browser pane is often hidden, where requestAnimationFrame does not
+  run, so check canvas/RAF animations with headless Chrome over CDP instead.
+  Browser-verified end to end: finish with a heavier squat -> "NEW PR!", gain, stats, streak
+  card on Today (test rows deleted). Not exercised: vibration, a real phone.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard
@@ -110,4 +126,3 @@ npm test           # vitest (schedule logic etc.)
 - Privacy settings (per-profile / per-workout visibility)
 - Rolling cycle (split not tied to weekdays)
 - Optimal schedule suggestion
-- Streaks

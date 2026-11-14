@@ -20,11 +20,23 @@ const ExerciseProgressPage = lazyPage(() => import('./pages/ExerciseProgressPage
 const LibraryPage = lazyPage(() => import('./pages/LibraryPage'), 'LibraryPage')
 const ExercisePage = lazyPage(() => import('./pages/ExercisePage'), 'ExercisePage')
 const ProfilePage = lazyPage(() => import('./pages/ProfilePage'), 'ProfilePage')
+// Dev-only playground for the celebration screen; dropped from production builds.
+const CelebrationPreview = import.meta.env.DEV
+  ? lazyPage(() => import('./dev/CelebrationPreview'), 'CelebrationPreview')
+  : null
 
 export function App() {
   const { session, recovering } = useAuth()
   const profile = useProfile()
 
+  // Dev-only: /dev/celebration works without signing in.
+  if (CelebrationPreview && window.location.pathname.endsWith('/dev/celebration')) {
+    return (
+      <Suspense fallback={<FullScreenLoader />}>
+        <CelebrationPreview />
+      </Suspense>
+    )
+  }
   if (session === undefined) return <FullScreenLoader />
   if (!session) return <AuthPage />
   if (recovering) return <NewPasswordPage />

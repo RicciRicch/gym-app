@@ -24,6 +24,10 @@ and watch your top sets climb.
   file list is generated at build time), and the last loaded data is kept on the phone, so
   the app opens and shows your split and history with no signal. Log the workout
   offline and tap Finish once you are back online.
+- **Celebrations** – finishing a workout shows a summary; beating a record sets off
+  confetti, a "NEW PR!" stamp and the gain over your previous best.
+- **Streak** – a burning flame for every week in a row that you hit all your planned
+  workouts; rest days never break it.
 - **Progress** – workout history, and a top-set chart per exercise with PR markers.
 - **Exercise library** – 12 core lifts with target muscles and three form cues each,
   plus your own custom exercises.

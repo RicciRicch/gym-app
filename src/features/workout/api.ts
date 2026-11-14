@@ -104,7 +104,8 @@ export function useFinishWorkout() {
         throw sets.error
       }
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workouts', user?.id] }),
+    // Not awaited: the summary screen should not wait for the refetch.
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['workouts', user?.id] }),
   })
 }
 
