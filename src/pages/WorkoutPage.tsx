@@ -194,7 +194,9 @@ export function WorkoutPage() {
 
       {finish.isError && (
         <p role="alert" className="mt-4 rounded-2xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
-          Could not save the workout — check your connection and try again. Nothing is lost.
+          {navigator.onLine
+            ? 'Could not save the workout — check your connection and try again. Nothing is lost.'
+            : 'You are offline. Your workout is safe on this phone — tap Finish again when you are back online.'}
         </p>
       )}
       <Button className="mt-5 min-h-14 w-full text-lg" loading={finish.isPending} onClick={finishWorkout}>

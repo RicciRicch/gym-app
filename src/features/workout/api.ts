@@ -39,7 +39,12 @@ export function useStartWorkout() {
   const { setDraft } = useWorkoutDraft()
   return useMutation({
     mutationFn: async (day: SplitDay) => {
-      const last = await fetchLastSets(day.split_day_exercises.map((e) => e.exercise_id))
+      let last = new Map<string, LastSet[]>()
+      try {
+        last = await fetchLastSets(day.split_day_exercises.map((e) => e.exercise_id))
+      } catch {
+        // offline: start with the day's default sets instead of blocking the workout
+      }
       const draft: WorkoutDraft = {
         version: 1,
         splitDayId: day.id,

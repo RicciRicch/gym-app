@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { useQueryClient } from '@tanstack/react-query'
 import { arrivedForRecovery, supabase } from '../../lib/supabase'
+import { clearPersistedQueryCache } from '../offline/query-cache'
 import { AuthContext } from './auth-context'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -17,6 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Never show one user's cached data to the next one.
       if (event === 'SIGNED_OUT') {
         queryClient.clear()
+        clearPersistedQueryCache()
         setRecovering(false)
       }
     })

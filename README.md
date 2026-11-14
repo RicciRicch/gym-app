@@ -20,6 +20,10 @@ and watch your top sets climb.
   when you finish. The draft survives reloads (localStorage).
 - **Rest timer** – starts automatically after a set, ±15 s, adjustable default, vibrates
   when done.
+- **Works offline** – a small hand-written service worker precaches the whole app (the
+  file list is generated at build time), and the last loaded data is kept on the phone, so
+  the app opens and shows your split and history with no signal. Log the workout
+  offline and tap Finish once you are back online.
 - **Progress** – workout history, and a top-set chart per exercise with PR markers.
 - **Exercise library** – 12 core lifts with target muscles and three form cues each,
   plus your own custom exercises.

@@ -40,7 +40,7 @@ export function ExerciseImage({
 }
 
 /** Coach mascot for empty states; renders nothing until the asset exists. */
-export function Mascot({ className = 'size-32' }: { className?: string }) {
+export function Mascot({ className = 'size-32 rounded-3xl' }: { className?: string }) {
   const [failed, setFailed] = useState(false)
   if (failed) return null
   return (

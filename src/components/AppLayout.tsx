@@ -6,6 +6,7 @@ import { useProfile } from '../features/auth/useProfile'
 import { GuideOverlay } from '../features/guide/GuideOverlay'
 import { closeGuide, useGuideOpen } from '../features/guide/guide-store'
 import { useActiveSplit } from '../features/split/api'
+import { useOnline } from '../features/offline/online'
 import { Avatar, PageLoader, TopProgressBar, Wordmark } from './ui'
 
 const icon = (path: ReactNode) => (
@@ -41,15 +42,26 @@ export function AppLayout() {
   const guideOpen = useGuideOpen(user?.id)
   const split = useActiveSplit()
   const busy = useIsFetching() + useIsMutating() > 0
+  const online = useOnline()
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-      <TopProgressBar active={busy} />
+      <TopProgressBar active={busy && online} />
       <header className="sticky top-0 z-10 flex items-center justify-between bg-bg/85 px-5 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 backdrop-blur">
         <Wordmark className="text-lg" />
         <Link to="/profile" aria-label="Profile" className="grid size-11 place-items-center rounded-full transition active:scale-95">
           {profile && <Avatar avatarKey={profile.avatar_key} className="size-9 ring-2 ring-line" />}
         </Link>
       </header>
+      {!online && (
+        <p role="status" className="mx-5 mb-3 flex items-center gap-2 rounded-2xl border border-line bg-surface px-4 py-2.5 text-sm text-muted">
+          <svg viewBox="0 0 24 24" className="size-4 shrink-0 text-accent" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+            <path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5.17-2.75M19 13a10 10 0 0 0-2.3-1.6M2 8.82a15 15 0 0 1 4.17-2.65M22 8.82A15 15 0 0 0 11 5.06M12 20h.01" />
+          </svg>
+          <span>
+            <span className="font-semibold text-text">You are offline.</span> Showing data saved on this phone.
+          </span>
+        </p>
+      )}
 
       <main className="flex-1 px-5 pb-28">
         <Suspense fallback={<PageLoader />}>

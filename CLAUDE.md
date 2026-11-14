@@ -82,6 +82,15 @@ npm test           # vitest (schedule logic etc.)
   caller via `auth.admin.deleteUser`; all tables cascade). Deploy it with the Supabase MCP
   `deploy_edge_function`. Verified: CORS preflight, 401 without a user. Not exercised: a real
   deletion in the UI.
+- Offline: `src/sw/service-worker.js` is the worker template; `scripts/service-worker-plugin.mjs`
+  (Vite, build only) emits `dist/sw.js` with VERSION (hash of all files + template) and
+  PRECACHE (every built file + public/). Navigations get the cached shell; assets cache-first
+  with `ignoreVary` (servers send `Vary: Origin`). Registered in `main.tsx` in production only.
+  Query cache persisted to localStorage (`src/features/offline/query-cache.ts`, unit-tested),
+  cleared on sign-out; mutations use networkMode 'always' so they fail fast offline; starting
+  a workout offline skips the last-session prefill. Test with the `gym-app-preview` launch
+  config (`npm run build` first). Browser-verified: precache (39 files), deep link with the
+  server stopped, offline banner. Not exercised: a real phone in airplane mode.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard
