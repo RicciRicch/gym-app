@@ -5,6 +5,7 @@ import { FullScreenLoader } from './components/ui'
 import { useAuth } from './features/auth/auth-context'
 import { useProfile } from './features/auth/useProfile'
 import { AuthPage } from './pages/AuthPage'
+import { NewPasswordPage } from './pages/NewPasswordPage'
 import { TodayPage } from './pages/TodayPage'
 
 // Today (the landing screen) and auth stay in the main bundle; every other
@@ -20,11 +21,12 @@ const ExercisePage = lazy(() => import('./pages/ExercisePage').then((m) => ({ de
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then((m) => ({ default: m.ProfilePage })))
 
 export function App() {
-  const { session } = useAuth()
+  const { session, recovering } = useAuth()
   const profile = useProfile()
 
   if (session === undefined) return <FullScreenLoader />
   if (!session) return <AuthPage />
+  if (recovering) return <NewPasswordPage />
   if (profile.isPending) return <FullScreenLoader />
   if (profile.isError) {
     return (

@@ -49,6 +49,8 @@ before running the app.
 - Only the publishable key ships to the browser. `.env` is never committed; CI reads the
   public URL and key from repository variables.
 - Supabase security advisors are run after every schema change.
+- Account deletion runs in an Edge Function with the service role, which never reaches the
+  client; it deletes only the user identified by the request's JWT.
 
 ## How I built it
 

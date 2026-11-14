@@ -1,7 +1,7 @@
 import { useId, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react'
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
   loading?: boolean
 }
 
@@ -9,6 +9,7 @@ const buttonVariants = {
   primary: 'bg-accent text-accent-ink font-bold hover:bg-accent-dim shadow-[0_0_24px_-6px] shadow-accent/50',
   secondary: 'bg-surface-2 text-text font-semibold border border-line hover:border-muted',
   ghost: 'text-muted font-semibold hover:text-text',
+  danger: 'bg-danger text-white font-bold hover:opacity-90',
 }
 
 export function Button({ variant = 'primary', loading, className = '', children, disabled, ...rest }: ButtonProps) {

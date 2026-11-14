@@ -71,6 +71,17 @@ npm test           # vitest (schedule logic etc.)
   (`src/features/guide/`): 5 steps, queued per user in localStorage when a new profile is
   created, closed with Skip/finish, reopenable from Profile ("How to use the app").
   Browser-verified: checkbox, guide from profile, first-run flag on reload, close clears flag.
+- Password reset: "Forgot password?" on the login screen sends a reset email
+  (`redirectTo` = app URL); the link signs the user in and `NewPasswordPage` asks for a new
+  password (`recovering` in AuthProvider, from `type=recovery` in the URL hash or the
+  PASSWORD_RECOVERY event). Expired-link errors show on the login screen. Browser-verified:
+  reset form, expired-link message. Not exercised: a real reset email (needs redirect URLs
+  set + email rate limit).
+- Delete account: Profile -> "Delete account" sheet calls the `delete-account` Edge Function
+  (`supabase/functions/delete-account`, verify_jwt on, service role inside, deletes the
+  caller via `auth.admin.deleteUser`; all tables cascade). Deploy it with the Supabase MCP
+  `deploy_edge_function`. Verified: CORS preflight, 401 without a user. Not exercised: a real
+  deletion in the UI.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard
