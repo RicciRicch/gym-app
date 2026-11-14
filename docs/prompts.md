@@ -50,7 +50,19 @@ Prompts below are the subject part; the suffix above follows each exercise promp
 | `lat-pulldown.webp` | `3993fd54-c05d-4cd0-8801-bda7a12662f1` | 1 | Three-quarter view of an athletic man using a seated lat pulldown cable machine: sitting with thighs under the knee pads, torso slightly leaning back, pulling a wide straight bar down to his upper chest with both hands, elbows pointing down. *(result shows the start position)* |
 | `romanian-deadlift.webp` | `fbfe4fa0-99cd-4a51-b577-99fc17366d33` | 1 | Side view of an athletic man doing a barbell Romanian deadlift: standing, hips pushed far back, knees only slightly bent, flat neutral back, torso tilted forward, arms straight holding a barbell that hangs at mid-shin height close to the legs, feet flat. |
 | `lateral-raise.webp` | `b202b8e2-e3d9-45a6-a760-e5744ae21190` | 2 (pressing overhead) | Front view of an athletic man doing a dumbbell lateral raise: both arms stretched straight out horizontally to the sides like a letter T, hands exactly at shoulder height, one dumbbell in each hand, palms facing the floor, elbows slightly soft, standing tall with feet flat. His hands are not above his head. |
-<!-- PENDING_ROWS -->
+
+The last four were made with **Nano Banana** (`nano_banana`, 1 credit each, user-approved) after
+z_image kept drawing arms overhead and its queue failed every resubmission (failed jobs were
+refunded). Each used the chosen squat (`c60fe036-…`) as an `image_references` style reference,
+and each prompt starts with "Same character, same soft 3D clay style, lighting and plain
+near-black charcoal background as the reference image[, but no barbell]."
+
+| File | Job (final) | Attempts | Subject prompt |
+|---|---|---|---|
+| `deadlift.webp` | `b63129ad-4e11-41fe-9020-acfb8b10cae0` | z_image 1 rejected (rounded back) + nano_banana 1 | Pure side profile view of the man at the start of a conventional barbell deadlift: barbell with lime-green plates resting on the floor over mid-foot, bar touching his shins, hips hinged back and higher than the knees, perfectly flat neutral back in one straight line from hips to head, chest up, arms straight and vertical gripping the bar just outside the knees, feet flat. |
+| `dumbbell-curl.webp` | `e69e76c5-3bc4-4f12-be7e-318abd7623bc` | z_image 2 rejected (pressing overhead) + nano_banana 1 | Three-quarter front view of the man standing tall doing a dumbbell biceps curl: upper arms hanging vertically with elbows pinned to his sides, forearms curled up so each lime-green dumbbell is in front of his shoulders, palms facing up toward him, hands below shoulder height, feet flat hip-width. |
+| `triceps-pushdown.webp` | `437864d4-fbc6-4061-9ae2-d31004f5a9e1` | z_image 1 rejected (arms overhead) + nano_banana 1 | Side view of the man doing a cable triceps pushdown at a slate grey cable machine with lime-green details: standing upright facing the machine, upper arms pinned against his sides, elbows at his waist, arms fully extended straight down, both hands pressing a short straight bar down to the front of his thighs, the cable running from the bar up to the high pulley. |
+| `leg-press.webp` | `9112338e-471f-4279-8a17-65771d3de02e` | z_image 1 rejected (seated, feet on floor) + nano_banana 1 | Side view of the man on a 45-degree incline sled leg press machine (slate grey with lime-green weight plates): reclined on the angled seat, back flat on the backrest, both feet flat on the large footplate that is above and in front of his hips, knees bent about 90 degrees, hands on the side handles, feet not touching the floor. |
 
 ### Mascot, avatars, icon
 

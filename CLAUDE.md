@@ -30,14 +30,12 @@ npm test           # vitest (schedule logic etc.)
 
 ## Status
 
-- M1 art: style B (soft 3D clay) chosen by the user. Generated from Claude Code on credits
-  with `z_image` (0.15/image; free generations only work in Claude chat). Failed Higgsfield jobs
-  are refunded; the queue is slow and often fails, so resubmit failed jobs one at a time.
-  Done: 8 exercise images (squat, bench, OHP, row, pull-up, lat pulldown, RDL, lateral raise),
-  mascot, 4 avatars, icon -> PWA icons/favicon/manifest. Pending: deadlift, dumbbell curl,
-  triceps pushdown, leg press (z_image keeps drawing arms overhead / rounded backs).
-  Convert approved PNGs with `python scripts/process-assets.py <dir>`; prompts + job ids in
-  `docs/prompts.md` (rows for the pending four still to add).
+- M1 art: DONE. Style B (soft 3D clay), chosen by the user. 8 exercises + mascot + 4 avatars +
+  icon with `z_image` (0.15/image); deadlift, dumbbell curl, triceps pushdown and leg press with
+  `nano_banana` (1 credit each, user-approved) using the squat as a style reference, because
+  z_image kept drawing arms overhead and its queue kept failing (failed jobs are refunded).
+  ~2.1 credits left. Convert approved PNGs with `python scripts/process-assets.py <dir>`;
+  prompts, models and job ids in `docs/prompts.md`.
 - M2 app shell + auth: code done. Schema + RLS applied (`init_schema`), security advisors clean.
   Browser-verified: auth screen, wrong-credentials error, signed-in shell. The user signed up
   and onboarded themselves (account + profile exist), so that flow works end to end.
@@ -67,7 +65,7 @@ npm test           # vitest (schedule logic etc.)
   Repo variables set and Pages source = GitHub Actions (user approved); first deploy green,
   live at https://ricciricch.github.io/gym-app/ (deep links work via 404.html, served with
   HTTP 404 status, which is expected). Still to do: auth redirect URLs in the Supabase
-  dashboard (user), PWA manifest + icons, screenshots.
+  dashboard (user), README screenshots. PWA manifest + icons done.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard
