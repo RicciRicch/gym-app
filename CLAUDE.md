@@ -91,6 +91,12 @@ npm test           # vitest (schedule logic etc.)
   a workout offline skips the last-session prefill. Test with the `gym-app-preview` launch
   config (`npm run build` first). Browser-verified: precache (39 files), deep link with the
   server stopped, offline banner. Not exercised: a real phone in airplane mode.
+- Stale deploys: lazy routes use `lazyPage` (`src/lib/lazy-page.ts`) and main.tsx handles
+  `vite:preloadError`: a missing chunk reloads the page once (30 s guard in sessionStorage).
+  `ErrorBoundary` wraps the app (full screen) and the routed outlet (resets on route change),
+  so errors show "Something went wrong / Reload" instead of a black page. Browser-verified
+  by renaming a built chunk. No Prettier config in the repo: don't run `npx prettier` with
+  defaults (style = single quotes, no semicolons, width 120).
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Auth redirect URLs (localhost + GitHub Pages) still have to be set in the Supabase dashboard

@@ -1,24 +1,25 @@
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './components/AppLayout'
 import { FullScreenLoader } from './components/ui'
 import { useAuth } from './features/auth/auth-context'
 import { useProfile } from './features/auth/useProfile'
+import { lazyPage } from './lib/lazy-page'
 import { AuthPage } from './pages/AuthPage'
 import { NewPasswordPage } from './pages/NewPasswordPage'
 import { TodayPage } from './pages/TodayPage'
 
 // Today (the landing screen) and auth stay in the main bundle; every other
 // route is its own chunk. AppLayout wraps the outlet in <Suspense>.
-const OnboardingPage = lazy(() => import('./pages/OnboardingPage').then((m) => ({ default: m.OnboardingPage })))
-const CalendarPage = lazy(() => import('./pages/CalendarPage').then((m) => ({ default: m.CalendarPage })))
-const SplitPage = lazy(() => import('./pages/SplitPage').then((m) => ({ default: m.SplitPage })))
-const WorkoutPage = lazy(() => import('./pages/WorkoutPage').then((m) => ({ default: m.WorkoutPage })))
-const ProgressPage = lazy(() => import('./pages/ProgressPage').then((m) => ({ default: m.ProgressPage })))
-const ExerciseProgressPage = lazy(() => import('./pages/ExerciseProgressPage'))
-const LibraryPage = lazy(() => import('./pages/LibraryPage').then((m) => ({ default: m.LibraryPage })))
-const ExercisePage = lazy(() => import('./pages/ExercisePage').then((m) => ({ default: m.ExercisePage })))
-const ProfilePage = lazy(() => import('./pages/ProfilePage').then((m) => ({ default: m.ProfilePage })))
+const OnboardingPage = lazyPage(() => import('./pages/OnboardingPage'), 'OnboardingPage')
+const CalendarPage = lazyPage(() => import('./pages/CalendarPage'), 'CalendarPage')
+const SplitPage = lazyPage(() => import('./pages/SplitPage'), 'SplitPage')
+const WorkoutPage = lazyPage(() => import('./pages/WorkoutPage'), 'WorkoutPage')
+const ProgressPage = lazyPage(() => import('./pages/ProgressPage'), 'ProgressPage')
+const ExerciseProgressPage = lazyPage(() => import('./pages/ExerciseProgressPage'), 'default')
+const LibraryPage = lazyPage(() => import('./pages/LibraryPage'), 'LibraryPage')
+const ExercisePage = lazyPage(() => import('./pages/ExercisePage'), 'ExercisePage')
+const ProfilePage = lazyPage(() => import('./pages/ProfilePage'), 'ProfilePage')
 
 export function App() {
   const { session, recovering } = useAuth()

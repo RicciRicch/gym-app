@@ -1,6 +1,7 @@
 import { Suspense, type ReactNode } from 'react'
 import { useIsFetching, useIsMutating } from '@tanstack/react-query'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { ErrorBoundary } from './ErrorBoundary'
 import { useAuth } from '../features/auth/auth-context'
 import { useProfile } from '../features/auth/useProfile'
 import { GuideOverlay } from '../features/guide/GuideOverlay'
@@ -43,6 +44,7 @@ export function AppLayout() {
   const split = useActiveSplit()
   const busy = useIsFetching() + useIsMutating() > 0
   const online = useOnline()
+  const { pathname } = useLocation()
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
       <TopProgressBar active={busy && online} />
@@ -64,9 +66,11 @@ export function AppLayout() {
       )}
 
       <main className="flex-1 px-5 pb-28">
-        <Suspense fallback={<PageLoader />}>
-          <Outlet />
-        </Suspense>
+        <ErrorBoundary resetKey={pathname}>
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
+        </ErrorBoundary>
       </main>
 
       <nav
