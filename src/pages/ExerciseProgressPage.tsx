@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { Mascot } from '../components/ExerciseImage'
 import { PrBadge } from '../components/PrBadge'
-import { Spinner } from '../components/ui'
+import { PageLoader } from '../components/ui'
 import { useLoggedSets } from '../features/progress/api'
 import { ProgressChart } from '../features/progress/ProgressChart'
 import { useExercises } from '../features/split/api'
@@ -17,9 +17,7 @@ export default function ExerciseProgressPage() {
 
   if (exercises.isPending || sets.isPending) {
     return (
-      <div className="grid place-items-center pt-24 text-accent">
-        <Spinner />
-      </div>
+      <PageLoader label="Loading your progress" />
     )
   }
 

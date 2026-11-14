@@ -1,11 +1,12 @@
 import { Suspense, type ReactNode } from 'react'
+import { useIsFetching, useIsMutating } from '@tanstack/react-query'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../features/auth/auth-context'
 import { useProfile } from '../features/auth/useProfile'
 import { GuideOverlay } from '../features/guide/GuideOverlay'
 import { closeGuide, useGuideOpen } from '../features/guide/guide-store'
 import { useActiveSplit } from '../features/split/api'
-import { Avatar, Spinner, Wordmark } from './ui'
+import { Avatar, PageLoader, TopProgressBar, Wordmark } from './ui'
 
 const icon = (path: ReactNode) => (
   <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -39,8 +40,10 @@ export function AppLayout() {
   const { user } = useAuth()
   const guideOpen = useGuideOpen(user?.id)
   const split = useActiveSplit()
+  const busy = useIsFetching() + useIsMutating() > 0
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
+      <TopProgressBar active={busy} />
       <header className="sticky top-0 z-10 flex items-center justify-between bg-bg/85 px-5 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 backdrop-blur">
         <Wordmark className="text-lg" />
         <Link to="/profile" aria-label="Profile" className="grid size-11 place-items-center rounded-full transition active:scale-95">
@@ -49,13 +52,7 @@ export function AppLayout() {
       </header>
 
       <main className="flex-1 px-5 pb-28">
-        <Suspense
-          fallback={
-            <div className="grid place-items-center pt-24 text-accent">
-              <Spinner />
-            </div>
-          }
-        >
+        <Suspense fallback={<PageLoader />}>
           <Outlet />
         </Suspense>
       </main>

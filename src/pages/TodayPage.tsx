@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { Spinner } from '../components/ui'
+import { PageLoader, Spinner } from '../components/ui'
 import { useProfile } from '../features/auth/useProfile'
 import { useCompletedWorkouts, useOverrides } from '../features/schedule/api'
 import { useActiveSplit, type SplitDay } from '../features/split/api'
@@ -45,9 +45,7 @@ export function TodayPage() {
       <h1 className="mt-1 text-3xl font-black tracking-tight">Hey, {profile?.display_name}</h1>
 
       {split.isPending || overrides.isPending ? (
-        <div className="grid place-items-center pt-20 text-accent">
-          <Spinner />
-        </div>
+        <PageLoader label="Loading today" />
       ) : !split.data ? (
         <section className="mt-6 rounded-3xl border border-line bg-surface p-6">
           <h2 className="text-xl font-bold">No split yet</h2>
@@ -124,9 +122,15 @@ export function TodayPage() {
               <button
                 disabled={start.isPending}
                 onClick={() => start.mutate(todayDay, { onSuccess: () => navigate('/workout') })}
-                className={`${primaryLink} mt-5 min-h-16 text-xl disabled:opacity-60`}
+                className={`${primaryLink} mt-5 min-h-16 gap-3 text-xl disabled:opacity-80`}
               >
-                {start.isPending ? 'Loading…' : 'Start workout'}
+                {start.isPending ? (
+                  <>
+                    <Spinner className="size-5" /> Starting…
+                  </>
+                ) : (
+                  'Start workout'
+                )}
               </button>
               {start.isError && (
                 <p role="alert" className="mt-3 text-sm text-danger">

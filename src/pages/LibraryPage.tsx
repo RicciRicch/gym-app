@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ExerciseImage } from '../components/ExerciseImage'
 import { Sheet } from '../components/Sheet'
-import { Button, Field, Spinner } from '../components/ui'
+import { Button, Field, PageLoader } from '../components/ui'
 import { ExerciseExistsError, parseMuscles, useCreateExercise } from '../features/library/api'
 import { useExercises, type Exercise } from '../features/split/api'
 
@@ -41,9 +41,7 @@ export function LibraryPage() {
       </label>
 
       {isPending ? (
-        <div className="grid place-items-center pt-20 text-accent">
-          <Spinner />
-        </div>
+        <PageLoader label="Loading exercises" />
       ) : isError ? (
         <div className="pt-16 text-center">
           <p className="font-bold">Could not load exercises</p>

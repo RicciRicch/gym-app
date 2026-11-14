@@ -17,6 +17,9 @@
 
   --animate-fade-up: fade-up 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-pop: pop 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-lift: lift 0.9s ease-in-out infinite;
+  --animate-progress: progress 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  --animate-fade-in-late: fade-in 0.2s ease-out 0.25s both;
 
   @keyframes fade-up {
     from {
@@ -26,6 +29,31 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+  @keyframes lift {
+    0%,
+    100% {
+      transform: translateY(12%);
+    }
+    50% {
+      transform: translateY(-12%);
+    }
+  }
+  @keyframes progress {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(260%);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
   @keyframes pop {

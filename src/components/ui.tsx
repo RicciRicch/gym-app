@@ -70,11 +70,59 @@ export function Spinner({ className = 'size-6' }: { className?: string }) {
   )
 }
 
-export function FullScreenLoader() {
+/** Branded loader: a lime ring spinning around the app's dumbbell mark. */
+export function Loader({ label, className = 'size-14' }: { label?: string; className?: string }) {
   return (
-    <div className="grid min-h-dvh place-items-center text-accent">
-      <Spinner className="size-8" />
+    <div role="status" className="flex flex-col items-center gap-4">
+      <span className={`relative grid place-items-center ${className}`}>
+        <span className="absolute inset-0 rounded-full border-[3px] border-line" />
+        <span className="absolute inset-0 animate-spin rounded-full border-[3px] border-transparent border-t-accent border-r-accent [animation-duration:0.8s]" />
+        <DumbbellMark className="w-1/2 animate-lift text-accent" />
+      </span>
+      {label ? <span className="text-sm font-semibold text-muted">{label}</span> : <span className="sr-only">Loading</span>}
     </div>
+  )
+}
+
+/** Loader centred in the page area while a screen's data loads. */
+export function PageLoader({ label }: { label?: string }) {
+  return (
+    <div className="grid animate-fade-in-late place-items-center pt-24">
+      <Loader label={label} />
+    </div>
+  )
+}
+
+export function FullScreenLoader({ label }: { label?: string }) {
+  return (
+    <div className="grid min-h-dvh place-items-center">
+      <Loader label={label} className="size-16" />
+    </div>
+  )
+}
+
+/** Thin bar along the top edge while anything loads or saves in the background. */
+export function TopProgressBar({ active }: { active: boolean }) {
+  if (!active) return null
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-x-0 top-0 z-40 h-0.5 animate-fade-in-late overflow-hidden bg-accent/15"
+    >
+      <div className="h-full w-2/5 animate-progress rounded-full bg-accent shadow-[0_0_8px] shadow-accent" />
+    </div>
+  )
+}
+
+export function DumbbellMark({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <rect x="1" y="11" width="5" height="10" rx="2" fill="currentColor" />
+      <rect x="7" y="7" width="5" height="18" rx="2" fill="currentColor" />
+      <rect x="12" y="14" width="8" height="4" fill="currentColor" />
+      <rect x="20" y="7" width="5" height="18" rx="2" fill="currentColor" />
+      <rect x="26" y="11" width="5" height="10" rx="2" fill="currentColor" />
+    </svg>
   )
 }
 
@@ -108,13 +156,7 @@ export function Avatar({ avatarKey, className = 'size-10' }: { avatarKey: string
 export function Wordmark({ className = '' }: { className?: string }) {
   return (
     <span className={`inline-flex items-center gap-2 font-black tracking-tight ${className}`}>
-      <svg viewBox="0 0 32 32" className="size-[1.1em] text-accent" aria-hidden="true">
-        <rect x="1" y="11" width="5" height="10" rx="2" fill="currentColor" />
-        <rect x="7" y="7" width="5" height="18" rx="2" fill="currentColor" />
-        <rect x="12" y="14" width="8" height="4" fill="currentColor" />
-        <rect x="20" y="7" width="5" height="18" rx="2" fill="currentColor" />
-        <rect x="26" y="11" width="5" height="10" rx="2" fill="currentColor" />
-      </svg>
+      <DumbbellMark className="size-[1.1em] text-accent" />
       <span>
         GYM<span className="text-accent">APP</span>
       </span>

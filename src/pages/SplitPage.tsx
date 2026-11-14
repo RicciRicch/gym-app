@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Spinner } from '../components/ui'
+import { PageLoader } from '../components/ui'
 import { Sheet } from '../components/Sheet'
 import { useActiveSplit } from '../features/split/api'
 import { SplitEditor } from '../features/split/SplitEditor'
@@ -11,9 +11,7 @@ export function SplitPage() {
 
   if (isPending) {
     return (
-      <div className="grid place-items-center pt-24 text-accent">
-        <Spinner />
-      </div>
+      <PageLoader label="Loading your split" />
     )
   }
   if (isError) {

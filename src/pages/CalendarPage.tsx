@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Spinner } from '../components/ui'
+import { PageLoader } from '../components/ui'
 import { useCompletedWorkouts, useOverrides, useResetOverrides, useSwapDays } from '../features/schedule/api'
 import { useActiveSplit, type SplitDay } from '../features/split/api'
 import {
@@ -61,9 +61,7 @@ export function CalendarPage() {
 
   if (split.isPending) {
     return (
-      <div className="grid place-items-center pt-24 text-accent">
-        <Spinner />
-      </div>
+      <PageLoader label="Loading your week" />
     )
   }
 

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Spinner } from '../components/ui'
+import { Button, PageLoader, Spinner } from '../components/ui'
 import { Sheet, SheetOption } from '../components/Sheet'
 import { useOverrides } from '../features/schedule/api'
 import { useActiveSplit, type SplitDay } from '../features/split/api'
@@ -354,9 +354,7 @@ function StartScreen() {
 
   if (split.isPending || overrides.isPending) {
     return (
-      <div className="grid place-items-center pt-24 text-accent">
-        <Spinner />
-      </div>
+      <PageLoader label="Loading your workout" />
     )
   }
 
@@ -390,7 +388,9 @@ function StartScreen() {
                       {day.split_day_exercises.length} exercises{day.id === planned?.id && ' · planned today'}
                     </span>
                   </span>
-                  <span className="font-bold text-accent">Start</span>
+                  <span className="font-bold text-accent">
+                    {start.isPending && start.variables?.id === day.id ? <Spinner className="size-5" /> : 'Start'}
+                  </span>
                 </button>
               </li>
             ))}

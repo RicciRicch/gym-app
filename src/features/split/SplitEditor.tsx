@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Button, Field } from '../../components/ui'
+import { Button, Field, Loader } from '../../components/ui'
 import { Sheet, SheetOption } from '../../components/Sheet'
 import { WEEKDAY_LONG, WEEKDAY_SHORT } from '../../lib/schedule'
 import {
@@ -364,7 +364,11 @@ export function ExercisePicker({
   const available = exercises?.filter((e) => !excludeIds.includes(e.id)) ?? []
   return (
     <Sheet title="Add exercise" onClose={onClose}>
-      {isPending && <p className="py-4 text-muted">Loading…</p>}
+      {isPending && (
+        <div className="grid place-items-center py-8">
+          <Loader label="Loading exercises" className="size-10" />
+        </div>
+      )}
       {!isPending && available.length === 0 && <p className="py-4 text-muted">Every exercise is already on this day.</p>}
       <div className="flex flex-col gap-1">
         {available.map((exercise) => (

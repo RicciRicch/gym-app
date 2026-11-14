@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { ExerciseImage } from '../components/ExerciseImage'
-import { Spinner } from '../components/ui'
+import { PageLoader } from '../components/ui'
 import { useLoggedSets } from '../features/progress/api'
 import { useExercises } from '../features/split/api'
 import { exerciseProgress, formatTopSet } from '../lib/progress'
@@ -14,9 +14,7 @@ export function ExercisePage() {
 
   if (isPending) {
     return (
-      <div className="grid place-items-center pt-24 text-accent">
-        <Spinner />
-      </div>
+      <PageLoader label="Loading exercise" />
     )
   }
   if (!exercise) {

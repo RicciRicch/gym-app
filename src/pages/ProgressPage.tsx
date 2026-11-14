@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ExerciseImage, Mascot } from '../components/ExerciseImage'
 import { PrBadge } from '../components/PrBadge'
-import { Spinner } from '../components/ui'
+import { PageLoader } from '../components/ui'
 import { useLoggedSets, useWorkoutHistory, type HistoryWorkout } from '../features/progress/api'
 import { useExercises } from '../features/split/api'
 import { formatTopSet, progressByExercise, prsByWorkout } from '../lib/progress'
@@ -45,9 +45,7 @@ export function ProgressPage() {
       </div>
 
       {loading ? (
-        <div className="grid place-items-center pt-20 text-accent">
-          <Spinner />
-        </div>
+        <PageLoader label="Loading your progress" />
       ) : history.isError || sets.isError ? (
         <div className="pt-16 text-center">
           <p className="font-bold">Could not load your progress</p>
