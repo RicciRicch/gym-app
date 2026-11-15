@@ -1,20 +1,30 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, PageLoader, Spinner } from '../components/ui'
 import { Sheet, SheetOption } from '../components/Sheet'
 import { useLoggedSets } from '../features/progress/api'
 import { useOverrides } from '../features/schedule/api'
-import { useWorkoutDates } from '../features/streak/api'
+import { useStreakFreezes, useWorkoutDates } from '../features/streak/api'
 import { useActiveSplit, type SplitDay } from '../features/split/api'
 import { ExercisePicker } from '../features/split/SplitEditor'
 import { useExercises } from '../features/split/api'
 import { buildDraftExercise, useFinishWorkout, useStartWorkout, useUpdateDayDefault } from '../features/workout/api'
 import { saveRestSeconds, useWorkoutDraft } from '../features/workout/draft-store'
+import { CoachTip } from '../features/workout/CoachTip'
 import { RestTimer } from '../features/workout/RestTimer'
 import { voiceSupported } from '../features/workout/voice'
 import { VoiceSheet } from '../features/workout/VoiceSheet'
 import { WorkoutSummaryScreen, type StreakChange } from '../features/workout/WorkoutSummaryScreen'
 import { useNow } from '../features/workout/useNow'
+import {
+  coachTip,
+  formatPastSet,
+  ghostScore,
+  ghostVerdict,
+  lastSessionSets,
+  type GhostVerdict,
+  type PastSet,
+} from '../lib/coach'
 import { resolveDay, toISODate } from '../lib/schedule'
 import { trainingDaysPerWeek, weeklyStreak } from '../lib/streak'
 import { summarizeWorkout, type WorkoutSummary } from '../lib/summary'
@@ -24,6 +34,8 @@ import {
   exercisesDiffer,
   formatClock,
   isLoggable,
+  parseReps,
+  parseWeight,
   toSetRows,
   type DraftExercise,
   type DraftSet,
@@ -49,6 +61,15 @@ export function WorkoutPage() {
   // Loaded while training so the summary can tell PRs and the streak right at the finish.
   const history = useLoggedSets()
   const workoutDates = useWorkoutDates()
+  const freezes = useStreakFreezes()
+  // Each exercise's previous session: the "ghost" to beat and what the coach's tip is based on.
+  const lastSessions = useMemo(() => {
+    const map = new Map<string, PastSet[]>()
+    const sets = history.data ?? []
+    for (const id of new Set(sets.map((s) => s.exerciseId))) map.set(id, lastSessionSets(sets, id))
+    return map
+  }, [history.data])
+  const [tipsApplied, setTipsApplied] = useState<ReadonlySet<string>>(new Set())
   const finish = useFinishWorkout()
   const updateDefault = useUpdateDayDefault()
   const { data: library } = useExercises()
@@ -121,6 +142,15 @@ export function WorkoutPage() {
     }))
   }
 
+  /** Writes the coach's suggestion into the sets that are not done yet. */
+  function applyTip(exerciseIndex: number, exerciseId: string, target: PastSet) {
+    updateExercise(exerciseIndex, (e) => ({
+      ...e,
+      sets: e.sets.map((s) => (s.done ? s : { ...s, weight: target.weight === 0 ? '' : String(target.weight), reps: String(target.reps) })),
+    }))
+    setTipsApplied((applied) => new Set(applied).add(exerciseId))
+  }
+
   /** The set a spoken set goes into: the first one not done yet, or a new one after the last. */
   const voiceTarget = (exercise: DraftExercise) => {
     const index = exercise.sets.findIndex((s) => !s.done)
@@ -167,8 +197,8 @@ export function WorkoutPage() {
       summary: summarizeWorkout(current, new Date().toISOString(), setsBefore),
       streak: datesBefore
         ? {
-            before: weeklyStreak(datesBefore, target, today),
-            after: weeklyStreak([...datesBefore, current.date], target, today),
+            before: weeklyStreak(datesBefore, target, today, freezes.data ?? []),
+            after: weeklyStreak([...datesBefore, current.date], target, today, freezes.data ?? []),
           }
         : null,
       askDefault: day && changed && current.exercises.length > 0 ? { day, exercises: current.exercises } : null,
@@ -199,7 +229,16 @@ export function WorkoutPage() {
       </div>
 
       <div className="mt-3 flex flex-col gap-3">
-        {draft.exercises.map((exercise, exerciseIndex) => (
+        {draft.exercises.map((exercise, exerciseIndex) => {
+          const ghost = lastSessions.get(exercise.exerciseId) ?? []
+          const doneSets = exercise.sets.map((s) =>
+            s.done && isLoggable(s) ? { weight: parseWeight(s.weight)!, reps: parseReps(s.reps)! } : null,
+          )
+          const anyDone = doneSets.some(Boolean)
+          const score = ghostScore(doneSets, ghost)
+          // Until the first set is done (or the tip is applied) the coach says what to aim for.
+          const tip = history.data && !anyDone && !tipsApplied.has(exercise.exerciseId) ? coachTip(ghost) : null
+          return (
           <article key={exercise.exerciseId} className="rounded-3xl border border-line bg-surface px-4 pt-3 pb-4">
             <div className="flex items-center justify-between gap-2">
               <h2 className="min-w-0 flex-1 truncate text-lg font-bold">{exercise.name}</h2>
@@ -226,6 +265,17 @@ export function WorkoutPage() {
               </button>
             </div>
 
+            {tip && (
+              <CoachTip tip={tip} onApply={tip.apply ? () => applyTip(exerciseIndex, exercise.exerciseId, tip.apply!) : null} />
+            )}
+            {anyDone && ghost.length > 0 && (
+              <p className="mb-2 flex items-center gap-2 text-sm font-bold" aria-label={`You ${score.you}, last time ${score.ghost}`}>
+                <span className={score.you >= score.ghost ? 'text-accent' : ''}>You {score.you}</span>
+                <span className="text-muted">:</span>
+                <span className={score.ghost > score.you ? 'text-danger' : 'text-muted'}>{score.ghost} 👻 last time</span>
+              </p>
+            )}
+
             <div className="grid grid-cols-[2rem_1fr_1fr_3rem] items-center gap-2 text-center text-xs font-semibold text-muted">
               <span>Set</span>
               <span>kg</span>
@@ -239,6 +289,8 @@ export function WorkoutPage() {
                   number={setIndex + 1}
                   set={set}
                   exerciseName={exercise.name}
+                  ghost={ghost[setIndex]}
+                  verdict={doneSets[setIndex] && ghost[setIndex] ? ghostVerdict(doneSets[setIndex], ghost[setIndex]) : null}
                   onChange={(patch) => updateSet(exerciseIndex, setIndex, patch)}
                   onToggle={() => toggleDone(exerciseIndex, setIndex)}
                 />
@@ -266,7 +318,8 @@ export function WorkoutPage() {
               </button>
             </div>
           </article>
-        ))}
+          )
+        })}
 
         {draft.exercises.length === 0 && (
           <p className="rounded-3xl border border-dashed border-line p-6 text-center text-muted">No exercises yet. Add the first one.</p>
@@ -389,12 +442,17 @@ function SetRow({
   number,
   set,
   exerciseName,
+  ghost,
+  verdict,
   onChange,
   onToggle,
 }: {
   number: number
   set: DraftSet
   exerciseName: string
+  /** The same set in the previous session of this exercise. */
+  ghost?: PastSet
+  verdict: GhostVerdict | null
   onChange: (patch: Partial<DraftSet>) => void
   onToggle: () => void
 }) {
@@ -432,6 +490,16 @@ function SetRow({
           <path d="m5 12 5 5 9-10" />
         </svg>
       </button>
+      {ghost && (
+        <p className="col-span-4 -mt-1 flex items-center justify-between pr-1 pl-10 text-xs font-semibold text-muted">
+          <span>👻 {formatPastSet(ghost)}</span>
+          {verdict && (
+            <span className={verdict === 'ahead' ? 'text-accent' : verdict === 'behind' ? 'text-danger' : ''}>
+              {verdict === 'ahead' ? '▲ beat it' : verdict === 'even' ? '= matched' : '▼ ghost wins'}
+            </span>
+          )}
+        </p>
+      )}
     </li>
   )
 }

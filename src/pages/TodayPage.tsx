@@ -2,7 +2,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { PageLoader, Spinner } from '../components/ui'
 import { useProfile } from '../features/auth/useProfile'
 import { useCompletedWorkouts, useOverrides } from '../features/schedule/api'
+import { GorillaCard } from '../features/gorilla/GorillaCard'
 import { useStreak } from '../features/streak/api'
+import { FreezeControl } from '../features/streak/FreezeControl'
 import { StreakCard } from '../features/streak/StreakCard'
 import { useActiveSplit, type SplitDay } from '../features/split/api'
 import { useStartWorkout } from '../features/workout/api'
@@ -23,7 +25,8 @@ export function TodayPage() {
   const { draft } = useWorkoutDraft()
   const start = useStartWorkout()
   const split = useActiveSplit()
-  const overrides = useOverrides(week[0], rangeEnd)
+  // One week back as well, so the coach can see what was planned on the last few days.
+  const overrides = useOverrides(addDays(week[0], -7), rangeEnd)
   const completed = useCompletedWorkouts(week[0], week[6])
   const streak = useStreak()
 
@@ -59,7 +62,18 @@ export function TodayPage() {
         </section>
       ) : (
         <>
-          <ul className="mt-5 grid grid-cols-7 gap-1.5" aria-label="This week">
+          <GorillaCard
+            className="mt-3"
+            days={days}
+            overrides={overrides.data ?? []}
+            planSince={toISODate(new Date(split.data.created_at))}
+            plannedToday={todayDay?.name ?? null}
+            doneToday={!!doneToday}
+            inProgress={!!draft}
+            streak={streak}
+          />
+
+          <ul className="mt-3 grid grid-cols-7 gap-1.5" aria-label="This week">
             {week.map((date) => {
               const day = planned(date)
               const done = doneOn(date)
@@ -85,7 +99,7 @@ export function TodayPage() {
             })}
           </ul>
 
-          {streak && <StreakCard streak={streak} className="mt-3" />}
+          {streak && <StreakCard streak={streak} action={<FreezeControl streak={streak} />} className="mt-3" />}
 
           {draft ? (
             <section className="mt-5 rounded-3xl border border-accent/40 bg-accent/10 p-6">

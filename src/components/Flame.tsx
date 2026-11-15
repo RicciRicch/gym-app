@@ -3,15 +3,18 @@ import { useId, type CSSProperties } from 'react'
 /**
  * The streak flame. Level 0 is a cold grey ember, 1 a small spark, 2 a steady
  * fire, 3 a blaze with more embers and a stronger glow. Animated with CSS only
- * (classes in index.css).
+ * (classes in index.css). `frozen` turns it ice blue (streak freeze).
  */
-export function Flame({ level, className = 'h-12' }: { level: 0 | 1 | 2 | 3; className?: string }) {
+export function Flame({ level, frozen = false, className = 'h-12' }: { level: 0 | 1 | 2 | 3; frozen?: boolean; className?: string }) {
   const id = useId().replace(/:/g, '')
   const lit = level > 0
   const embers = level === 3 ? 5 : level === 2 ? 3 : level === 1 ? 1 : 0
 
   return (
-    <span aria-hidden="true" className={`relative inline-flex aspect-[4/5] shrink-0 items-end justify-center ${className}`}>
+    <span
+      aria-hidden="true"
+      className={`relative inline-flex aspect-[4/5] shrink-0 items-end justify-center ${frozen ? 'flame-frozen' : ''} ${className}`}
+    >
       {lit && (
         <span
           className={`flame-glow absolute inset-x-0 bottom-0 h-4/5 rounded-full blur-lg ${level === 3 ? 'bg-orange-500/60' : 'bg-orange-500/40'}`}

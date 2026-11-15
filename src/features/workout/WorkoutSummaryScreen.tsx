@@ -98,7 +98,7 @@ export function WorkoutSummaryScreen({
           )}
           <span className="pop-in relative" style={delay(0.05)}>
             <span className={hasPr ? 'celebrate-bounce block' : 'block'}>
-              <Mascot className="h-48" />
+              <Mascot className="h-48" pose={hasPr ? 'proud' : 'coach'} />
             </span>
           </span>
         </div>

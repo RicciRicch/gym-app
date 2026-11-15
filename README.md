@@ -29,6 +29,14 @@ and watch your top sets climb.
 - **Streak** – a burning flame for every week in a row that you hit all your planned
   workouts; rest days never break it.
 - **Progress** – workout history, and a top-set chart per exercise with PR markers.
+- **A coach with moods** – the gorilla mascot lives on Today: waiting for your workout,
+  beating its chest after a PR, sulking on the couch with chips when you skip a day, and
+  not above a little trash talk ("Skipped legs again? 🦵🐔").
+- **Coach tips and your ghost** – during a workout the coach suggests the next step from
+  your last session ("80 kg × 8 on every set. Too easy. Try 82.5 kg.", one tap to apply), and
+  every set shows what you did last time so you can race your past self.
+- **Streak freeze** – sick or travelling? Freeze the week once a month and the streak
+  survives (the flame turns to ice).
 - **What you lifted** – your volume in real-world things: "That's like lifting 3 rhinos"
   after a workout, and a year-to-date total (grand pianos, blue whales, Eiffel Towers…).
 - **Voice input** – tap the mic and say "sto kila puta pet" (or "100 kilos times 5"): the

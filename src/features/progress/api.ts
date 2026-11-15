@@ -14,12 +14,13 @@ export function useLoggedSets() {
     queryFn: async (): Promise<LoggedSet[]> => {
       const { data, error } = await supabase
         .from('workout_sets')
-        .select('workout_id, exercise_id, reps, weight_kg, workouts!inner(date, started_at)')
+        .select('workout_id, exercise_id, set_number, reps, weight_kg, workouts!inner(date, started_at)')
         .limit(10000)
       if (error) throw error
       const rows = data as unknown as {
         workout_id: string
         exercise_id: string
+        set_number: number
         reps: number
         weight_kg: number
         workouts: { date: string; started_at: string }
@@ -27,6 +28,7 @@ export function useLoggedSets() {
       return rows.map((r) => ({
         workoutId: r.workout_id,
         exerciseId: r.exercise_id,
+        setNumber: r.set_number,
         reps: r.reps,
         weight_kg: Number(r.weight_kg),
         date: r.workouts.date,

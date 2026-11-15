@@ -34,7 +34,8 @@ npm test           # vitest (schedule logic etc.)
   icon with `z_image` (0.15/image); deadlift, dumbbell curl, triceps pushdown and leg press with
   `nano_banana` (1 credit each, user-approved) using the squat as a style reference, because
   z_image kept drawing arms overhead and its queue kept failing (failed jobs are refunded).
-  ~2.1 credits left. Convert approved PNGs with `python scripts/process-assets.py <dir>`;
+  Two more mascot poses (sad on the couch, proud chest-beating) with `nano_banana`, 1 credit
+  each, user-approved on 2026-11-15. ~0.1 credits left: no more generations without a top-up. Convert approved PNGs with `python scripts/process-assets.py <dir>`;
   prompts, models and job ids in `docs/prompts.md`.
 - M2 app shell + auth: code done. Schema + RLS applied (`init_schema`), security advisors clean.
   Browser-verified: auth screen, wrong-credentials error, signed-in shell. The user signed up
@@ -132,6 +133,30 @@ npm test           # vitest (schedule logic etc.)
   weight. Browser-verified with a mocked recognizer (the Browser pane blocks the mic; the
   blocked-mic message shows). Not exercised: a real microphone / phone. Chrome sends audio
   to Google for recognition.
+- Gorilla on Today (`src/features/gorilla/GorillaCard.tsx`, logic in `src/lib/gorilla.ts`,
+  unit-tested): mascot + speech bubble above the week strip. Moods: coach (default pose),
+  proud (`mascot-proud.webp`, PR in a workout from today/yesterday), sad (`mascot-sad.webp`,
+  a planned day in the last 3 days was skipped and nothing was trained since; never before the
+  split's created_at, never in a frozen week), sleepy (rest day / frozen week, "Zzz"). Lines
+  are English, picked per day (stable hash of the date). Teases when the latest workout moved
+  10%+ less than the previous one of the same day. The summary screen uses the proud pose on a PR.
+- Coach + ghost in a workout (`src/lib/coach.ts`, unit-tested; `useLoggedSets` now carries
+  `setNumber`): until an exercise's first set is done, `CoachTip` says what to aim for from the
+  last session (reps held on every top-weight set -> +2.5 kg, +1 kg under 20 kg; reps dropped
+  -> same weight, all sets to the first set's reps; bodyweight -> +1 rep) with Apply (fills the
+  open sets). Each set row shows last time's set ("👻 80 × 8") and, once done, beat / matched /
+  ghost wins; the card shows the score "You 2 : 1 👻 last time".
+- Streak freeze: table `streak_freezes` (migration `streak_freezes`; week_start = Monday, one
+  per user per calendar month via a unique index, RLS: insert only the running week, delete
+  only the running week). `weeklyStreak(..., frozenWeeks)`: a frozen week neither counts nor
+  breaks the streak; `Streak.frozen` = running week frozen and target not met (ice-blue flame
+  and card). `FreezeControl` (🧊 on the Today streak card) shows only when there is a streak
+  to protect and the week is not done; frozen weeks can be thawed. RLS verified with SQL as
+  the user (running week ok; old week, non-Monday, other user blocked; undo ok; net zero).
+- Verification of the three items above: visuals in `/dev/celebration` (all four moods, frozen
+  streak card) via headless Chrome; pure logic unit-tested. NOT yet exercised signed in (the
+  Browser pane was signed out): Today with real data, the coach tip / ghost rows in a real
+  workout, the freeze sheet.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL

@@ -84,3 +84,15 @@ character, not a picture in a box. Done locally with `scripts/cutout-mascot.py`
 removed, mask eroded and feathered). Output trimmed to 451x640 RGBA WebP.
 `process-assets.py` would re-create the boxed version from the raw PNG, so
 re-run the cut-out after it if the mascot is ever regenerated.
+
+### Mascot poses (2026-11-15, 2 credits, user-approved)
+
+Both with `nano_banana` (1 credit each), the mascot job `a5a34a94-…` as the
+`image_references` reference, 1:1, on a solid pure blue chroma-key background so
+the cut-out is a simple colour key: `python scripts/cutout-chroma.py <in.png> <out.webp> [height]`
+(blue dominance -> alpha, 1px matte choke, de-spill). First attempt accepted for both.
+
+| File | Job | Prompt |
+|---|---|---|
+| `assets/mascot-sad.webp` (571x560) | `5716c977-fcbc-4a37-9acd-d26b70a3760d` | The exact same clay cartoon gorilla character as the reference image (same lime-green sweatband, lime-green tank top, silver whistle, same soft 3D clay style and lighting), now slumped sadly on a small dark charcoal couch, holding an open bag of potato chips, a few chips on the couch, droopy sad eyes and a guilty frown, full body visible, facing the viewer. Background: a perfectly flat, uniform, solid pure blue (#0000FF) chroma-key backdrop with no floor, no gradient and no shadows. |
+| `assets/mascot-proud.webp` (559x640) | `770d4d98-7a3c-40fc-b3b6-eda8bf4f2c57` | Same opening, then: now standing tall and triumphantly beating its chest with both fists, head tilted back slightly, mouth open in a huge proud victory roar, eyes bright, full body visible from head to feet, facing the viewer. Same blue chroma-key background sentence. |

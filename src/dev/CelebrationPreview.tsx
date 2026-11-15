@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Flame } from '../components/Flame'
+import { GorillaBubble } from '../features/gorilla/GorillaCard'
 import { StreakCard } from '../features/streak/StreakCard'
 import { WorkoutSummaryScreen } from '../features/workout/WorkoutSummaryScreen'
 import type { Streak } from '../lib/streak'
@@ -29,6 +30,7 @@ const streak = (weeks: number, thisWeek: number, level: Streak['level']): Streak
   thisWeek,
   target: 5,
   weekDone: thisWeek >= 5,
+  frozen: false,
   level,
 })
 
@@ -54,6 +56,11 @@ export function CelebrationPreview() {
           <Flame key={level} level={level} className="h-24" />
         ))}
       </div>
+      <GorillaBubble says={{ mood: 'coach', line: "Push is waiting. I don't wait long." }} />
+      <GorillaBubble says={{ mood: 'proud', line: "Bench Press: 100 kg × 5. Who's the king of the jungle?" }} />
+      <GorillaBubble says={{ mood: 'sad', line: 'Skipped legs again? 🦵🐔' }} />
+      <GorillaBubble says={{ mood: 'sleepy', line: 'Rest day. Recovery is part of the plan. Zzz.' }} />
+      <StreakCard streak={{ ...streak(3, 1, 2), frozen: true }} action={<span className="grid size-12 place-items-center rounded-2xl border border-sky-300/60 bg-sky-400/20 text-2xl">🧊</span>} />
       <StreakCard streak={streak(0, 0, 0)} />
       <StreakCard streak={streak(0, 1, 1)} />
       <StreakCard streak={streak(3, 2, 2)} />

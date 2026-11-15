@@ -7,6 +7,8 @@ export interface LoggedSet {
   /** ISO timestamp, orders workouts on the same date. */
   startedAt: string
   exerciseId: string
+  /** Order within the workout's exercise; only needed where set order matters. */
+  setNumber?: number
   reps: number
   weight_kg: number
 }

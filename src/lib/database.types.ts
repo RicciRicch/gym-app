@@ -162,6 +162,23 @@ export type Database = {
         }
         Relationships: [Rel<'schedule_overrides_split_day_id_fkey', 'split_day_id', 'split_days'>]
       }
+      streak_freezes: {
+        Row: {
+          id: string
+          user_id: string
+          week_start: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string
+          week_start: string
+        }
+        Update: {
+          week_start?: string
+        }
+        Relationships: []
+      }
       workouts: {
         Row: {
           id: string
