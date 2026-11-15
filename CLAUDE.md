@@ -182,6 +182,14 @@ npm test           # vitest (schedule logic etc.)
   item (3+ each side, >= 3% difference): "With coffee you lift 8% more". Playground: `?fuel=1`.
   Verified: cards and chips in headless Chrome, Today card signed in, fuel update / empty /
   invalid value via RLS (test row deleted). Not exercised: saving from a real finished workout.
+- Muscle map (`src/lib/muscles.ts`, unit-tested): `MuscleMapCard` at the top of Progress history
+  (under the lifted card). 13 regions; exercise muscle names (free text, English or Serbian) map
+  to regions by keyword; a set counts 1 for the first listed muscle, 0.5 for the others. Heat by
+  sets per week (>0 warm, 5+ hot, 10+ on fire, glowing), toggle This week (Mon-today) / 30 days.
+  `MuscleMap.tsx` is a hand-drawn SVG (front + back, left half mirrored). The gorilla teases one
+  cold region (big muscles first, changes per day), drawn with a blinking dashed red outline;
+  below: bars with set counts and the cold list. Playground: `?muscles=1`. Browser-verified
+  signed in with a seeded workout (since deleted) and in headless Chrome.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL

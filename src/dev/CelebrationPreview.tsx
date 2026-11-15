@@ -5,7 +5,9 @@ import { FuelCheck } from '../features/fuel/FuelCheck'
 import { PreWorkoutCard } from '../features/fuel/PreWorkoutCard'
 import { UnlockOverlay, type MedalRect } from '../features/badges/BadgeUnlock'
 import { Medal } from '../features/badges/Medal'
+import { MuscleMapView } from '../features/muscles/MuscleMapCard'
 import { BADGES, type BadgeState } from '../lib/badges'
+import { REGIONS, type MuscleLoad } from '../lib/muscles'
 import { GorillaBubble } from '../features/gorilla/GorillaCard'
 import { StreakCard } from '../features/streak/StreakCard'
 import { WorkoutSummaryScreen } from '../features/workout/WorkoutSummaryScreen'
@@ -15,7 +17,8 @@ import type { WorkoutSummary } from '../lib/summary'
 // Dev-only playground (/dev/celebration, not in the production build) for the
 // post-workout celebration and the streak flame. ?prs=2 opens the summary
 // straight away (handy for headless screenshots), ?badge=1|2 the badge unlock screen,
-// ?shelf=1 the badge shelf with two medals flying in, ?fuel=1 the pre-workout cards.
+// ?shelf=1 the badge shelf with two medals flying in, ?fuel=1 the pre-workout cards,
+// ?muscles=1 the muscle map.
 
 const prs: WorkoutSummary['prs'] = [
   { exerciseId: 'a', name: 'Back Squat', metric: 'weight', top: { weight: 105, reps: 3 }, previous: { weight: 102.5, reps: 2 } },
@@ -37,6 +40,8 @@ const shelfStates: BadgeState[] = BADGES.map((badge, i) => {
   const earned = i % 4 !== 3 || UNLOCKED.includes(badge)
   return { badge, progress: earned ? badge.goal : Math.floor(badge.goal * 0.6), earnedOn: earned ? '2026-11-15' : null }
 })
+
+const muscleLoads = (values: Partial<MuscleLoad>) => ({ ...(Object.fromEntries(REGIONS.map((r) => [r, 0])) as MuscleLoad), ...values })
 
 const streak = (weeks: number, thisWeek: number, level: Streak['level']): Streak => ({
   weeks,
@@ -63,6 +68,15 @@ export function CelebrationPreview() {
         <PreWorkoutCard dayName="Push" plannedSets={14} now={new Date(2026, 10, 15, 13)} />
         <PreWorkoutCard dayName="Arms" plannedSets={6} now={new Date(2026, 10, 15, 20)} />
         <FuelCheck workoutId="preview" />
+      </div>
+    )
+  }
+  if (new URLSearchParams(window.location.search).has('muscles')) {
+    const upper = muscleLoads({ chest: 12, shoulders: 7.5, triceps: 6, lats: 9, upperBack: 4.5, biceps: 5.5, core: 1.5, forearms: 1 })
+    return (
+      <div className="mx-auto flex max-w-md flex-col gap-3 px-5 pt-4 pb-10">
+        <MuscleMapView load={upper} days={7} today="2026-11-15" period="week" onPeriod={() => {}} />
+        <MuscleMapView load={muscleLoads({})} days={7} today="2026-11-15" period="week" onPeriod={() => {}} />
       </div>
     )
   }

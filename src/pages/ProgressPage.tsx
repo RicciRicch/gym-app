@@ -5,6 +5,7 @@ import { PrBadge } from '../components/PrBadge'
 import { Sheet } from '../components/Sheet'
 import { Button, PageLoader } from '../components/ui'
 import { useDeleteWorkout, useLoggedSets, useWorkoutHistory, type HistoryWorkout } from '../features/progress/api'
+import { MuscleMapCard } from '../features/muscles/MuscleMapCard'
 import { useExercises } from '../features/split/api'
 import { LiftedCard } from '../components/LiftedCard'
 import { formatMass, totalVolume } from '../lib/lifted'
@@ -90,6 +91,9 @@ export function ProgressPage() {
               />
             </li>
           )}
+          <li>
+            <MuscleMapCard />
+          </li>
           {history.data!.map((w) => (
             <WorkoutCard key={w.id} workout={w} prExercises={prs.get(w.id)} />
           ))}

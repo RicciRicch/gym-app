@@ -521,3 +521,38 @@ body {
     opacity: 0;
   }
 }
+
+/* ------------------------------------------------------------------------
+   Muscle map
+   ------------------------------------------------------------------------ */
+/* A muscle that is "on fire" glows and breathes. */
+.muscle-fire {
+  filter: drop-shadow(0 0 3px rgb(255 176 46 / 0.75));
+  animation: muscle-fire 1.8s ease-in-out infinite alternate;
+}
+@keyframes muscle-fire {
+  from {
+    fill: #ffb02e;
+  }
+  to {
+    fill: #ffd27a;
+  }
+}
+/* The muscle the gorilla is teasing about blinks its outline. */
+.muscle-missing {
+  animation: muscle-missing 1.2s ease-in-out infinite alternate;
+}
+@keyframes muscle-missing {
+  from {
+    stroke-opacity: 1;
+  }
+  to {
+    stroke-opacity: 0.25;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .muscle-fire,
+  .muscle-missing {
+    animation: none;
+  }
+}

@@ -38,6 +38,9 @@ and watch your top sets climb.
 - **Pre-workout coach** – under today's workout the gorilla tells you what to eat and drink
   before it (half-joking, sane underneath: "One coffee. Maybe two. Not a bathtub."). Log what
   you had after the session and it finds out what actually works for you.
+- **Muscle map** – a body figure on Progress lights up by how much each muscle was trained
+  this week; the gorilla calls out what you skipped ("Your hamstrings filed a missing person
+  report.").
 - **Badges** – 17 medals to collect (first workout, 100 tonnes lifted, 10 PRs, a 4 week
   streak, a 6 AM session...). A new one drops onto the screen spinning like a coin, then flies
   onto your badge shelf.
