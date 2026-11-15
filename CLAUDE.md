@@ -191,6 +191,14 @@ npm test           # vitest (schedule logic etc.)
   cold region (big muscles first, changes per day), drawn with a blinking dashed red outline;
   below: bars with set counts and the cold list. Playground: `?muscles=1`. Browser-verified
   signed in with a seeded workout (since deleted) and in headless Chrome.
+- Library: 56 core exercises (12 with images + 44 text-only from migration `more_exercises`,
+  first muscle = main one; they show the placeholder icon until art exists). Search
+  (`matchesSearch` in `src/lib/muscles.ts`: every word in name / muscles / group, accents
+  stripped, đ = dj) and muscle group chips with counts (`exerciseGroup` by the main muscle:
+  Chest, Back, Shoulders, Arms, Legs, Core). Shared `SearchField` / `GroupChips`
+  (`src/features/library/ExerciseFilter.tsx`, hook in `filter.ts`) are used by the Library (state
+  in the URL: `?q=&group=`) and by `ExercisePicker` (split editor + workout "Add exercise").
+  Browser-verified signed in: chips/counts, Legs + "squat", picker Core filter.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL

@@ -1,7 +1,10 @@
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { Button, Field, Loader } from '../../components/ui'
 import { Sheet, SheetOption } from '../../components/Sheet'
 import { WEEKDAY_LONG, WEEKDAY_SHORT } from '../../lib/schedule'
+import { type MuscleGroup } from '../../lib/muscles'
+import { GroupChips, SearchField } from '../library/ExerciseFilter'
+import { useExerciseFilter } from '../library/filter'
 import {
   useAddDay,
   useAddDayExercise,
@@ -361,17 +364,27 @@ export function ExercisePicker({
   onClose: () => void
 }) {
   const { data: exercises, isPending } = useExercises()
-  const available = exercises?.filter((e) => !excludeIds.includes(e.id)) ?? []
+  const [query, setQuery] = useState('')
+  const [group, setGroup] = useState<MuscleGroup | null>(null)
+  const available = useMemo(() => exercises?.filter((e) => !excludeIds.includes(e.id)) ?? [], [exercises, excludeIds])
+  const { shown, counts, total } = useExerciseFilter(available, query, group)
   return (
     <Sheet title="Add exercise" onClose={onClose}>
+      {available.length > 0 && (
+        <div className="sticky top-0 z-10 -mx-5 bg-surface px-5 pb-3">
+          <SearchField value={query} onChange={setQuery} />
+          <GroupChips className="mt-2" value={group} onChange={setGroup} counts={counts} total={total} />
+        </div>
+      )}
       {isPending && (
         <div className="grid place-items-center py-8">
           <Loader label="Loading exercises" className="size-10" />
         </div>
       )}
       {!isPending && available.length === 0 && <p className="py-4 text-muted">Every exercise is already on this day.</p>}
+      {!isPending && available.length > 0 && shown.length === 0 && <p className="py-4 text-muted">No exercise matches.</p>}
       <div className="flex flex-col gap-1">
-        {available.map((exercise) => (
+        {shown.map((exercise) => (
           <SheetOption key={exercise.id} onClick={() => onPick(exercise.id)}>
             <span>
               {exercise.name}

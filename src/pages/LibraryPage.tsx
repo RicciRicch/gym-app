@@ -1,20 +1,37 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ExerciseImage } from '../components/ExerciseImage'
 import { Sheet } from '../components/Sheet'
 import { Button, Field, PageLoader } from '../components/ui'
 import { ExerciseExistsError, parseMuscles, useCreateExercise } from '../features/library/api'
+import { GroupChips, SearchField } from '../features/library/ExerciseFilter'
+import { useExerciseFilter } from '../features/library/filter'
+import { GROUP_LABEL, MUSCLE_GROUPS, type MuscleGroup } from '../lib/muscles'
 import { useExercises, type Exercise } from '../features/split/api'
 
 export function LibraryPage() {
   const { data: exercises, isPending, isError, refetch } = useExercises()
-  const [query, setQuery] = useState('')
   const [adding, setAdding] = useState(false)
+  // Search and group live in the URL, so they survive opening an exercise and coming back.
+  const [params, setParams] = useSearchParams()
+  const query = params.get('q') ?? ''
+  const groupParam = params.get('group')
+  const group = MUSCLE_GROUPS.includes(groupParam as MuscleGroup) ? (groupParam as MuscleGroup) : null
+  const update = (key: 'q' | 'group', value: string | null) =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (value) next.set(key, value)
+        else next.delete(key)
+        return next
+      },
+      { replace: true },
+    )
 
-  const q = query.trim().toLowerCase()
-  const matches = (e: Exercise) => !q || e.name.toLowerCase().includes(q) || e.muscles.some((m) => m.toLowerCase().includes(q))
-  const core = exercises?.filter((e) => !e.user_id && matches(e)) ?? []
-  const custom = exercises?.filter((e) => e.user_id && matches(e)) ?? []
+  const { shown, counts, total } = useExerciseFilter(exercises ?? [], query, group)
+  const q = query.trim()
+  const core = shown.filter((e) => !e.user_id)
+  const custom = shown.filter((e) => e.user_id)
 
   return (
     <div className="animate-fade-up pt-2">
@@ -25,20 +42,8 @@ export function LibraryPage() {
         </button>
       </div>
 
-      <label className="mt-4 flex min-h-12 items-center gap-2 rounded-2xl border border-line bg-surface px-4 focus-within:border-accent">
-        <svg viewBox="0 0 24 24" className="size-5 shrink-0 text-muted" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-4-4" />
-        </svg>
-        <span className="sr-only">Search exercises</span>
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name or muscle"
-          className="min-h-12 w-full bg-transparent text-base outline-none placeholder:text-muted/60"
-        />
-      </label>
+      <SearchField className="mt-4" value={query} onChange={(v) => update('q', v)} placeholder="Search by name or muscle" />
+      {exercises && <GroupChips className="mt-3" value={group} onChange={(g) => update('group', g)} counts={counts} total={total} />}
 
       {isPending ? (
         <PageLoader label="Loading exercises" />
@@ -51,12 +56,21 @@ export function LibraryPage() {
         </div>
       ) : (
         <>
-          {core.length > 0 && <ExerciseList title="Core exercises" exercises={core} />}
-          {custom.length > 0 && <ExerciseList title="Your exercises" exercises={custom} />}
-          {core.length === 0 && custom.length === 0 && (
-            <p className="mt-10 text-center text-muted">No exercise matches “{query}”.</p>
+          {core.length > 0 && (
+            <ExerciseList title={`${group ? GROUP_LABEL[group] : 'Core exercises'} · ${core.length}`} exercises={core} />
           )}
-          {!q && custom.length === 0 && (
+          {custom.length > 0 && <ExerciseList title={`Your exercises · ${custom.length}`} exercises={custom} />}
+          {core.length === 0 && custom.length === 0 && (
+            <div className="mt-10 text-center">
+              <p className="text-muted">
+                No {group ? `${GROUP_LABEL[group].toLowerCase()} ` : ''}exercise matches{q ? ` “${q}”` : ''}.
+              </p>
+              <button className="mt-2 min-h-11 px-4 font-semibold text-accent" onClick={() => setParams(new URLSearchParams(), { replace: true })}>
+                Clear filters
+              </button>
+            </div>
+          )}
+          {!q && !group && custom.length === 0 && (
             <button
               onClick={() => setAdding(true)}
               className="mt-6 min-h-14 w-full rounded-3xl border border-dashed border-line font-semibold text-muted transition hover:text-text active:scale-[0.98]"

@@ -155,3 +155,59 @@ export function muscleVerdict(load: MuscleLoad, today: ISODate): MuscleVerdict {
   const region = pick(cold.slice(0, 3), today) as Region
   return { line: TEASE[region], region }
 }
+
+// Library filter: big muscle groups, by an exercise's main (first) muscle.
+
+export const MUSCLE_GROUPS = ['chest', 'back', 'shoulders', 'arms', 'legs', 'core'] as const
+export type MuscleGroup = (typeof MUSCLE_GROUPS)[number]
+
+export const GROUP_LABEL: Record<MuscleGroup, string> = {
+  chest: 'Chest',
+  back: 'Back',
+  shoulders: 'Shoulders',
+  arms: 'Arms',
+  legs: 'Legs',
+  core: 'Core',
+}
+
+const GROUP_OF: Record<Region, MuscleGroup> = {
+  chest: 'chest',
+  lats: 'back',
+  upperBack: 'back',
+  lowerBack: 'back',
+  shoulders: 'shoulders',
+  biceps: 'arms',
+  triceps: 'arms',
+  forearms: 'arms',
+  quads: 'legs',
+  hamstrings: 'legs',
+  glutes: 'legs',
+  calves: 'legs',
+  core: 'core',
+}
+
+/** The group of an exercise's main muscle (the first one listed that is recognised), null when none is. */
+export function exerciseGroup(muscles: readonly string[]): MuscleGroup | null {
+  for (const muscle of muscles) {
+    const region = regionsOf(muscle)[0]
+    if (region) return GROUP_OF[region]
+  }
+  return null
+}
+
+/** Lower-case, accents stripped and đ as "dj", so "ledja" finds "Leđa" and "squat" finds "Squat". */
+export const searchKey = (text: string) =>
+  text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/đ/g, 'dj')
+
+/** True when every word of the query is found in the name, a muscle or the group name. */
+export function matchesSearch(query: string, exercise: { name: string; muscles: readonly string[] }): boolean {
+  const words = searchKey(query).split(/\s+/).filter(Boolean)
+  if (words.length === 0) return true
+  const group = exerciseGroup(exercise.muscles)
+  const haystack = searchKey([exercise.name, ...exercise.muscles, group ? GROUP_LABEL[group] : ''].join(' '))
+  return words.every((w) => haystack.includes(w))
+}

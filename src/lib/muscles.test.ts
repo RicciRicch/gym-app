@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { heat, muscleLoad, muscleVerdict, regionsOf, REGIONS, type MuscleLoad } from './muscles'
+import { exerciseGroup, heat, matchesSearch, muscleLoad, muscleVerdict, regionsOf, REGIONS, type MuscleLoad } from './muscles'
 
 describe('regionsOf', () => {
   it('maps the core exercise muscles', () => {
@@ -77,5 +77,35 @@ describe('muscleVerdict', () => {
     expect(muscleVerdict(load, '2026-11-15')).toEqual({ region: 'hamstrings', line: 'Your hamstrings filed a missing person report.' })
     const small = { ...full(), forearms: 0, calves: 0 }
     expect(['calves', 'forearms']).toContain(muscleVerdict(small, '2026-11-15').region)
+  })
+})
+
+describe('exerciseGroup', () => {
+  it('groups by the main muscle', () => {
+    expect(exerciseGroup(['Chest', 'Triceps', 'Front delts'])).toBe('chest')
+    expect(exerciseGroup(['Upper chest', 'Front delts'])).toBe('chest')
+    expect(exerciseGroup(['Close grip', 'Triceps'])).toBe('arms')
+    expect(exerciseGroup(['Traps'])).toBe('back')
+    expect(exerciseGroup(['Rear delts', 'Upper back'])).toBe('shoulders')
+    expect(exerciseGroup(['Obliques'])).toBe('core')
+    expect(exerciseGroup(['Glutes', 'Hamstrings'])).toBe('legs')
+    expect(exerciseGroup([])).toBeNull()
+    expect(exerciseGroup(['Cardio'])).toBeNull()
+  })
+})
+
+describe('matchesSearch', () => {
+  const bench = { name: 'Incline Bench Press', muscles: ['Upper chest', 'Front delts', 'Triceps'] }
+  it('matches name, muscles and group, every word', () => {
+    expect(matchesSearch('', bench)).toBe(true)
+    expect(matchesSearch('bench', bench)).toBe(true)
+    expect(matchesSearch('incline press', bench)).toBe(true)
+    expect(matchesSearch('triceps', bench)).toBe(true)
+    expect(matchesSearch('CHEST', bench)).toBe(true)
+    expect(matchesSearch('decline', bench)).toBe(false)
+    expect(matchesSearch('bench squat', bench)).toBe(false)
+  })
+  it('ignores accents', () => {
+    expect(matchesSearch('ledja', { name: 'Veslanje', muscles: ['Leđa'] })).toBe(true)
   })
 })
