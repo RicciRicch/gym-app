@@ -35,6 +35,9 @@ and watch your top sets climb.
 - **Coach tips and your ghost** – during a workout the coach suggests the next step from
   your last session ("80 kg × 8 on every set. Too easy. Try 82.5 kg.", one tap to apply), and
   every set shows what you did last time so you can race your past self.
+- **Badges** – 17 medals to collect (first workout, 100 tonnes lifted, 10 PRs, a 4 week
+  streak, a 6 AM session...). A new one drops onto the screen spinning like a coin, then flies
+  onto your badge shelf.
 - **Streak freeze** – sick or travelling? Freeze the week once a month and the streak
   survives (the flame turns to ice).
 - **What you lifted** – your volume in real-world things: "That's like lifting 3 rhinos"

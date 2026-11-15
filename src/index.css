@@ -423,3 +423,101 @@ body {
     animation: none !important;
   }
 }
+
+/* ------------------------------------------------------------------------
+   Badges
+   ------------------------------------------------------------------------ */
+/* The new medal falls in from above, spinning like a coin, and settles. */
+.badge-drop {
+  animation: badge-drop 1.15s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@keyframes badge-drop {
+  0% {
+    transform: translateY(-75vh) scale(0.45) rotateY(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  55% {
+    transform: translateY(0) scale(1.1) rotateY(560deg);
+  }
+  72% {
+    transform: translateY(0) scale(0.93) rotateY(700deg);
+  }
+  88% {
+    transform: translateY(0) scale(1.03) rotateY(720deg);
+  }
+  100% {
+    transform: translateY(0) scale(1) rotateY(720deg);
+    opacity: 1;
+  }
+}
+/* A soft glow that breathes behind the unlocked medal. */
+.badge-glow {
+  animation:
+    fade-in 0.6s ease-out 0.5s both,
+    badge-glow 2.4s ease-in-out 1.1s infinite;
+}
+@keyframes badge-glow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+/* The medal lands in its slot on the shelf. */
+.badge-land {
+  animation: badge-land 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes badge-land {
+  0% {
+    transform: scale(1.3);
+  }
+  40% {
+    transform: scale(0.88);
+  }
+  70% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+/* Sparks that fly out of a slot when a medal lands; --a is the direction. */
+.badge-spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  opacity: 0;
+  animation: badge-spark 0.75s cubic-bezier(0.1, 0.7, 0.3, 1) both;
+}
+@keyframes badge-spark {
+  0% {
+    transform: translate(-50%, -50%) rotate(var(--a)) translateY(0) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(var(--a)) translateY(-58px) scale(0.2);
+    opacity: 0;
+  }
+}
+/* The dark backdrop from the unlock screen fades away as the medal flies to the shelf. */
+.badge-backdrop-out {
+  animation: badge-backdrop-out 0.7s ease-out 0.15s both;
+}
+@keyframes badge-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

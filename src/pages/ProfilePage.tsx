@@ -6,6 +6,7 @@ import { Avatar, Button } from '../components/ui'
 import { Sheet } from '../components/Sheet'
 import { openGuide } from '../features/guide/guide-store'
 import { AvatarPicker } from '../features/avatar/AvatarPicker'
+import { BadgeShelfCard } from '../features/badges/BadgeShelfCard'
 import { avatarPhotoUrl, choiceFromProfile, useUpdateAvatar, type AvatarChoice } from '../features/avatar/api'
 import type { Database } from '../lib/database.types'
 
@@ -37,7 +38,8 @@ export function ProfilePage() {
       <h1 className="mt-4 text-2xl font-black tracking-tight">{profile.display_name}</h1>
       <p className="text-muted">@{profile.username}</p>
       <p className="mt-1 text-sm text-muted">{user?.email}</p>
-      <Button variant="secondary" className="mt-8 w-full" onClick={() => user && openGuide(user.id)}>
+      <BadgeShelfCard className="mt-6" />
+      <Button variant="secondary" className="mt-3 w-full" onClick={() => user && openGuide(user.id)}>
         How to use the app
       </Button>
       <Button variant="ghost" className="mt-2 w-full" onClick={() => supabase.auth.signOut()}>

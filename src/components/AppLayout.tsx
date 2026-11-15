@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { ErrorBoundary } from './ErrorBoundary'
 import { useAuth } from '../features/auth/auth-context'
 import { useProfile } from '../features/auth/useProfile'
+import { BadgeUnlock } from '../features/badges/BadgeUnlock'
 import { GuideOverlay } from '../features/guide/GuideOverlay'
 import { closeGuide, useGuideOpen } from '../features/guide/guide-store'
 import { useActiveSplit } from '../features/split/api'
@@ -94,6 +95,7 @@ export function AppLayout() {
       </nav>
 
       {guideOpen && user && <GuideOverlay hasSplit={!!split.data} onClose={() => closeGuide(user.id)} />}
+      {!guideOpen && <BadgeUnlock />}
     </div>
   )
 }

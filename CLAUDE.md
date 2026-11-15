@@ -158,6 +158,19 @@ npm test           # vitest (schedule logic etc.)
   with a seeded test workout (since deleted): Today gorilla line, coach tips (hold / add
   weight / first time), Apply, ghost rows and score. Not exercised in the UI: the freeze sheet
   (needs a streak at risk), the sad/proud moods with real data.
+- Badges (`src/lib/badges.ts`, unit-tested): 17 badges (workout counts 1/10/50/100, volume
+  10/100/1000 t, PRs 1/10/50, best streak 4/12 weeks with frozen weeks bridging, 10 leg days by
+  day name, early bird < 7:00, night owl >= 22:00, 90+ min, Saturday + Sunday), all derived from
+  history with the date each was earned (no table). Medals drawn in code (`Medal.tsx`, tier
+  rosette + emoji). "Seen" ids in localStorage `gym-app:badges-seen:<uid>`; the first run stores
+  what is already earned so old accounts get no pile of pop-ups. `BadgeUnlock` (AppLayout, not
+  on /workout or /badges): coin-spin drop, rays, confetti, queue "1 of N", "Put it on my shelf"
+  -> `/badges` (lazy) where `BadgeShelf` flies each medal from the unlock screen into its slot
+  (WAAPI FLIP arc, spark burst, count ticks up, NEW pill). Reduced motion: no flight, NEW only.
+  Profile has a `BadgeShelfCard`. Playground: `/dev/celebration?badge=2` and `?shelf=1`.
+  Browser-verified signed in with a seeded 6:30 workout (since deleted): pop-up, Later, Profile
+  card, shelf, detail sheet, hidden on /workout; the flight via headless Chrome in the playground
+  (the Browser pane has reduced motion on and is frozen while hidden).
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL
