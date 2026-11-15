@@ -1,9 +1,10 @@
 import { Link, useParams } from 'react-router-dom'
 import { ExerciseImage } from '../components/ExerciseImage'
 import { PageLoader } from '../components/ui'
-import { MusclesWorked } from '../features/muscles/MusclesWorked'
+import { EquipmentIcon } from '../features/library/EquipmentIcon'
 import { useLoggedSets } from '../features/progress/api'
 import { useExercises } from '../features/split/api'
+import { EQUIPMENT_LABEL, equipmentOf } from '../lib/library'
 import { exerciseProgress, formatTopSet } from '../lib/progress'
 
 /** Library detail: image, target muscles, form cues and a link to progress. */
@@ -29,6 +30,7 @@ export function ExercisePage() {
     )
   }
 
+  const equipment = equipmentOf(exercise.name)
   const progress = exerciseProgress(sets.data?.filter((s) => s.exerciseId === exercise.id) ?? [])
 
   return (
@@ -44,7 +46,13 @@ export function ExercisePage() {
         <ExerciseImage imageKey={exercise.image_key} name={exercise.name} className="mt-2 aspect-square w-full rounded-3xl" />
       )}
 
-      <h1 className="mt-5 text-3xl font-black tracking-tight">{exercise.name}</h1>
+      <h1 className={`${exercise.image_key ? 'mt-5' : 'mt-2'} text-3xl font-black tracking-tight`}>{exercise.name}</h1>
+      {equipment && (
+        <p className="mt-2 flex items-center gap-2 font-semibold text-muted">
+          <EquipmentIcon equipment={equipment} className="size-5 text-accent" />
+          {EQUIPMENT_LABEL[equipment]}
+        </p>
+      )}
       {exercise.muscles.length > 0 && (
         <ul className="mt-3 flex flex-wrap gap-2" aria-label="Target muscles">
           {exercise.muscles.map((m) => (
@@ -54,8 +62,6 @@ export function ExercisePage() {
           ))}
         </ul>
       )}
-
-      <MusclesWorked muscles={exercise.muscles} className="mt-6" />
 
       {exercise.cues.length > 0 ? (
         <section className="mt-6">

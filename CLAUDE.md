@@ -192,17 +192,18 @@ npm test           # vitest (schedule logic etc.)
   below: bars with set counts and the cold list. Playground: `?muscles=1`. Browser-verified
   signed in with a seeded workout (since deleted) and in headless Chrome.
 - Library: 56 core exercises (12 with images + 44 text-only from migration `more_exercises`,
-  first muscle = main one). Exercises without art show `MuscleThumb` (a close-up of the body
-  from the side of the main muscle, main = heat 3, helpers = heat 1; `muscleRoles` / `bestSide`
-  / `REGION_Y` in `src/lib/muscles.ts`, shapes shared in `src/features/muscles/body-shapes.ts`);
-  the dumbbell only when no muscle is recognised. The exercise page has a "Muscles worked" card
-  (`MusclesWorked`, the full front + back map) and the hero image only when art exists.
-  Playground: `?thumbs=1`. Search
+  first muscle = main one). Search
   (`matchesSearch` in `src/lib/muscles.ts`: every word in name / muscles / group, accents
   stripped, đ = dj) and muscle group chips with counts (`exerciseGroup` by the main muscle:
   Chest, Back, Shoulders, Arms, Legs, Core). Shared `SearchField` / `GroupChips`
   (`src/features/library/ExerciseFilter.tsx`, hook in `filter.ts`) are used by the Library (state
   in the URL: `?q=&group=`) and by `ExercisePicker` (split editor + workout "Add exercise").
+  Library layout (user's pick, after rejecting muscle-figure thumbnails): search, "Yours" (last
+  logged, then the split; `yourExerciseIds`, max 4), 2x3 muscle group tiles (count + example
+  names; a group pushes `?group=` so the phone's back button leaves it), custom exercises.
+  Compact rows without images: name, main muscle · gear, gear icon on the right
+  (`EquipmentIcon`; gear guessed from the name by `equipmentOf` in `src/lib/library.ts`,
+  unit-tested on all 56 core names, no DB column). Exercise page: hero only with art, gear line.
   Browser-verified signed in: chips/counts, Legs + "squat", picker Core filter.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.

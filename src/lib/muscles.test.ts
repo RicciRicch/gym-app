@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bestSide, exerciseGroup, heat, matchesSearch, muscleRoles, muscleLoad, muscleVerdict, regionsOf, REGIONS, type MuscleLoad } from './muscles'
+import { exerciseGroup, heat, matchesSearch, muscleLoad, muscleVerdict, regionsOf, REGIONS, type MuscleLoad } from './muscles'
 
 describe('regionsOf', () => {
   it('maps the core exercise muscles', () => {
@@ -107,28 +107,5 @@ describe('matchesSearch', () => {
   })
   it('ignores accents', () => {
     expect(matchesSearch('ledja', { name: 'Veslanje', muscles: ['Leđa'] })).toBe(true)
-  })
-})
-
-describe('muscleRoles', () => {
-  it('marks the first recognised muscle as main and the rest as assist', () => {
-    const roles = muscleRoles(['Cardio', 'Chest', 'Triceps', 'Front delts'])
-    expect([...roles]).toEqual([
-      ['chest', 'main'],
-      ['triceps', 'assist'],
-      ['shoulders', 'assist'],
-    ])
-  })
-  it('keeps every region of a broad main muscle as main', () => {
-    const roles = muscleRoles(['Legs', 'Core'])
-    expect(roles.get('quads')).toBe('main')
-    expect(roles.get('hamstrings')).toBe('main')
-    expect(roles.get('core')).toBe('assist')
-  })
-  it('picks the side that shows the main muscle', () => {
-    expect(bestSide(muscleRoles(['Chest', 'Triceps']))).toBe('front')
-    expect(bestSide(muscleRoles(['Lats', 'Biceps']))).toBe('back')
-    expect(bestSide(muscleRoles(['Hamstrings']))).toBe('back')
-    expect(bestSide(muscleRoles([]))).toBe('front')
   })
 })

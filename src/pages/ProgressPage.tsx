@@ -111,7 +111,7 @@ export function ProgressPage() {
                     to={`/progress/${id}`}
                     className="flex min-h-20 items-center gap-4 rounded-3xl border border-line bg-surface p-2 pr-4 transition active:scale-[0.98]"
                   >
-                    <ExerciseImage imageKey={exercise?.image_key ?? null} name={exercise?.name ?? ''} muscles={exercise?.muscles} className="size-14 rounded-2xl" />
+                    <ExerciseImage imageKey={exercise?.image_key ?? null} name={exercise?.name ?? ''} className="size-14 rounded-2xl" />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-bold">{exercise?.name ?? 'Exercise'}</span>
                       <span className="block text-sm text-muted">
