@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { ExerciseImage } from '../components/ExerciseImage'
 import { PageLoader } from '../components/ui'
+import { MusclesWorked } from '../features/muscles/MusclesWorked'
 import { useLoggedSets } from '../features/progress/api'
 import { useExercises } from '../features/split/api'
 import { exerciseProgress, formatTopSet } from '../lib/progress'
@@ -39,7 +40,9 @@ export function ExercisePage() {
         Library
       </Link>
 
-      <ExerciseImage imageKey={exercise.image_key} name={exercise.name} className="mt-2 aspect-square w-full rounded-3xl" />
+      {exercise.image_key && (
+        <ExerciseImage imageKey={exercise.image_key} name={exercise.name} className="mt-2 aspect-square w-full rounded-3xl" />
+      )}
 
       <h1 className="mt-5 text-3xl font-black tracking-tight">{exercise.name}</h1>
       {exercise.muscles.length > 0 && (
@@ -51,6 +54,8 @@ export function ExercisePage() {
           ))}
         </ul>
       )}
+
+      <MusclesWorked muscles={exercise.muscles} className="mt-6" />
 
       {exercise.cues.length > 0 ? (
         <section className="mt-6">

@@ -1,20 +1,32 @@
 import { useState } from 'react'
+import { MuscleThumb } from '../features/muscles/MuscleThumb'
+import { muscleRoles } from '../lib/muscles'
 
 /**
- * Exercise illustration from public/assets/exercises. Falls back to a drawn
- * tile for custom exercises and until the generated image exists.
+ * Exercise illustration from public/assets/exercises. Without one (custom
+ * exercises, exercises without art) it shows the body with the worked muscles
+ * lit, or a dumbbell when the muscles are unknown.
  */
 export function ExerciseImage({
   imageKey,
   name,
+  muscles = [],
   className = 'size-16 rounded-2xl',
 }: {
   imageKey: string | null
   name: string
+  muscles?: readonly string[]
   className?: string
 }) {
   const [failed, setFailed] = useState(false)
 
+  if ((!imageKey || failed) && muscleRoles(muscles).size > 0) {
+    return (
+      <span aria-hidden="true" className={`block shrink-0 overflow-hidden bg-gradient-to-br from-surface-2 to-bg ${className}`}>
+        <MuscleThumb muscles={muscles} className="size-full" />
+      </span>
+    )
+  }
   if (!imageKey || failed) {
     return (
       <span

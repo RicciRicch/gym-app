@@ -97,7 +97,7 @@ function ExerciseList({ title, exercises }: { title: string; exercises: Exercise
               to={`/library/${e.id}`}
               className="flex min-h-20 items-center gap-4 rounded-3xl border border-line bg-surface p-2 pr-4 transition active:scale-[0.98]"
             >
-              <ExerciseImage imageKey={e.image_key} name={e.name} />
+              <ExerciseImage imageKey={e.image_key} name={e.name} muscles={e.muscles} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-bold">{e.name}</span>
                 <span className="block truncate text-sm text-muted">{e.muscles.join(' · ') || 'Custom exercise'}</span>

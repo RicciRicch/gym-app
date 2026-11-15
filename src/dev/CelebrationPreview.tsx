@@ -6,6 +6,8 @@ import { PreWorkoutCard } from '../features/fuel/PreWorkoutCard'
 import { UnlockOverlay, type MedalRect } from '../features/badges/BadgeUnlock'
 import { Medal } from '../features/badges/Medal'
 import { MuscleMapView } from '../features/muscles/MuscleMapCard'
+import { MusclesWorked } from '../features/muscles/MusclesWorked'
+import { ExerciseImage } from '../components/ExerciseImage'
 import { BADGES, type BadgeState } from '../lib/badges'
 import { REGIONS, type MuscleLoad } from '../lib/muscles'
 import { GorillaBubble } from '../features/gorilla/GorillaCard'
@@ -18,7 +20,7 @@ import type { WorkoutSummary } from '../lib/summary'
 // post-workout celebration and the streak flame. ?prs=2 opens the summary
 // straight away (handy for headless screenshots), ?badge=1|2 the badge unlock screen,
 // ?shelf=1 the badge shelf with two medals flying in, ?fuel=1 the pre-workout cards,
-// ?muscles=1 the muscle map.
+// ?muscles=1 the muscle map, ?thumbs=1 the exercise thumbnails without art.
 
 const prs: WorkoutSummary['prs'] = [
   { exerciseId: 'a', name: 'Back Squat', metric: 'weight', top: { weight: 105, reps: 3 }, previous: { weight: 102.5, reps: 2 } },
@@ -68,6 +70,36 @@ export function CelebrationPreview() {
         <PreWorkoutCard dayName="Push" plannedSets={14} now={new Date(2026, 10, 15, 13)} />
         <PreWorkoutCard dayName="Arms" plannedSets={6} now={new Date(2026, 10, 15, 20)} />
         <FuelCheck workoutId="preview" />
+      </div>
+    )
+  }
+  if (new URLSearchParams(window.location.search).has('thumbs')) {
+    const samples: [string, string[]][] = [
+      ['Incline Bench Press', ['Upper chest', 'Front delts', 'Triceps']],
+      ['Pull-Up', ['Lats', 'Biceps', 'Upper back']],
+      ['Lateral Raise', ['Side delts']],
+      ['Hammer Curl', ['Biceps', 'Forearms']],
+      ['Skull Crusher', ['Triceps']],
+      ['Plank', ['Core']],
+      ['Back Extension', ['Lower back', 'Glutes']],
+      ['Hip Thrust', ['Glutes', 'Hamstrings']],
+      ['Bulgarian Split Squat', ['Quads', 'Glutes']],
+      ['Romanian Deadlift', ['Hamstrings', 'Glutes', 'Lower back']],
+      ['Calf Raise', ['Calves']],
+      ['Custom thing', ['Cardio']],
+    ]
+    return (
+      <div className="mx-auto flex max-w-md flex-col gap-2 px-5 pt-4 pb-10">
+        {samples.map(([name, muscles]) => (
+          <div key={name} className="flex min-h-20 items-center gap-4 rounded-3xl border border-line bg-surface p-2 pr-4">
+            <ExerciseImage imageKey={null} name={name} muscles={muscles} />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-bold">{name}</span>
+              <span className="block truncate text-sm text-muted">{muscles.join(' · ')}</span>
+            </span>
+          </div>
+        ))}
+        <MusclesWorked muscles={['Upper chest', 'Front delts', 'Triceps']} className="mt-4" />
       </div>
     )
   }

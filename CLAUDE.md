@@ -192,7 +192,12 @@ npm test           # vitest (schedule logic etc.)
   below: bars with set counts and the cold list. Playground: `?muscles=1`. Browser-verified
   signed in with a seeded workout (since deleted) and in headless Chrome.
 - Library: 56 core exercises (12 with images + 44 text-only from migration `more_exercises`,
-  first muscle = main one; they show the placeholder icon until art exists). Search
+  first muscle = main one). Exercises without art show `MuscleThumb` (a close-up of the body
+  from the side of the main muscle, main = heat 3, helpers = heat 1; `muscleRoles` / `bestSide`
+  / `REGION_Y` in `src/lib/muscles.ts`, shapes shared in `src/features/muscles/body-shapes.ts`);
+  the dumbbell only when no muscle is recognised. The exercise page has a "Muscles worked" card
+  (`MusclesWorked`, the full front + back map) and the hero image only when art exists.
+  Playground: `?thumbs=1`. Search
   (`matchesSearch` in `src/lib/muscles.ts`: every word in name / muscles / group, accents
   stripped, đ = dj) and muscle group chips with counts (`exerciseGroup` by the main muscle:
   Chest, Back, Shoulders, Arms, Legs, Core). Shared `SearchField` / `GroupChips`
