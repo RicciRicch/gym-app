@@ -1,125 +1,193 @@
-import type { ReactNode } from 'react'
-import { heat, HEAT_FILL, REGION_LABEL, type MuscleLoad, type Region } from '../../lib/muscles'
+import { useId, type ReactNode } from 'react'
+import { heat, REGION_LABEL, type Heat, type MuscleLoad, type Region } from '../../lib/muscles'
 
-const BODY = '#1a1f26'
+// The figure is drawn in a 200 x 440 box, centre line x = 100. Everything is
+// drawn for the left half and mirrored, so the body is perfectly symmetric.
 
-// Shapes are drawn for the figure's left half (x < 50) in a 100 x 210 box and mirrored.
-const SILHOUETTE_HALF = [
-  'M31,33 Q21,34 19,46 L15,74 L11,104 Q11,110 15,110 Q19,110 20,104 L26,76 L30,56 Z', // arm
-  'M32,96 Q31,125 34,150 L36,198 Q36,204 41,204 Q46,204 45,198 L47,150 Q49,120 50,100 Z', // leg
-]
-const TORSO = 'M31,33 Q50,27 69,33 L67,60 Q66,80 68,98 Q50,104 32,98 Q34,80 33,60 Z'
+/** Top and bottom colour of a muscle per heat level (brighter = more work). */
+const HEAT_GRADIENT: Record<Heat, [string, string]> = {
+  0: ['#3b4552', '#2a323c'],
+  1: ['#b0621d', '#7a430f'],
+  2: ['#ff9a2b', '#d26a0e'],
+  3: ['#ffd667', '#ff9f1c'],
+}
+const SKIN: [string, string] = ['#252c36', '#181d24']
+const GAP = '#12161b'
 
-const SHOULDER = 'M32,34 Q22,33 19.5,45 Q26,48 32,43 Z'
-const UPPER_ARM = 'M20,48 Q25,46 29.5,49 L26,70 Q21,72 17,69 Z'
-const FOREARM = 'M16.5,73 Q21,75 25.5,74 L20.5,101 Q16,103 12.5,100 Z'
+const SILHOUETTE =
+  'M100,44 L91,46 L91,57 Q84,66 66,69 Q50,71 46,88 Q43,112 41,136 Q39,150 36,162 Q30,186 29,208 Q27,220 26,232 ' +
+  'Q26,245 33,246 Q40,245 40,232 L41,210 Q46,186 50,164 Q54,146 57,124 Q58,112 62,106 Q65,128 70,150 Q66,172 64,190 ' +
+  'Q60,232 66,272 Q68,288 67,300 Q60,330 67,366 Q70,386 71,398 Q63,412 66,421 L89,421 Q91,410 86,398 ' +
+  'Q86,380 88,360 Q92,330 90,304 Q89,290 91,274 Q95,236 100,208 Z'
+
+const DELTOID = 'M66,70 Q51,71 47,88 Q46,98 50,105 Q58,99 63,87 Q66,79 66,70 Z'
+const FOREARM = 'M41,157 Q33.5,180 31,207 L40.5,209.5 Q46.5,188 50.5,165 Q46,153 41,157 Z'
+const UPPER_ARM = 'M50,106 Q44,121 44,138 Q46,149 51.5,151 Q56.5,143 57.5,125 Q57.5,113 56,104 Q53,107 50,106 Z'
 
 interface Shape {
   region: Region
   d: string
-  /** Drawn once, not mirrored (it sits on the centre line). */
-  centre?: boolean
 }
 
 const FRONT: Shape[] = [
-  { region: 'shoulders', d: SHOULDER },
-  { region: 'chest', d: 'M34,38 Q42,35 49,38 L49,53 Q41,58 34,52 Z' },
+  // Neck-to-shoulder slope of the trapezius.
+  { region: 'upperBack', d: 'M91,57 Q85,65 70,69 Q80,70 90,68 Z' },
+  { region: 'shoulders', d: DELTOID },
+  { region: 'chest', d: 'M68,72 Q84,68 98.5,73 L98.5,103 Q88,114 75,110 Q66,105 64.5,91 Q65,80 68,72 Z' },
   { region: 'biceps', d: UPPER_ARM },
   { region: 'forearms', d: FOREARM },
-  { region: 'core', d: 'M38,58 Q50,62 62,58 L61,92 Q50,97 39,92 Z', centre: true },
-  { region: 'quads', d: 'M33,101 Q41,104 49,102 L47,146 Q41,149 35,146 Z' },
-  { region: 'calves', d: 'M35.5,153 Q41,151 46.5,153 L44.5,192 Q41,194 37.5,192 Z' },
+  // Six-pack: three blocks and the lower abs, per side.
+  { region: 'core', d: 'M86,115 Q92,112 98.5,113 V125.5 H85.5 Q85,119 86,115 Z' },
+  { region: 'core', d: 'M85.5,128 H98.5 V140.5 H85.5 Z' },
+  { region: 'core', d: 'M85.5,143 H98.5 V155.5 H86 Z' },
+  { region: 'core', d: 'M86,158 H98.5 V186 Q91,182 88,172 Q86,165 86,158 Z' },
+  // Obliques.
+  { region: 'core', d: 'M72,113 Q78,119 83,117 L83,150 Q79,162 82,180 Q73,170 70.5,150 Q69,130 72,113 Z' },
+  // Quads: outer sweep, and the middle with the teardrop above the knee.
+  { region: 'quads', d: 'M66.5,196 Q62,234 68,270 Q72,281 77,276 Q74,240 78,202 Q72,193 66.5,196 Z' },
+  { region: 'quads', d: 'M80.5,202 Q77,240 80,278 Q86,287 90,277 Q94,244 97,214 Q90,199 80.5,202 Z' },
+  // Shin and the inner calf seen from the front.
+  { region: 'calves', d: 'M69,305 Q63.5,330 69,364 Q73,372 76,364 Q79,334 77,305 Q73,299 69,305 Z' },
+  { region: 'calves', d: 'M80,307 Q82,334 79.5,360 Q84,367 87,357 Q89.5,332 88,307 Q84,301 80,307 Z' },
 ]
 
 const BACK: Shape[] = [
-  { region: 'shoulders', d: SHOULDER },
-  { region: 'upperBack', d: 'M39,32 Q50,29 61,32 L66,44 L50,58 L34,44 Z', centre: true },
-  { region: 'lats', d: 'M33.5,47 L48.5,60 L48,80 Q40,80 35,74 Z' },
-  { region: 'lowerBack', d: 'M41,82 L59,82 L60,94 Q50,97 40,94 Z', centre: true },
+  // Trapezius: a kite from the neck across the shoulders down to mid-back.
+  { region: 'upperBack', d: 'M99,48 L92,56 Q84,66 68,70 Q84,78 91,97 L99,127 Z' },
+  { region: 'shoulders', d: DELTOID },
+  // Around the shoulder blade.
+  { region: 'upperBack', d: 'M67.5,74 Q80,80 87.5,98 L85,107 Q74,105 65.5,97 Q63.5,85 67.5,74 Z' },
+  { region: 'lats', d: 'M63.5,101 Q65.5,128 70.5,150 Q80,160 96.5,161 L96.5,134 L88.5,111 Q76,109 63.5,101 Z' },
+  { region: 'lowerBack', d: 'M79,165 Q89,167 98.5,165 V190 Q86,189 73.5,183 Q75,172 79,165 Z' },
   { region: 'triceps', d: UPPER_ARM },
   { region: 'forearms', d: FOREARM },
-  { region: 'glutes', d: 'M33,98 Q41,95 49.5,98 L49.5,112 Q41,117 33,111 Z' },
-  { region: 'hamstrings', d: 'M33.5,115 Q41,119 49,115 L47,146 Q41,149 35,146 Z' },
-  { region: 'calves', d: 'M35,152 Q41,149 47,152 Q48,172 44.5,192 Q41,194 37.5,192 Q34,172 35,152 Z' },
+  { region: 'glutes', d: 'M66,192 Q80,186 98.5,193 V222 Q85,233 70.5,225 Q63,211 66,192 Z' },
+  { region: 'hamstrings', d: 'M66,231 Q64,255 69,277 Q74,283 79,277 Q78,251 80.5,234 Q72,236 66,231 Z' },
+  { region: 'hamstrings', d: 'M83.5,236 Q81.5,257 83.5,279 Q88,285 91,275 Q94,253 97,232 Q90,238 83.5,236 Z' },
+  // Calves: the two heads of the gastrocnemius.
+  { region: 'calves', d: 'M66.5,303 Q61.5,327 67.5,351 Q72,361 76,351 Q78,327 76,303 Q71,297 66.5,303 Z' },
+  { region: 'calves', d: 'M79,303 Q78,327 80,351 Q85,359 88,347 Q91,325 89,303 Q84,297 79,303 Z' },
 ]
 
-const mirrored = (node: ReactNode) => <g transform="translate(100 0) scale(-1 1)">{node}</g>
+const mirrored = (node: ReactNode) => <g transform="translate(200 0) scale(-1 1)">{node}</g>
 
-function Figure({
-  shapes,
-  load,
-  days,
-  tease,
-  label,
-  detail,
-}: {
-  shapes: Shape[]
+interface MapProps {
   load: MuscleLoad
   days: number
+  /** The region the gorilla is teasing about: dashed red outline. */
   tease: Region | null
-  label: string
-  detail?: ReactNode
-}) {
-  const silhouette = SILHOUETTE_HALF.map((d) => <path key={d} d={d} />)
-  const region = (s: Shape) => {
+  /** The region the user tapped: white outline. */
+  selected: Region | null
+  onSelect: (region: Region | null) => void
+}
+
+function Figure({ shapes, load, days, tease, selected, onSelect, label, detail }: MapProps & { shapes: Shape[]; label: string; detail: ReactNode }) {
+  const id = useId()
+  const muscles = shapes.map((s, i) => {
     const level = heat(load[s.region], days)
+    const picked = s.region === selected
+    const teased = s.region === tease && !picked
     return (
       <path
-        key={s.region}
+        key={i}
         d={s.d}
-        fill={HEAT_FILL[level]}
-        stroke={s.region === tease ? '#ff5c5c' : BODY}
-        strokeWidth={s.region === tease ? 1.4 : 1}
-        strokeDasharray={s.region === tease ? '3 2' : undefined}
+        fill={`url(#${id}h${level})`}
+        stroke={picked ? '#ffffff' : teased ? '#ff5c5c' : GAP}
+        strokeWidth={picked ? 1.8 : teased ? 1.6 : 1.1}
+        strokeDasharray={teased ? '4 2.5' : undefined}
         strokeLinejoin="round"
-        className={level === 3 ? 'muscle-fire' : s.region === tease ? 'muscle-missing' : undefined}
-      />
+        className={`cursor-pointer ${level === 3 ? 'muscle-fire' : ''} ${teased ? 'muscle-missing' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation()
+          onSelect(picked ? null : s.region)
+        }}
+      >
+        <title>{REGION_LABEL[s.region]}</title>
+      </path>
     )
+  })
+  // Outlined muscles are drawn last, so their outline is not covered by neighbours.
+  const order = (nodes: typeof muscles) => {
+    const on = (i: number) => shapes[i].region === selected || shapes[i].region === tease
+    return [...nodes.filter((_, i) => !on(i)), ...nodes.filter((_, i) => on(i))]
   }
-  const sides = shapes.filter((s) => !s.centre).map(region)
+
   return (
     <figure className="flex flex-1 flex-col items-center">
-      <svg viewBox="0 0 100 210" className="w-full max-w-36" role="img" aria-label={`${label} of the body`}>
-        <g fill={BODY}>
-          <circle cx="50" cy="15" r="10.5" />
-          <path d="M45,24 h10 v9 h-10 Z" />
-          <path d={TORSO} />
-          {silhouette}
-          {mirrored(silhouette)}
+      <svg viewBox="0 0 200 440" className="w-full max-w-40" role="img" aria-label={`${label} of the body`} onClick={() => onSelect(null)}>
+        <defs>
+          {([0, 1, 2, 3] as Heat[]).map((level) => (
+            <linearGradient key={level} id={`${id}h${level}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor={HEAT_GRADIENT[level][0]} />
+              <stop offset="1" stopColor={HEAT_GRADIENT[level][1]} />
+            </linearGradient>
+          ))}
+          <linearGradient id={`${id}skin`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor={SKIN[0]} />
+            <stop offset="1" stopColor={SKIN[1]} />
+          </linearGradient>
+          <radialGradient id={`${id}floor`}>
+            <stop offset="0" stopColor="#000" stopOpacity="0.55" />
+            <stop offset="1" stopColor="#000" stopOpacity="0" />
+          </radialGradient>
+          {/* A thin light rim around the whole silhouette. */}
+          <filter id={`${id}rim`} x="-10%" y="-5%" width="120%" height="110%">
+            <feMorphology in="SourceAlpha" operator="dilate" radius="1" result="grown" />
+            <feFlood floodColor="#3a4553" />
+            <feComposite in2="grown" operator="in" result="rim" />
+            <feMerge>
+              <feMergeNode in="rim" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <ellipse cx="100" cy="424" rx="52" ry="7" fill={`url(#${id}floor)`} />
+        <g fill={`url(#${id}skin)`} filter={`url(#${id}rim)`}>
+          <ellipse cx="100" cy="27" rx="17.5" ry="21" />
+          <path d={SILHOUETTE} />
+          {mirrored(<path d={SILHOUETTE} />)}
         </g>
-        {shapes.filter((s) => s.centre).map(region)}
-        {sides}
-        {mirrored(sides)}
         {detail}
+        {order(muscles)}
+        {mirrored(order(muscles))}
       </svg>
       <figcaption className="mt-1 text-[11px] font-bold tracking-widest text-muted uppercase">{label}</figcaption>
     </figure>
   )
 }
 
-/** Front and back of the body, each muscle region coloured by how much it was trained. */
-export function MuscleMap({ load, days, tease }: { load: MuscleLoad; days: number; tease: Region | null }) {
+/** Soft lines that are not muscles: collarbones, knees, elbows. */
+const line = (d: string) => <path d={d} fill="none" stroke="#343d49" strokeWidth="1.2" strokeLinecap="round" />
+const both = (node: ReactNode) => (
+  <g pointerEvents="none">
+    {node}
+    {mirrored(node)}
+  </g>
+)
+
+const FRONT_DETAIL = both(
+  <>
+    {line('M70,70.5 Q84,66.5 97,70')}
+    {line('M72,289 Q78,296 85,289')}
+    {line('M73,293 Q78,299 84,293')}
+    {line('M88,190 Q93,198 99,201')}
+  </>,
+)
+const BACK_DETAIL = both(
+  <>
+    {line('M70,288 Q78,292 87,288')}
+    {line('M44,154 Q47,157 51,155')}
+    {line('M76,372 Q78,385 78,396')}
+  </>,
+)
+
+/** Front and back of the body, each muscle coloured by how much it was trained. Tap a muscle to select it. */
+export function MuscleMap(props: MapProps) {
   return (
-    <div className="flex justify-center gap-4" aria-label={`Muscle map: ${tease ? `${REGION_LABEL[tease]} untrained` : 'see the list below'}`}>
-      <Figure
-        shapes={FRONT}
-        load={load}
-        days={days}
-        tease={tease}
-        label="Front"
-        detail={
-          // Ab lines, so the core reads as a six-pack.
-          <path d="M50,61 V94 M39.5,70 H60.5 M39.5,81 H60.5" stroke={BODY} strokeWidth="1" fill="none" pointerEvents="none" />
-        }
-      />
-      <Figure
-        shapes={BACK}
-        load={load}
-        days={days}
-        tease={tease}
-        label="Back"
-        detail={<path d="M50,31 V95" stroke={BODY} strokeWidth="1" fill="none" pointerEvents="none" />}
-      />
+    <div className="flex justify-center gap-2">
+      <Figure {...props} shapes={FRONT} label="Front" detail={FRONT_DETAIL} />
+      <Figure {...props} shapes={BACK} label="Back" detail={BACK_DETAIL} />
     </div>
   )
 }

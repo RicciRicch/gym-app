@@ -1,5 +1,16 @@
 import { useMemo, useState } from 'react'
-import { HEAT_FILL, HEAT_LABEL, heat, muscleLoad, muscleVerdict, REGION_LABEL, REGIONS, type Heat, type MuscleLoad } from '../../lib/muscles'
+import {
+  HEAT_FILL,
+  HEAT_LABEL,
+  heat,
+  muscleLoad,
+  muscleVerdict,
+  REGION_LABEL,
+  REGIONS,
+  type Heat,
+  type MuscleLoad,
+  type Region,
+} from '../../lib/muscles'
 import { addDays, startOfWeek, toISODate } from '../../lib/schedule'
 import { useLoggedSets } from '../progress/api'
 import { useExercises } from '../split/api'
@@ -44,6 +55,7 @@ export function MuscleMapView({
   className?: string
 }) {
   const verdict = muscleVerdict(load, today)
+  const [selected, setSelected] = useState<Region | null>(null)
   const worked = REGIONS.filter((r) => load[r] > 0).sort((a, b) => load[b] - load[a])
   const cold = REGIONS.filter((r) => load[r] === 0)
   const max = Math.max(1, ...worked.map((r) => load[r]))
@@ -75,8 +87,22 @@ export function MuscleMapView({
       </div>
 
       <div className="mt-4">
-        <MuscleMap load={load} days={days} tease={verdict.region} />
+        <MuscleMap load={load} days={days} tease={verdict.region} selected={selected} onSelect={setSelected} />
       </div>
+
+      <p aria-live="polite" className="mt-3 flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-surface-2 px-3 text-sm">
+        {selected ? (
+          <>
+            <span className="size-2.5 shrink-0 rounded-full" style={{ background: HEAT_FILL[heat(load[selected], days)] }} />
+            <span className="font-bold">{REGION_LABEL[selected]}</span>
+            <span className="text-muted">
+              {load[selected] > 0 ? `${sets(load[selected])} · ${HEAT_LABEL[heat(load[selected], days)]}` : 'not trained yet'}
+            </span>
+          </>
+        ) : (
+          <span className="text-muted">Tap a muscle to see its sets</span>
+        )}
+      </p>
 
       <ul className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-1" aria-label="Legend">
         {([0, 1, 2, 3] as Heat[]).map((level) => (
@@ -85,13 +111,19 @@ export function MuscleMapView({
             {HEAT_LABEL[level]}
           </li>
         ))}
+        {verdict.region && (
+          <li className="flex items-center gap-1.5 text-[11px] font-semibold text-muted">
+            <span className="size-2.5 rounded-full border border-dashed border-danger" />
+            Gorilla&apos;s pick
+          </li>
+        )}
       </ul>
 
       {worked.length > 0 && (
         <ul className="mt-4 flex flex-col gap-1.5">
           {worked.map((r) => (
             <li key={r} className="grid grid-cols-[6.5rem_1fr_4rem] items-center gap-2 text-sm">
-              <span className="font-semibold">{REGION_LABEL[r]}</span>
+              <span className={`font-semibold ${r === selected ? 'text-accent' : ''}`}>{REGION_LABEL[r]}</span>
               <span className="h-2 overflow-hidden rounded-full bg-surface-2">
                 <span
                   className="block h-full rounded-full"

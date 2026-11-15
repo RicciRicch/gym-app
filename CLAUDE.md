@@ -186,7 +186,8 @@ npm test           # vitest (schedule logic etc.)
   (under the lifted card). 13 regions; exercise muscle names (free text, English or Serbian) map
   to regions by keyword; a set counts 1 for the first listed muscle, 0.5 for the others. Heat by
   sets per week (>0 warm, 5+ hot, 10+ on fire, glowing), toggle This week (Mon-today) / 30 days.
-  `MuscleMap.tsx` is a hand-drawn SVG (front + back, left half mirrored). The gorilla teases one
+  `MuscleMap.tsx` is a hand-drawn anatomical SVG (200 x 440, front + back, left half mirrored,
+  gradient fills, rim filter; tap a muscle -> white outline + its sets in the pill below). The gorilla teases one
   cold region (big muscles first, changes per day), drawn with a blinking dashed red outline;
   below: bars with set counts and the cold list. Playground: `?muscles=1`. Browser-verified
   signed in with a seeded workout (since deleted) and in headless Chrome.

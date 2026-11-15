@@ -527,15 +527,14 @@ body {
    ------------------------------------------------------------------------ */
 /* A muscle that is "on fire" glows and breathes. */
 .muscle-fire {
-  filter: drop-shadow(0 0 3px rgb(255 176 46 / 0.75));
-  animation: muscle-fire 1.8s ease-in-out infinite alternate;
+  animation: muscle-fire 1.6s ease-in-out infinite alternate;
 }
 @keyframes muscle-fire {
   from {
-    fill: #ffb02e;
+    filter: drop-shadow(0 0 2px rgb(255 176 46 / 0.55)) brightness(1);
   }
   to {
-    fill: #ffd27a;
+    filter: drop-shadow(0 0 7px rgb(255 190 70 / 0.95)) brightness(1.12);
   }
 }
 /* The muscle the gorilla is teasing about blinks its outline. */
