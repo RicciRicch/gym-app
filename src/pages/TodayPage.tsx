@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { PageLoader, Spinner } from '../components/ui'
 import { useProfile } from '../features/auth/useProfile'
 import { useCompletedWorkouts, useOverrides } from '../features/schedule/api'
+import { PreWorkoutCard } from '../features/fuel/PreWorkoutCard'
 import { GorillaCard } from '../features/gorilla/GorillaCard'
 import { useStreak } from '../features/streak/api'
 import { FreezeControl } from '../features/streak/FreezeControl'
@@ -122,41 +123,48 @@ export function TodayPage() {
               </Link>
             </section>
           ) : todayDay ? (
-            <section className="mt-5 rounded-3xl border border-line bg-surface p-6">
-              <p className="text-sm font-semibold tracking-widest text-muted uppercase">Today&apos;s workout</p>
-              <h2 className="mt-1 text-3xl font-black tracking-tight">{todayDay.name}</h2>
-              <ul className="mt-4 divide-y divide-line">
-                {todayDay.split_day_exercises.map((e) => (
-                  <li key={e.id} className="flex items-center justify-between py-2.5">
-                    <span className="font-semibold">{e.exercises.name}</span>
-                    <span className="text-muted tabular-nums">
-                      {e.target_sets} × {e.target_reps}
-                    </span>
-                  </li>
-                ))}
-                {todayDay.split_day_exercises.length === 0 && (
-                  <li className="py-2.5 text-muted">No default exercises yet. You can add them as you go.</li>
+            <>
+              <section className="mt-5 rounded-3xl border border-line bg-surface p-6">
+                <p className="text-sm font-semibold tracking-widest text-muted uppercase">Today&apos;s workout</p>
+                <h2 className="mt-1 text-3xl font-black tracking-tight">{todayDay.name}</h2>
+                <ul className="mt-4 divide-y divide-line">
+                  {todayDay.split_day_exercises.map((e) => (
+                    <li key={e.id} className="flex items-center justify-between py-2.5">
+                      <span className="font-semibold">{e.exercises.name}</span>
+                      <span className="text-muted tabular-nums">
+                        {e.target_sets} × {e.target_reps}
+                      </span>
+                    </li>
+                  ))}
+                  {todayDay.split_day_exercises.length === 0 && (
+                    <li className="py-2.5 text-muted">No default exercises yet. You can add them as you go.</li>
+                  )}
+                </ul>
+                <button
+                  disabled={start.isPending}
+                  onClick={() => start.mutate(todayDay, { onSuccess: () => navigate('/workout') })}
+                  className={`${primaryLink} mt-5 min-h-16 gap-3 text-xl disabled:opacity-80`}
+                >
+                  {start.isPending ? (
+                    <>
+                      <Spinner className="size-5" /> Starting…
+                    </>
+                  ) : (
+                    'Start workout'
+                  )}
+                </button>
+                {start.isError && (
+                  <p role="alert" className="mt-3 text-sm text-danger">
+                    Could not start the workout — check your connection and try again
+                  </p>
                 )}
-              </ul>
-              <button
-                disabled={start.isPending}
-                onClick={() => start.mutate(todayDay, { onSuccess: () => navigate('/workout') })}
-                className={`${primaryLink} mt-5 min-h-16 gap-3 text-xl disabled:opacity-80`}
-              >
-                {start.isPending ? (
-                  <>
-                    <Spinner className="size-5" /> Starting…
-                  </>
-                ) : (
-                  'Start workout'
-                )}
-              </button>
-              {start.isError && (
-                <p role="alert" className="mt-3 text-sm text-danger">
-                  Could not start the workout — check your connection and try again
-                </p>
-              )}
-            </section>
+              </section>
+              <PreWorkoutCard
+                className="mt-3"
+                dayName={todayDay.name}
+                plannedSets={todayDay.split_day_exercises.reduce((n, e) => n + e.target_sets, 0)}
+              />
+            </>
           ) : (
             <section className="mt-5 rounded-3xl border border-line bg-surface p-6">
               <p className="text-sm font-semibold tracking-widest text-muted uppercase">Today</p>

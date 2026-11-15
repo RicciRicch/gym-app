@@ -103,6 +103,7 @@ export function useFinishWorkout() {
         await supabase.from('workouts').delete().eq('id', workout.data.id)
         throw sets.error
       }
+      return workout.data.id
     },
     // Not awaited: the summary screen should not wait for the refetch.
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['workouts', user?.id] }),
@@ -148,5 +149,19 @@ export function useUpdateDayDefault() {
       }
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['split', user?.id] }),
+  })
+}
+
+/** Stores what the user had before a workout (coffee, carbs, ...); an empty list = nothing. */
+export function useSaveFuel() {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ workoutId, fuel }: { workoutId: string; fuel: string[] }) => {
+      const { data, error } = await supabase.from('workouts').update({ fuel }).eq('id', workoutId).select('id')
+      if (error) throw error
+      if (data.length === 0) throw new Error('Workout not found')
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['workouts', user?.id, 'history'] }),
   })
 }

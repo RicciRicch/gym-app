@@ -35,6 +35,9 @@ and watch your top sets climb.
 - **Coach tips and your ghost** – during a workout the coach suggests the next step from
   your last session ("80 kg × 8 on every set. Too easy. Try 82.5 kg.", one tap to apply), and
   every set shows what you did last time so you can race your past self.
+- **Pre-workout coach** – under today's workout the gorilla tells you what to eat and drink
+  before it (half-joking, sane underneath: "One coffee. Maybe two. Not a bathtub."). Log what
+  you had after the session and it finds out what actually works for you.
 - **Badges** – 17 medals to collect (first workout, 100 tonnes lifted, 10 PRs, a 4 week
   streak, a 6 AM session...). A new one drops onto the screen spinning like a coin, then flies
   onto your badge shelf.

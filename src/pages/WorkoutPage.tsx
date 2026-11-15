@@ -11,6 +11,7 @@ import { useExercises } from '../features/split/api'
 import { buildDraftExercise, useFinishWorkout, useStartWorkout, useUpdateDayDefault } from '../features/workout/api'
 import { saveRestSeconds, useWorkoutDraft } from '../features/workout/draft-store'
 import { CoachTip } from '../features/workout/CoachTip'
+import { FuelCheck } from '../features/fuel/FuelCheck'
 import { RestTimer } from '../features/workout/RestTimer'
 import { voiceSupported } from '../features/workout/voice'
 import { VoiceSheet } from '../features/workout/VoiceSheet'
@@ -54,6 +55,7 @@ export function WorkoutPage() {
   const [voiceFor, setVoiceFor] = useState<string | null>(null)
   const [canUseVoice] = useState(voiceSupported)
   const [finished, setFinished] = useState<{
+    workoutId: string
     summary: WorkoutSummary
     streak: StreakChange | null
     askDefault: DefaultPrompt | null
@@ -81,6 +83,7 @@ export function WorkoutPage() {
       <WorkoutSummaryScreen
         summary={finished.summary}
         streak={finished.streak}
+        extra={(style) => <FuelCheck workoutId={finished.workoutId} className="rise-in mt-3 w-full" style={style} />}
         onDone={() => {
           if (finished.askDefault) setAskDefault(finished.askDefault)
           else navigate('/', { replace: true })
@@ -184,8 +187,9 @@ export function WorkoutPage() {
     // Snapshot what was known before this workout: PRs and the streak are measured against it.
     const setsBefore = history.data
     const datesBefore = workoutDates.data
+    let workoutId: string
     try {
-      await finish.mutateAsync(current)
+      workoutId = await finish.mutateAsync(current)
     } catch {
       return // the error is shown next to the button; the draft stays
     }
@@ -194,6 +198,7 @@ export function WorkoutPage() {
     const today = toISODate(new Date())
     const target = trainingDaysPerWeek(split.data?.split_days ?? [])
     setFinished({
+      workoutId,
       summary: summarizeWorkout(current, new Date().toISOString(), setsBefore),
       streak: datesBefore
         ? {

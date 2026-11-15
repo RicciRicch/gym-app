@@ -188,6 +188,7 @@ export type Database = {
           date: string
           started_at: string
           finished_at: string
+          fuel: string[] | null
           created_at: string
         }
         Insert: {
@@ -198,10 +199,12 @@ export type Database = {
           date: string
           started_at: string
           finished_at: string
+          fuel?: string[] | null
         }
         Update: {
           day_name?: string
           date?: string
+          fuel?: string[] | null
         }
         Relationships: [Rel<'workouts_split_day_id_fkey', 'split_day_id', 'split_days'>]
       }

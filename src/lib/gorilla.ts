@@ -28,8 +28,8 @@ export interface GorillaSays {
   line: string
 }
 
-/** Stable pick for a day: the line changes from day to day, not on every render. */
-function pick(lines: readonly string[], seed: string): string {
+/** A stable pick from `lines` for a seed (e.g. the date), so a line does not change on every render. */
+export function pick(lines: readonly string[], seed: string): string {
   let hash = 0
   for (const ch of seed) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0
   return lines[hash % lines.length]

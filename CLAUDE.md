@@ -171,6 +171,17 @@ npm test           # vitest (schedule logic etc.)
   Browser-verified signed in with a seeded 6:30 workout (since deleted): pop-up, Later, Profile
   card, shelf, detail sheet, hidden on /workout; the flight via headless Chrome in the playground
   (the Browser pane has reduced motion on and is frozen while hidden).
+- Pre-workout coach (`src/lib/fuel.ts`, unit-tested): `PreWorkoutCard` under today's workout on
+  Today (not once started/done). Half-ironic hard-core lines, sane advice underneath: snack 30-60
+  min before in the morning, a meal 2-3 h before otherwise, fruit on light days (<= 8 sets),
+  "carb load" on leg days / 18+ sets, coffee 30 min before ("not a bathtub"), none from 16:00.
+  No brand names. The summary asks "What did you have before?" (`FuelCheck`: coffee / energy
+  drink / carbs / pre-workout / nothing) -> `workouts.fuel text[]` (migration `workout_fuel`,
+  check constraint on the values, null = not answered) and the gorilla reacts. After 6 answered
+  workouts `fuelInsight` compares volume against the same day's average, with vs without each
+  item (3+ each side, >= 3% difference): "With coffee you lift 8% more". Playground: `?fuel=1`.
+  Verified: cards and chips in headless Chrome, Today card signed in, fuel update / empty /
+  invalid value via RLS (test row deleted). Not exercised: saving from a real finished workout.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL

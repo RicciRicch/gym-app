@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Flame } from '../components/Flame'
 import { BadgeShelf } from '../features/badges/BadgeShelf'
+import { FuelCheck } from '../features/fuel/FuelCheck'
+import { PreWorkoutCard } from '../features/fuel/PreWorkoutCard'
 import { UnlockOverlay, type MedalRect } from '../features/badges/BadgeUnlock'
 import { Medal } from '../features/badges/Medal'
 import { BADGES, type BadgeState } from '../lib/badges'
@@ -13,7 +15,7 @@ import type { WorkoutSummary } from '../lib/summary'
 // Dev-only playground (/dev/celebration, not in the production build) for the
 // post-workout celebration and the streak flame. ?prs=2 opens the summary
 // straight away (handy for headless screenshots), ?badge=1|2 the badge unlock screen,
-// ?shelf=1 the badge shelf with two medals flying in.
+// ?shelf=1 the badge shelf with two medals flying in, ?fuel=1 the pre-workout cards.
 
 const prs: WorkoutSummary['prs'] = [
   { exerciseId: 'a', name: 'Back Squat', metric: 'weight', top: { weight: 105, reps: 3 }, previous: { weight: 102.5, reps: 2 } },
@@ -54,6 +56,16 @@ export function CelebrationPreview() {
   const [shelf, setShelf] = useState<{ from?: MedalRect } | null>(() =>
     new URLSearchParams(window.location.search).has('shelf') ? {} : null,
   )
+  if (new URLSearchParams(window.location.search).has('fuel')) {
+    return (
+      <div className="mx-auto flex max-w-md flex-col gap-3 px-5 pt-4 pb-10">
+        <PreWorkoutCard dayName="Legs" plannedSets={20} now={new Date(2026, 10, 15, 7)} />
+        <PreWorkoutCard dayName="Push" plannedSets={14} now={new Date(2026, 10, 15, 13)} />
+        <PreWorkoutCard dayName="Arms" plannedSets={6} now={new Date(2026, 10, 15, 20)} />
+        <FuelCheck workoutId="preview" />
+      </div>
+    )
+  }
   if (shelf) {
     return (
       <div className="mx-auto max-w-md px-5 pt-4 pb-10">

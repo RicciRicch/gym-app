@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Confetti } from '../../components/Confetti'
 import { LiftedCard } from '../../components/LiftedCard'
@@ -45,10 +45,13 @@ export function WorkoutSummaryScreen({
   summary,
   streak,
   onDone,
+  extra,
 }: {
   summary: WorkoutSummary
   streak: StreakChange | null
   onDone: () => void
+  /** Rendered under the stats (the pre-workout question); gets the animation delay to rise in with. */
+  extra?: (style: CSSProperties) => ReactNode
 }) {
   const prCount = summary.prs.length
   const hasPr = prCount > 0
@@ -184,6 +187,8 @@ export function WorkoutSummaryScreen({
             )}
           </div>
         )}
+
+        {extra?.(delay(afterPrs + 0.7))}
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-[70] bg-gradient-to-t from-bg via-bg/95 to-transparent px-6 pt-10 pb-[max(1.25rem,env(safe-area-inset-bottom))]">

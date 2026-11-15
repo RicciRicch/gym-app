@@ -44,6 +44,8 @@ export interface HistoryWorkout {
   date: string
   started_at: string
   finished_at: string
+  /** What the user had before it; null = not answered. */
+  fuel: string[] | null
   workout_sets: {
     exercise_id: string
     exercise_position: number
@@ -64,7 +66,7 @@ export function useWorkoutHistory() {
       const { data, error } = await supabase
         .from('workouts')
         .select(
-          'id, day_name, date, started_at, finished_at, workout_sets(exercise_id, exercise_position, set_number, reps, weight_kg, exercises(name))',
+          'id, day_name, date, started_at, finished_at, fuel, workout_sets(exercise_id, exercise_position, set_number, reps, weight_kg, exercises(name))',
         )
         .order('date', { ascending: false })
         .order('started_at', { ascending: false })
