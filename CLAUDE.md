@@ -154,9 +154,10 @@ npm test           # vitest (schedule logic etc.)
   to protect and the week is not done; frozen weeks can be thawed. RLS verified with SQL as
   the user (running week ok; old week, non-Monday, other user blocked; undo ok; net zero).
 - Verification of the three items above: visuals in `/dev/celebration` (all four moods, frozen
-  streak card) via headless Chrome; pure logic unit-tested. NOT yet exercised signed in (the
-  Browser pane was signed out): Today with real data, the coach tip / ghost rows in a real
-  workout, the freeze sheet.
+  streak card) via headless Chrome; pure logic unit-tested. Browser-verified signed in at 375px
+  with a seeded test workout (since deleted): Today gorilla line, coach tips (hold / add
+  weight / first time), Apply, ghost rows and score. Not exercised in the UI: the freeze sheet
+  (needs a streak at risk), the sad/proud moods with real data.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL
