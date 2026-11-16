@@ -122,8 +122,17 @@ npm test           # vitest (schedule logic etc.)
   RLS blocks other folders / root / SVG / pointing at another user's path. Not exercised:
   onboarding with a photo (needs a new account), a real phone camera / HEIC.
 - "What you lifted": `src/lib/lifted.ts` (unit-tested) turns volume into the biggest thing it
-  covers at least twice (watermelon ... Titanic). `LiftedCard` shows it on the workout summary
-  ("Today") and at the top of Progress history (this year, plus all time). Browser-verified.
+  covers at least twice (watermelon ... Titanic); `nextMilestone` = kg left until it moves up to
+  2 of the next thing. `LiftedCard` (small, with a thin bar) on the workout summary ("Today");
+  `LiftedStrip` (one quiet line) at the top of the Progress training log. Browser-verified.
+- Progress History layout (user's picks, 2026-11-16): muscle map first (its period switch is
+  underlined text tabs, deliberately unlike the page's pill), then a separate "Training log":
+  sessions grouped by week (`src/lib/history.ts`, unit-tested: `groupByWeek`, `weekLabel`),
+  on a thin timeline. Each session shows its trend vs the last session with the same day name
+  (`sessionTrends`: total weight x reps, ▲/▼ %, "≈ same" within 2%, "First"); the dot is lime /
+  red / grey, PR sessions glow and get a lime border. No kg line on the card (user removed it).
+  The explanation sits in an `InfoBubble` (ⓘ next to the heading; tap outside / Esc closes).
+  Weight-plate markers were tried and rejected. Up/down cards only covered by unit tests so far.
 - Voice input: mic button on each exercise in a workout opens `VoiceSheet`; the Web Speech API
   (`src/features/workout/voice.ts`, hidden where unsupported, e.g. Firefox) listens in sr-RS /
   hr-HR / en-US (saved in localStorage). `src/lib/voice-set.ts` (unit-tested) parses Serbian

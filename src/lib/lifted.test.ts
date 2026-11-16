@@ -1,5 +1,34 @@
 import { describe, expect, it } from 'vitest'
-import { LIFT_THINGS, formatMass, liftedComparison, totalVolume } from './lifted'
+import { LIFT_THINGS, formatMass, liftedComparison, nextMilestone, totalVolume } from './lifted'
+
+describe('nextMilestone', () => {
+  it('points at two of the next heavier thing', () => {
+    // 3,175 kg = 2.5 giraffes; the comparison moves to hippos at 4,000 kg.
+    const next = nextMilestone(3175)
+    expect(next?.label).toBe('2 hippos')
+    expect(next?.targetKg).toBe(4000)
+    expect(next?.remainingKg).toBe(825)
+    // Giraffes kicked in at 2,400 kg.
+    expect(next?.progress).toBeCloseTo((3175 - 2400) / (4000 - 2400))
+  })
+
+  it('starts from zero below two watermelons', () => {
+    const next = nextMilestone(12)
+    expect(next?.thing.one).toBe('golden retriever')
+    expect(next?.progress).toBeCloseTo(12 / 60)
+  })
+
+  it('agrees with the comparison right at the switch', () => {
+    expect(liftedComparison(4000)?.thing.one).toBe('hippo')
+    expect(nextMilestone(4000)?.thing.one).toBe('rhino')
+    expect(nextMilestone(3999.9)?.thing.one).toBe('hippo')
+  })
+
+  it('has nowhere to go past the Titanic', () => {
+    expect(nextMilestone(52_000_000 * 3)).toBeNull()
+    expect(nextMilestone(0)).toBeNull()
+  })
+})
 
 describe('liftedComparison', () => {
   it('picks the biggest thing covered at least twice', () => {

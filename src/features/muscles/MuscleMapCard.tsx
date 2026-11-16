@@ -64,14 +64,15 @@ export function MuscleMapView({
     <section aria-label="Muscle map" className={`rounded-3xl border border-line bg-surface p-5 ${className}`}>
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-black">Muscle map</h2>
-        <div className="flex rounded-full bg-surface-2 p-1" role="tablist" aria-label="Period">
+        {/* Underlined text tabs, so it does not repeat the page's History / Exercises pill. */}
+        <div className="-mr-2 flex" role="tablist" aria-label="Period">
           {(['week', 'month'] as const).map((p) => (
             <button
               key={p}
               role="tab"
               aria-selected={period === p}
               onClick={() => onPeriod(p)}
-              className={`min-h-9 rounded-full px-3 text-xs font-bold transition ${period === p ? 'bg-accent text-accent-ink' : 'text-muted'}`}
+              className={`relative min-h-11 px-2 text-sm font-bold transition-colors after:absolute after:right-2 after:bottom-1.5 after:left-2 after:h-0.5 after:origin-center after:rounded-full after:bg-accent after:transition-transform after:duration-300 ${period === p ? 'text-text after:scale-x-100' : 'text-muted after:scale-x-0'}`}
             >
               {p === 'week' ? 'This week' : '30 days'}
             </button>

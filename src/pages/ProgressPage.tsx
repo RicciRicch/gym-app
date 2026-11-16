@@ -7,10 +7,12 @@ import { Button, PageLoader } from '../components/ui'
 import { useDeleteWorkout, useLoggedSets, useWorkoutHistory, type HistoryWorkout } from '../features/progress/api'
 import { MuscleMapCard } from '../features/muscles/MuscleMapCard'
 import { useExercises } from '../features/split/api'
-import { LiftedCard } from '../components/LiftedCard'
+import { LiftedStrip } from '../components/LiftedCard'
+import { InfoBubble } from '../components/InfoBubble'
+import { formatTrend, groupByWeek, SAME_BAND, sessionTrends, type SessionTrend, type Trend } from '../lib/history'
 import { formatMass, totalVolume } from '../lib/lifted'
 import { formatTopSet, progressByExercise, prsByWorkout } from '../lib/progress'
-import { fromISODate } from '../lib/schedule'
+import { fromISODate, toISODate } from '../lib/schedule'
 import { formatClock } from '../lib/workout'
 
 type Tab = 'history' | 'exercises'
@@ -28,6 +30,10 @@ export function ProgressPage() {
     () => ({ year: totalVolume(sets.data ?? [], year), allTime: totalVolume(sets.data ?? []) }),
     [sets.data, year],
   )
+
+  const today = toISODate(new Date())
+  const weeks = useMemo(() => groupByWeek(history.data ?? [], today), [history.data, today])
+  const trends = useMemo(() => sessionTrends(history.data ?? []), [history.data])
 
   const loading = history.isPending || sets.isPending
   const empty = !loading && (history.data?.length ?? 0) === 0
@@ -81,23 +87,56 @@ export function ProgressPage() {
           </Link>
         </div>
       ) : tab === 'history' ? (
-        <ul className="mt-4 flex flex-col gap-3">
-          {volume.allTime > 0 && (
-            <li>
-              <LiftedCard
-                kg={volume.year > 0 ? volume.year : volume.allTime}
-                heading={volume.year > 0 ? `${year} so far · ${formatMass(volume.year)}` : `All time · ${formatMass(volume.allTime)}`}
-                footer={volume.year > 0 && volume.allTime > volume.year ? `All time: ${formatMass(volume.allTime)}` : undefined}
-              />
-            </li>
-          )}
-          <li>
-            <MuscleMapCard />
-          </li>
-          {history.data!.map((w) => (
-            <WorkoutCard key={w.id} workout={w} prExercises={prs.get(w.id)} />
-          ))}
-        </ul>
+        <>
+          <MuscleMapCard className="mt-4" />
+
+          <section aria-labelledby="training-log" className="mt-10">
+            <div className="relative flex items-center justify-between gap-3">
+              <div className="flex items-center gap-1">
+                <h2 id="training-log" className="text-2xl font-black tracking-tight">
+                  Training log
+                </h2>
+                <span className="ml-1.5">
+                  <InfoBubble label="How sessions are compared">
+                    <TrendLegend />
+                  </InfoBubble>
+                </span>
+              </div>
+              <span className="text-sm font-semibold text-muted tabular-nums">
+                {history.data!.length} {history.data!.length === 1 ? 'session' : 'sessions'}
+              </span>
+            </div>
+            {volume.allTime > 0 && (
+              <div className="mt-3">
+                <LiftedStrip
+                  kg={volume.year > 0 ? volume.year : volume.allTime}
+                  label={volume.year > 0 ? `in ${year}` : 'all time'}
+                  footer={volume.year > 0 && volume.allTime > volume.year ? `${formatMass(volume.allTime)} total` : undefined}
+                />
+              </div>
+            )}
+
+            {weeks.map((week) => {
+              const sets = week.items.reduce((sum, w) => sum + w.workout_sets.length, 0)
+              return (
+                <div key={week.weekStart} className="mt-6">
+                  <h3 className="flex items-baseline justify-between gap-3">
+                    <span className="text-sm font-black tracking-wider text-text uppercase">{week.label}</span>
+                    <span className="text-xs font-semibold text-muted tabular-nums">
+                      {week.items.length} {week.items.length === 1 ? 'workout' : 'workouts'} · {sets} sets
+                    </span>
+                  </h3>
+                  <ol className="relative mt-2 flex flex-col gap-3 pl-7">
+                    <span aria-hidden="true" className="absolute top-2 bottom-2 left-[6px] w-0.5 rounded-full bg-line" />
+                    {week.items.map((w) => (
+                      <WorkoutCard key={w.id} workout={w} prExercises={prs.get(w.id)} trend={trends.get(w.id)} />
+                    ))}
+                  </ol>
+                </div>
+              )
+            })}
+          </section>
+        </>
       ) : (
         <ul className="mt-4 flex flex-col gap-2">
           {[...progress]
@@ -129,7 +168,29 @@ export function ProgressPage() {
   )
 }
 
-function WorkoutCard({ workout, prExercises }: { workout: HistoryWorkout; prExercises: Set<string> | undefined }) {
+const TREND_DOT: Record<Trend, string> = {
+  up: 'bg-accent',
+  down: 'bg-danger',
+  same: 'bg-muted',
+  first: 'border-2 border-muted bg-bg',
+}
+const TREND_TEXT: Record<Trend, string> = { up: 'text-accent', down: 'text-danger', same: 'text-muted', first: 'text-muted font-semibold' }
+
+function trendLabel(t: SessionTrend, day: string): string {
+  if (t.trend === 'first') return `First ${day} session`
+  if (t.trend === 'same' || t.change === null) return `About the same as your last ${day} session`
+  return `${Math.round(Math.abs(t.change) * 100)}% ${t.trend === 'up' ? 'more' : 'less'} than your last ${day} session`
+}
+
+function WorkoutCard({
+  workout,
+  prExercises,
+  trend,
+}: {
+  workout: HistoryWorkout
+  prExercises: Set<string> | undefined
+  trend: SessionTrend | undefined
+}) {
   const [open, setOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const groups: { exerciseId: string; name: string; sets: HistoryWorkout['workout_sets'] }[] = []
@@ -141,12 +202,29 @@ function WorkoutCard({ workout, prExercises }: { workout: HistoryWorkout; prExer
   const seconds = (new Date(workout.finished_at).getTime() - new Date(workout.started_at).getTime()) / 1000
   const date = fromISODate(workout.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
 
+  const hasPR = !!prExercises?.size
+  const t = trend ?? { volumeKg: 0, previousKg: null, change: null, trend: 'first' as const }
+
   return (
-    <li className="overflow-hidden rounded-3xl border border-line bg-surface">
+    <li className="relative">
+      <span
+        aria-hidden="true"
+        className={`absolute top-[26px] left-[-21px] size-3 -translate-x-1/2 rounded-full ${TREND_DOT[t.trend]} ${hasPR ? 'dot-pr' : ''}`}
+        style={{ boxShadow: '0 0 0 4px var(--color-bg)' }}
+      />
+      <div className={`overflow-hidden rounded-3xl border bg-surface ${hasPR ? 'border-accent/40' : 'border-line'}`}>
       <button onClick={() => setOpen(!open)} aria-expanded={open} className="flex min-h-18 w-full items-center gap-3 px-5 py-3 text-left">
         <span className="min-w-0 flex-1">
           <span className="block text-sm text-muted">{date}</span>
-          <span className="block truncate text-lg font-bold">{workout.day_name}</span>
+          <span className="flex items-center justify-between gap-2">
+            <span className="truncate text-lg font-bold">{workout.day_name}</span>
+            <span
+              className={`shrink-0 text-sm font-black tabular-nums ${TREND_TEXT[t.trend]}`}
+              aria-label={trendLabel(t, workout.day_name)}
+            >
+              {formatTrend(t)}
+            </span>
+          </span>
           <span className="block text-sm text-muted">
             {groups.length} {groups.length === 1 ? 'exercise' : 'exercises'} · {workout.workout_sets.length} sets · {formatClock(seconds)}
           </span>
@@ -188,10 +266,38 @@ function WorkoutCard({ workout, prExercises }: { workout: HistoryWorkout; prExer
           </button>
         </div>
       )}
+      </div>
       {confirmDelete && (
-        <DeleteWorkoutSheet workout={workout} date={date} hasPRs={!!prExercises?.size} onClose={() => setConfirmDelete(false)} />
+        <DeleteWorkoutSheet workout={workout} date={date} hasPRs={hasPR} onClose={() => setConfirmDelete(false)} />
       )}
     </li>
+  )
+}
+
+/** The info bubble on the training log: what the arrows and dots compare. */
+function TrendLegend() {
+  const rows: { trend: Trend; text: string; note: string }[] = [
+    { trend: 'up', text: '▲ 12%', note: 'moved more than last time' },
+    { trend: 'down', text: '▼ 4%', note: 'moved less than last time' },
+    { trend: 'same', text: '≈ same', note: `within ${SAME_BAND * 100}%` },
+    { trend: 'first', text: 'First', note: 'nothing to compare yet' },
+  ]
+  return (
+    <>
+      <p className="font-bold">You vs your last same day</p>
+      <p className="mt-1 text-muted">
+        Each session is compared with the last one of the same day, e.g. Chest with your previous Chest. Total weight × reps.
+      </p>
+      <ul className="mt-3 flex flex-col gap-2">
+        {rows.map((r) => (
+          <li key={r.trend} className="flex items-center gap-3">
+            <span className={`size-3 shrink-0 rounded-full ${TREND_DOT[r.trend]}`} aria-hidden="true" />
+            <span className={`w-14 shrink-0 font-black tabular-nums ${TREND_TEXT[r.trend]}`}>{r.text}</span>
+            <span className="text-xs text-muted">{r.note}</span>
+          </li>
+        ))}
+      </ul>
+    </>
   )
 }
 

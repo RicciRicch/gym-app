@@ -56,6 +56,30 @@ export function liftedComparison(kg: number): LiftedComparison | null {
   return { thing, count, label }
 }
 
+export interface LiftMilestone {
+  /** The next, heavier thing; the comparison switches to it at two of them. */
+  thing: LiftThing
+  targetKg: number
+  remainingKg: number
+  /** 0..1 from the point the current comparison kicked in to the target. */
+  progress: number
+  /** "2 hippos" */
+  label: string
+}
+
+/** How far the volume is from the comparison moving up to the next thing (null past the Titanic). */
+export function nextMilestone(kg: number): LiftMilestone | null {
+  if (!(kg > 0)) return null
+  const current = liftedComparison(kg)?.thing ?? LIFT_THINGS[0]
+  const index = LIFT_THINGS.indexOf(current)
+  const thing = LIFT_THINGS[index + 1]
+  if (!thing) return null
+  const targetKg = thing.kg * 2
+  const startKg = index === 0 ? 0 : current.kg * 2
+  const progress = Math.min(1, Math.max(0, (kg - startKg) / (targetKg - startKg)))
+  return { thing, targetKg, remainingKg: Math.max(0, targetKg - kg), progress, label: `2 ${thing.many}` }
+}
+
 /** "8,450 kg" below ten tonnes, "12.4 t" above. */
 export function formatMass(kg: number): string {
   if (kg < 10000) return `${Math.round(kg).toLocaleString('en-GB')} kg`

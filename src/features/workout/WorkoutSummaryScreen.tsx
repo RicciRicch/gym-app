@@ -172,7 +172,8 @@ export function WorkoutSummaryScreen({
 
         <LiftedCard
           kg={summary.volumeKg}
-          heading="Today"
+          label="Today"
+          showMass={false}
           className="rise-in mt-3 w-full"
           style={delay(afterPrs + 0.35)}
         />
