@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { canNudge, inviteLink, lastWorkoutLabel, liveStreak, nudgeLine, parseFriendCode, tableLine, weeklyTable } from './friends'
+import {
+  canNudge,
+  inviteLink,
+  lastWorkoutLabel,
+  liveStreak,
+  nudgeLine,
+  parseFriendCode,
+  tableLine,
+  togetherLine,
+  weeklyTable,
+  withNames,
+  workoutsTogether,
+} from './friends'
 
 describe('parseFriendCode', () => {
   it('reads the code however it is typed', () => {
@@ -91,5 +103,32 @@ describe('nudges', () => {
     expect(canNudge(null, false, '2026-11-16')).toBe(true)
     expect(canNudge('2026-11-15', true, '2026-11-16')).toBe(false)
     expect(canNudge('2026-11-16', false, '2026-11-16')).toBe(false)
+  })
+})
+
+describe('training together', () => {
+  it('counts days per friend once, whoever tagged', () => {
+    const rows = [
+      { userId: 'me', friendId: 'ana', day: '2026-11-10' },
+      { userId: 'ana', friendId: 'me', day: '2026-11-10' },
+      { userId: 'ana', friendId: 'me', day: '2026-11-12' },
+      { userId: 'me', friendId: 'marko', day: '2026-11-03' },
+      { userId: 'ana', friendId: 'marko', day: '2026-11-04' },
+    ]
+    const together = workoutsTogether(rows, 'me')
+    expect(together.get('ana')).toEqual({ count: 2, lastDay: '2026-11-12' })
+    expect(together.get('marko')).toEqual({ count: 1, lastDay: '2026-11-03' })
+    expect(together.size).toBe(2)
+  })
+  it('names the partners', () => {
+    expect(withNames([])).toBe('')
+    expect(withNames(['Ana'])).toBe('With Ana')
+    expect(withNames(['Ana', 'Marko'])).toBe('With Ana & Marko')
+    expect(withNames(['Ana', 'Marko', 'Luka'])).toBe('With Ana, Marko & Luka')
+  })
+  it('marks the first and round workouts together', () => {
+    expect(togetherLine('Ana', 1)).toMatch(/^First workout with Ana/)
+    expect(togetherLine('Ana', 5)).toBe('Workout #5 with Ana.')
+    expect(togetherLine('Ana', 20)).toMatch(/#20 with Ana.*buddy/)
   })
 })

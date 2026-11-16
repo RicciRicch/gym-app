@@ -253,6 +253,22 @@ export type Database = {
         Update: never
         Relationships: []
       }
+      workout_partners: {
+        Row: {
+          workout_id: string
+          user_id: string
+          friend_id: string
+          day: string
+          created_at: string
+        }
+        Insert: {
+          workout_id: string
+          friend_id: string
+          day: string
+        }
+        Update: Record<string, never>
+        Relationships: []
+      }
       nudges: {
         Row: {
           id: string

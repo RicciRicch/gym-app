@@ -139,3 +139,44 @@ export function nudgeLine(names: readonly string[], today: ISODate): string {
 export function canNudge(lastWorkoutDate: ISODate | null, nudgedToday: boolean, today: ISODate): boolean {
   return !nudgedToday && lastWorkoutDate !== today
 }
+
+export interface PartnerRow {
+  userId: string
+  friendId: string
+  day: ISODate
+}
+
+export interface Together {
+  /** Days the two trained together, whoever tagged the other. */
+  count: number
+  lastDay: ISODate
+}
+
+/**
+ * Workouts done together, per friend. A row is one tag (owner tagged friend on a
+ * day); when both tag each other for the same session it still counts once.
+ */
+export function workoutsTogether(rows: readonly PartnerRow[], me: string): Map<string, Together> {
+  const days = new Map<string, Set<ISODate>>()
+  for (const row of rows) {
+    const other = row.userId === me ? row.friendId : row.friendId === me ? row.userId : null
+    if (!other || other === me) continue
+    if (!days.has(other)) days.set(other, new Set())
+    days.get(other)!.add(row.day)
+  }
+  return new Map([...days].map(([id, set]) => [id, { count: set.size, lastDay: [...set].sort().at(-1)! }]))
+}
+
+/** "With Ana", "With Ana & Marko", "With Ana, Marko & Luka". */
+export function withNames(names: readonly string[]): string {
+  if (names.length === 0) return ''
+  if (names.length === 1) return `With ${names[0]}`
+  return `With ${names.slice(0, -1).join(', ')} & ${names.at(-1)}`
+}
+
+/** The gorilla on a finished workout together: "Workout #5 with Ana." */
+export function togetherLine(name: string, count: number): string {
+  if (count <= 1) return `First workout with ${name}. Make it a habit.`
+  if (count % 10 === 0) return `Workout #${count} with ${name}. That's a real gym buddy.`
+  return `Workout #${count} with ${name}.`
+}

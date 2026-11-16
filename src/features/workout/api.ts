@@ -4,7 +4,7 @@ import { toISODate } from '../../lib/schedule'
 import { prefillSets, toSetRows, type DraftExercise, type LastSet, type WorkoutDraft } from '../../lib/workout'
 import { useAuth } from '../auth/auth-context'
 import type { SplitDay } from '../split/api'
-import { loadRestSeconds, useWorkoutDraft } from './draft-store'
+import { loadPartnerIds, loadRestSeconds, savePartnerIds, useWorkoutDraft } from './draft-store'
 
 /** For each exercise, the sets of the most recent workout that included it. */
 export async function fetchLastSets(exerciseIds: string[]): Promise<Map<string, LastSet[]>> {
@@ -58,8 +58,10 @@ export function useStartWorkout() {
         })),
         restSeconds: loadRestSeconds(),
         restEndsAt: null,
+        partnerIds: [...loadPartnerIds()],
       }
       setDraft(draft)
+      savePartnerIds([])
     },
   })
 }
@@ -103,10 +105,20 @@ export function useFinishWorkout() {
         await supabase.from('workouts').delete().eq('id', workout.data.id)
         throw sets.error
       }
+      // Who trained along. One insert per friend, and never fatal: the workout is
+      // saved either way (someone may have been unfriended since the start).
+      await Promise.all(
+        [...new Set(draft.partnerIds ?? [])].map((friendId) =>
+          supabase.from('workout_partners').insert({ workout_id: workout.data.id, friend_id: friendId, day: draft.date }),
+        ),
+      )
       return workout.data.id
     },
     // Not awaited: the summary screen should not wait for the refetch.
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['workouts', user?.id] }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['workouts', user?.id] })
+      void queryClient.invalidateQueries({ queryKey: ['friends', user?.id, 'together'] })
+    },
   })
 }
 

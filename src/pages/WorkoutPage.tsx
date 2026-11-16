@@ -9,7 +9,8 @@ import { useActiveSplit, type SplitDay } from '../features/split/api'
 import { ExercisePicker } from '../features/split/SplitEditor'
 import { useExercises } from '../features/split/api'
 import { buildDraftExercise, useFinishWorkout, useStartWorkout, useUpdateDayDefault } from '../features/workout/api'
-import { saveRestSeconds, useRestSeconds, useWorkoutDraft } from '../features/workout/draft-store'
+import { savePartnerIds, saveRestSeconds, usePartnerIds, useRestSeconds, useWorkoutDraft } from '../features/workout/draft-store'
+import { PartnerChip, PartnerPicker, TrainedWith } from '../features/friends/Partners'
 import { RestPicker } from '../features/workout/RestPicker'
 import { CoachTip } from '../features/workout/CoachTip'
 import { FuelCheck } from '../features/fuel/FuelCheck'
@@ -44,7 +45,7 @@ import {
   type WorkoutDraft,
 } from '../lib/workout'
 
-type SheetState = 'add-exercise' | 'rest' | 'discard' | 'finish-empty' | null
+type SheetState = 'add-exercise' | 'rest' | 'partners' | 'discard' | 'finish-empty' | null
 type DefaultPrompt = { day: SplitDay; exercises: DraftExercise[] }
 
 export function WorkoutPage() {
@@ -57,6 +58,7 @@ export function WorkoutPage() {
   const [canUseVoice] = useState(voiceSupported)
   const [finished, setFinished] = useState<{
     workoutId: string
+    partnerIds: string[]
     summary: WorkoutSummary
     streak: StreakChange | null
     askDefault: DefaultPrompt | null
@@ -84,7 +86,12 @@ export function WorkoutPage() {
       <WorkoutSummaryScreen
         summary={finished.summary}
         streak={finished.streak}
-        extra={(style) => <FuelCheck workoutId={finished.workoutId} className="rise-in mt-3 w-full" style={style} />}
+        extra={(style) => (
+          <>
+            <TrainedWith ids={finished.partnerIds} className="rise-in mt-3 w-full" style={style} />
+            <FuelCheck workoutId={finished.workoutId} className="rise-in mt-3 w-full" style={style} />
+          </>
+        )}
         onDone={() => {
           if (finished.askDefault) setAskDefault(finished.askDefault)
           else navigate('/', { replace: true })
@@ -200,6 +207,7 @@ export function WorkoutPage() {
     const target = trainingDaysPerWeek(split.data?.split_days ?? [])
     setFinished({
       workoutId,
+      partnerIds: current.partnerIds ?? [],
       summary: summarizeWorkout(current, new Date().toISOString(), setsBefore),
       streak: datesBefore
         ? {
@@ -225,11 +233,12 @@ export function WorkoutPage() {
         <Elapsed startedAt={draft.startedAt} />
       </div>
 
-      <div className="mt-3 flex items-center justify-between text-sm">
-        <span className="text-muted">
+      <div className="mt-3 flex items-center justify-between gap-2 text-sm">
+        <span className="shrink-0 text-muted">
           {doneSets} / {totalSets} sets done
         </span>
-        <button onClick={() => setSheet('rest')} className="min-h-11 rounded-full bg-surface px-4 font-semibold">
+        <PartnerChip ids={draft.partnerIds ?? []} onClick={() => setSheet('partners')} className="ml-auto" />
+        <button onClick={() => setSheet('rest')} className="min-h-11 shrink-0 rounded-full bg-surface px-4 font-semibold">
           Rest {formatRest(draft.restSeconds)}
         </button>
       </div>
@@ -403,6 +412,15 @@ export function WorkoutPage() {
         </Sheet>
       )}
 
+      {sheet === 'partners' && (
+        <Sheet title="Who trains with you?" onClose={() => setSheet(null)}>
+          <PartnerPicker value={draft.partnerIds ?? []} onChange={(ids) => update((d) => ({ ...d, partnerIds: ids }))} />
+          <Button className="mt-5 mb-2 w-full" onClick={() => setSheet(null)}>
+            Done
+          </Button>
+        </Sheet>
+      )}
+
       {sheet === 'finish-empty' && (
         <Sheet title="No sets completed" onClose={() => setSheet(null)}>
           <p className="text-muted">Tick at least one set as done to save this workout.</p>
@@ -522,6 +540,7 @@ function StartScreen() {
   const start = useStartWorkout()
   const navigate = useNavigate()
   const restSeconds = useRestSeconds()
+  const partnerIds = usePartnerIds()
 
   if (split.isPending || overrides.isPending) {
     return (
@@ -546,6 +565,7 @@ function StartScreen() {
         <>
           <p className="mt-1 text-muted">{planned ? `Today is ${planned.name}.` : 'Today is a rest day, but you can train anyway.'}</p>
           <RestPicker className="mt-4 rounded-3xl border border-line bg-surface p-4" value={restSeconds} onChange={saveRestSeconds} />
+          <PartnerPicker className="mt-2 rounded-3xl border border-line bg-surface p-4" value={partnerIds} onChange={savePartnerIds} />
           <ul className="mt-4 flex flex-col gap-2">
             {[...days].sort((a, b) => Number(b.id === planned?.id) - Number(a.id === planned?.id)).map((day) => (
               <li key={day.id}>

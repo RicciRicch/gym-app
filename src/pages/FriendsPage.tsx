@@ -4,7 +4,7 @@ import { Mascot } from '../components/ExerciseImage'
 import { Flame } from '../components/Flame'
 import { Avatar, Button, Field, PageLoader } from '../components/ui'
 import { avatarPhotoUrl } from '../features/avatar/api'
-import { useAcceptFriendRequest, useFriends, useRemoveFriendship, type Friend } from '../features/friends/api'
+import { useAcceptFriendRequest, useFriends, useRemoveFriendship, useTogether, type Friend } from '../features/friends/api'
 import { FistBump, type Buddy } from '../features/friends/FistBump'
 import { GymPass } from '../features/friends/GymPass'
 import { openInvite } from '../features/friends/invite-store'
@@ -177,6 +177,7 @@ function PendingRow({ friend }: { friend: Friend }) {
 function FriendRow({ friend }: { friend: Friend }) {
   const today = toISODate(new Date())
   const streak = liveStreak(friend.streakWeeks, friend.streakWeek, today)
+  const together = useTogether().get(friend.id)
   return (
     <li className={row}>
       <Link to={`/friends/${friend.id}`} className="flex min-w-0 flex-1 items-center gap-3 transition active:scale-[0.98]">
@@ -191,7 +192,10 @@ function FriendRow({ friend }: { friend: Friend }) {
               </span>
             )}
           </span>
-          <span className="block truncate text-sm text-muted">{lastWorkoutLabel(friend.lastDate, friend.lastDay, today)}</span>
+          <span className="block truncate text-sm text-muted">
+            {lastWorkoutLabel(friend.lastDate, friend.lastDay, today)}
+            {together && ` · 🤝 ${together.count} together`}
+          </span>
         </span>
       </Link>
       <NudgeButton friend={friend} compact />

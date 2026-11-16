@@ -5,17 +5,18 @@ import { Sheet } from '../components/Sheet'
 import { Avatar, Button, PageLoader } from '../components/ui'
 import { avatarPhotoUrl } from '../features/avatar/api'
 import { Medal } from '../features/badges/Medal'
-import { useFriends, useRemoveFriendship, type Friend } from '../features/friends/api'
+import { useFriends, useRemoveFriendship, useTogether, type Friend } from '../features/friends/api'
 import { NudgeButton } from '../features/friends/NudgeButton'
 import { BADGES } from '../lib/badges'
 import { lastWorkoutLabel, liveStreak } from '../lib/friends'
-import { addDays, startOfWeek, toISODate, WEEKDAY_SHORT } from '../lib/schedule'
+import { addDays, fromISODate, startOfWeek, toISODate, WEEKDAY_SHORT } from '../lib/schedule'
 
 /** A friend's profile: streak, this week, the last four weeks and their badges. No weights. */
 export function FriendPage() {
   const { friendId } = useParams()
   const friends = useFriends()
   const [removing, setRemoving] = useState(false)
+  const together = useTogether().get(friendId ?? '')
   const friend = friends.data?.find((f) => f.id === friendId && f.status === 'accepted')
 
   if (friends.isPending) return <PageLoader label="Loading friend" />
@@ -50,6 +51,26 @@ export function FriendPage() {
         <Stat label="sets this week">{friend.weekSets}</Stat>
         <Stat label="records">{friend.prCount}</Stat>
       </div>
+
+      <section className="mt-3 flex items-center gap-4 rounded-3xl border border-line bg-surface p-4">
+        <span className="text-3xl" aria-hidden="true">
+          🤝
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="font-bold">Trained together</h2>
+          <p className="text-sm text-muted">
+            {together
+              ? `Last time ${fromISODate(together.lastDay).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
+              : `Pick ${friend.name} before you start a workout.`}
+          </p>
+        </div>
+        {together && (
+          <p className="text-right">
+            <span className="block text-2xl leading-none font-black tabular-nums text-accent">{together.count}</span>
+            <span className="text-[11px] font-semibold tracking-wide text-muted uppercase">{together.count === 1 ? 'workout' : 'workouts'}</span>
+          </p>
+        )}
+      </section>
 
       <section className="mt-3 rounded-3xl border border-line bg-surface p-4">
         <h2 className="font-bold">Last four weeks</h2>

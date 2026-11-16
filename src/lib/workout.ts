@@ -26,6 +26,8 @@ export interface WorkoutDraft {
   restSeconds: number
   /** Epoch ms when the running rest timer ends; null = no timer. */
   restEndsAt: number | null
+  /** Friends training along (their user ids); absent in drafts from before this existed. */
+  partnerIds?: string[]
 }
 
 export interface LastSet {
@@ -140,6 +142,7 @@ export function isWorkoutDraft(value: unknown): value is WorkoutDraft {
     typeof d.date === 'string' &&
     typeof d.startedAt === 'string' &&
     typeof d.restSeconds === 'number' &&
+    (d.partnerIds === undefined || (Array.isArray(d.partnerIds) && d.partnerIds.every((id) => typeof id === 'string'))) &&
     Array.isArray(d.exercises) &&
     d.exercises.every(
       (e) =>

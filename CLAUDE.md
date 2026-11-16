@@ -246,6 +246,19 @@ npm test           # vitest (schedule logic etc.)
   (`useRestSeconds`, re-renders on change) and a new workout copies it into the draft.
   Browser-verified at 375px with a throwaway account (deleted): pick 2:00 on Today -> workout
   shows "Rest 2 min", change to 1:45 mid-workout -> the timer counts 1:45 after a set.
+- Training together (user asked on 2026-11-16): table `workout_partners` (migration
+  `workout_partners`: workout_id, user_id, friend_id, day; RLS: both sides read, insert only on
+  your own workout with its real date and only an accepted friend, delete own; narrow grants).
+  `PartnerPicker` (`src/features/friends/Partners.tsx`, hidden without friends) on Today's
+  workout card and the /workout start screen; the pick lives in memory (`usePartnerIds` in
+  draft-store) and is copied into the draft (`partnerIds`) at start. In the workout:
+  `PartnerChip` (small avatars + "with Ana", or "+ Buddy") next to the Rest button opens a
+  sheet to change it. Finish inserts one row per partner (never fatal). `workoutsTogether`
+  (`src/lib/friends.ts`, unit-tested) counts distinct days per friend from both directions;
+  shown on the summary (`TrainedWith`: "Workout #5 with Ana"), the friend's page ("Trained
+  together") and the Friends list ("🤝 3 together"). Browser-verified at 375px with two
+  throwaway accounts (deleted): pick on Today, chip + sheet in the workout, summary, both
+  sides see the count; the friend cannot insert a fake row or delete the owner's.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL

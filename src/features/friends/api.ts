@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { nudgeLine } from '../../lib/friends'
+import { nudgeLine, workoutsTogether, type Together } from '../../lib/friends'
 import { progressByExercise, prsByWorkout } from '../../lib/progress'
 import { addDays, startOfWeek, toISODate, type ISODate } from '../../lib/schedule'
 import { supabase } from '../../lib/supabase'
@@ -243,4 +243,22 @@ export function usePublishFriendStats() {
         }
       })
   }, [user, stats])
+}
+
+const NO_TOGETHER: ReadonlyMap<string, Together> = new Map()
+
+/** Workouts done together per friend id (either side tagged the other). */
+export function useTogether(): ReadonlyMap<string, Together> {
+  const { user } = useAuth()
+  const { data } = useQuery({
+    queryKey: [...friendsKey(user?.id), 'together'],
+    enabled: !!user,
+    staleTime: 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('workout_partners').select('user_id, friend_id, day')
+      if (error) throw error
+      return data.map((r) => ({ userId: r.user_id, friendId: r.friend_id, day: r.day }))
+    },
+  })
+  return useMemo(() => (data && user ? workoutsTogether(data, user.id) : NO_TOGETHER), [data, user])
 }

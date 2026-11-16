@@ -114,3 +114,27 @@ function subscribeRest(onChange: () => void) {
 export function useRestSeconds(): number {
   return useSyncExternalStore(subscribeRest, loadRestSeconds)
 }
+
+// Who trains along, picked before the workout starts. Kept in memory only:
+// it is about the workout that is about to begin, not a lasting preference.
+let pendingPartners: readonly string[] = []
+const partnerListeners = new Set<() => void>()
+
+export function loadPartnerIds(): readonly string[] {
+  return pendingPartners
+}
+
+export function savePartnerIds(ids: readonly string[]) {
+  pendingPartners = ids
+  partnerListeners.forEach((notify) => notify())
+}
+
+function subscribePartners(notify: () => void) {
+  partnerListeners.add(notify)
+  return () => void partnerListeners.delete(notify)
+}
+
+/** The friends picked for the next workout. */
+export function usePartnerIds(): readonly string[] {
+  return useSyncExternalStore(subscribePartners, loadPartnerIds)
+}
