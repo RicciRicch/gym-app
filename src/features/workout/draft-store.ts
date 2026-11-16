@@ -80,6 +80,8 @@ export function useWorkoutDraft() {
   return { draft, setDraft }
 }
 
+const REST_EVENT = 'gym-app:rest-seconds'
+
 /** The user's preferred rest duration, remembered across workouts. */
 export function loadRestSeconds(): number {
   try {
@@ -96,4 +98,19 @@ export function saveRestSeconds(seconds: number) {
   } catch {
     // not critical
   }
+  window.dispatchEvent(new Event(REST_EVENT))
+}
+
+function subscribeRest(onChange: () => void) {
+  window.addEventListener(REST_EVENT, onChange)
+  window.addEventListener('storage', onChange)
+  return () => {
+    window.removeEventListener(REST_EVENT, onChange)
+    window.removeEventListener('storage', onChange)
+  }
+}
+
+/** The preferred rest duration, re-rendering when it changes (picked before a workout). */
+export function useRestSeconds(): number {
+  return useSyncExternalStore(subscribeRest, loadRestSeconds)
 }

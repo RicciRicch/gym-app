@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, PageLoader, Spinner } from '../components/ui'
-import { Sheet, SheetOption } from '../components/Sheet'
+import { Sheet } from '../components/Sheet'
 import { useLoggedSets } from '../features/progress/api'
 import { useOverrides } from '../features/schedule/api'
 import { useStreakFreezes, useWorkoutDates } from '../features/streak/api'
@@ -9,7 +9,8 @@ import { useActiveSplit, type SplitDay } from '../features/split/api'
 import { ExercisePicker } from '../features/split/SplitEditor'
 import { useExercises } from '../features/split/api'
 import { buildDraftExercise, useFinishWorkout, useStartWorkout, useUpdateDayDefault } from '../features/workout/api'
-import { saveRestSeconds, useWorkoutDraft } from '../features/workout/draft-store'
+import { saveRestSeconds, useRestSeconds, useWorkoutDraft } from '../features/workout/draft-store'
+import { RestPicker } from '../features/workout/RestPicker'
 import { CoachTip } from '../features/workout/CoachTip'
 import { FuelCheck } from '../features/fuel/FuelCheck'
 import { RestTimer } from '../features/workout/RestTimer'
@@ -31,7 +32,7 @@ import { trainingDaysPerWeek, weeklyStreak } from '../lib/streak'
 import { summarizeWorkout, type WorkoutSummary } from '../lib/summary'
 import type { SpokenSet } from '../lib/voice-set'
 import {
-  REST_OPTIONS,
+  formatRest,
   exercisesDiffer,
   formatClock,
   isLoggable,
@@ -229,7 +230,7 @@ export function WorkoutPage() {
           {doneSets} / {totalSets} sets done
         </span>
         <button onClick={() => setSheet('rest')} className="min-h-11 rounded-full bg-surface px-4 font-semibold">
-          Rest {draft.restSeconds}s
+          Rest {formatRest(draft.restSeconds)}
         </button>
       </div>
 
@@ -389,22 +390,16 @@ export function WorkoutPage() {
 
       {sheet === 'rest' && (
         <Sheet title="Rest between sets" onClose={() => setSheet(null)}>
-          <div className="flex flex-col gap-1">
-            {REST_OPTIONS.map((seconds) => (
-              <SheetOption
-                key={seconds}
-                selected={draft.restSeconds === seconds}
-                onClick={() => {
-                  saveRestSeconds(seconds)
-                  update((d) => ({ ...d, restSeconds: seconds }))
-                  setSheet(null)
-                }}
-              >
-                {seconds < 60 ? `${seconds} seconds` : `${formatClock(seconds)} min`}
-              </SheetOption>
-            ))}
-          </div>
-          <p className="mt-2 pb-2 text-sm text-muted">The timer starts by itself when you complete a set.</p>
+          <RestPicker
+            value={draft.restSeconds}
+            onChange={(seconds) => {
+              saveRestSeconds(seconds)
+              update((d) => ({ ...d, restSeconds: seconds }))
+            }}
+          />
+          <Button className="mt-5 mb-2 w-full" onClick={() => setSheet(null)}>
+            Done
+          </Button>
         </Sheet>
       )}
 
@@ -526,6 +521,7 @@ function StartScreen() {
   const overrides = useOverrides(today, today)
   const start = useStartWorkout()
   const navigate = useNavigate()
+  const restSeconds = useRestSeconds()
 
   if (split.isPending || overrides.isPending) {
     return (
@@ -549,6 +545,7 @@ function StartScreen() {
       ) : (
         <>
           <p className="mt-1 text-muted">{planned ? `Today is ${planned.name}.` : 'Today is a rest day, but you can train anyway.'}</p>
+          <RestPicker className="mt-4 rounded-3xl border border-line bg-surface p-4" value={restSeconds} onChange={saveRestSeconds} />
           <ul className="mt-4 flex flex-col gap-2">
             {[...days].sort((a, b) => Number(b.id === planned?.id) - Number(a.id === planned?.id)).map((day) => (
               <li key={day.id}>

@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest'
 import {
   exercisesDiffer,
   formatClock,
+  formatRest,
   isWorkoutDraft,
   parseReps,
   parseWeight,
   prefillSets,
+  stepRest,
   toSetRows,
   type WorkoutDraft,
 } from './workout'
@@ -124,5 +126,21 @@ describe('isWorkoutDraft', () => {
     expect(isWorkoutDraft(null)).toBe(false)
     expect(isWorkoutDraft({ version: 2 })).toBe(false)
     expect(isWorkoutDraft({ ...draft([]), exercises: [{ exerciseId: 1 }] })).toBe(false)
+  })
+})
+
+describe('rest duration', () => {
+  it('steps by 15 seconds within 15 s - 10 min', () => {
+    expect(stepRest(90, 1)).toBe(105)
+    expect(stepRest(90, -1)).toBe(75)
+    expect(stepRest(100, 1)).toBe(105)
+    expect(stepRest(100, -1)).toBe(90)
+    expect(stepRest(15, -1)).toBe(15)
+    expect(stepRest(600, 1)).toBe(600)
+  })
+  it('reads naturally', () => {
+    expect(formatRest(45)).toBe('45 s')
+    expect(formatRest(90)).toBe('1:30 min')
+    expect(formatRest(180)).toBe('3 min')
   })
 })

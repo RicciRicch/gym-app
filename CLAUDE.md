@@ -230,6 +230,13 @@ npm test           # vitest (schedule logic etc.)
   fist bump, table, friend page, nudge both ways, remove, typed code. RLS/grants checked with
   SQL as friend / stranger / anon. Not exercised: the share sheet and QR scan on a real phone,
   two real accounts, the user's own account (the pane was signed out).
+- Rest before a workout: `RestPicker` (`src/features/workout/RestPicker.tsx`: −/+ in 15 s steps
+  from 15 s to 10 min via `stepRest`, plus quick picks 45s-3:00; `formatRest` in
+  `src/lib/workout.ts`, unit-tested) sits on Today's workout card above Start, on the /workout
+  start screen, and in the running workout's "Rest" sheet. The value lives in localStorage
+  (`useRestSeconds`, re-renders on change) and a new workout copies it into the draft.
+  Browser-verified at 375px with a throwaway account (deleted): pick 2:00 on Today -> workout
+  shows "Rest 2 min", change to 1:45 mid-workout -> the timer counts 1:45 after a set.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL

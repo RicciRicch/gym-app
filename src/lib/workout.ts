@@ -35,6 +35,21 @@ export interface LastSet {
 
 export const DEFAULT_REST_SECONDS = 90
 export const REST_OPTIONS = [45, 60, 90, 120, 180] as const
+export const REST_MIN = 15
+export const REST_MAX = 600
+export const REST_STEP = 15
+
+/** Rest after a −/+ tap: moves to the next multiple of 15 s in that direction, within 15 s - 10 min. */
+export function stepRest(seconds: number, direction: -1 | 1): number {
+  const snapped = direction > 0 ? Math.floor(seconds / REST_STEP) + 1 : Math.ceil(seconds / REST_STEP) - 1
+  return Math.min(REST_MAX, Math.max(REST_MIN, snapped * REST_STEP))
+}
+
+/** "45 s", "1:30 min", "3 min". */
+export function formatRest(seconds: number): string {
+  if (seconds < 60) return `${seconds} s`
+  return seconds % 60 === 0 ? `${seconds / 60} min` : `${formatClock(seconds)} min`
+}
 
 const formatWeight = (kg: number) => String(Number(kg.toFixed(2)))
 
