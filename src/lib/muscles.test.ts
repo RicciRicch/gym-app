@@ -19,6 +19,8 @@ describe('regionsOf', () => {
     expect(regionsOf('Abs')).toEqual(['core'])
     expect(regionsOf('Grudi')).toEqual(['chest'])
     expect(regionsOf('cardio')).toEqual([])
+    expect(regionsOf('Adductors')).toEqual(['quads'])
+    expect(regionsOf('Abductors')).toEqual(['glutes'])
   })
 })
 
@@ -89,6 +91,8 @@ describe('exerciseGroup', () => {
     expect(exerciseGroup(['Rear delts', 'Upper back'])).toBe('shoulders')
     expect(exerciseGroup(['Obliques'])).toBe('core')
     expect(exerciseGroup(['Glutes', 'Hamstrings'])).toBe('legs')
+    expect(exerciseGroup(['Adductors', 'Quads'])).toBe('legs')
+    expect(exerciseGroup(['Upper back', 'Lats'])).toBe('back')
     expect(exerciseGroup([])).toBeNull()
     expect(exerciseGroup(['Cardio'])).toBeNull()
   })

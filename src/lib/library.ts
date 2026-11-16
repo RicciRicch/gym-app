@@ -16,7 +16,7 @@ export const EQUIPMENT_LABEL: Record<Equipment, string> = {
 const RULES: [Equipment, string[]][] = [
   ['dumbbell', ['dumbbell', 'bucic', 'kettlebell']],
   ['cable', ['cable', 'sajl', 'pulldown', 'pushdown', 'face pull', 'krosover', 'crossover']],
-  ['machine', ['machine', 'masin', 'sprav', 'smith', 'leg press', 'leg curl', 'leg extension', 'hack squat', 'calf raise', 'pec deck']],
+  ['machine', ['machine', 'masin', 'sprav', 'smith', 'leg press', 'leg curl', 'leg extension', 'hack squat', 'calf raise', 'pec deck', 'pendulum', 'belt squat']],
   ['barbell', ['barbell', 'sipk', 'ez bar']],
   ['dumbbell', ['goblet', 'hammer curl', 'lateral raise', 'front raise', 'rear delt', 'arnold', 'lunge', 'bulgarian', 'triceps extension', 'wrist curl', 'concentration']],
   ['bodyweight', ['pull-up', 'pull up', 'chin-up', 'chin up', 'push-up', 'push up', 'dips', 'plank', 'crunch', 'leg raise', 'back extension', 'ab wheel', 'russian twist', 'zgib', 'sklek', 'propadanj', 'trbusnjac']],

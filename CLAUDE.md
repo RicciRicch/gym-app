@@ -191,8 +191,9 @@ npm test           # vitest (schedule logic etc.)
   cold region (big muscles first, changes per day), drawn with a blinking dashed red outline;
   below: bars with set counts and the cold list. Playground: `?muscles=1`. Browser-verified
   signed in with a seeded workout (since deleted) and in headless Chrome.
-- Library: 56 core exercises (12 with images + 44 text-only from migration `more_exercises`,
-  first muscle = main one). Search
+- Library: 83 core exercises (12 with images + 44 text-only from migration `more_exercises` +
+  27 machine / Smith exercises from `machine_exercises`, first muscle = main one). Muscle
+  keywords also know adductors (-> quads region) and abductors (-> glutes). Search
   (`matchesSearch` in `src/lib/muscles.ts`: every word in name / muscles / group, accents
   stripped, đ = dj) and muscle group chips with counts (`exerciseGroup` by the main muscle:
   Chest, Back, Shoulders, Arms, Legs, Core). Shared `SearchField` / `GroupChips`
@@ -203,7 +204,7 @@ npm test           # vitest (schedule logic etc.)
   names; a group pushes `?group=` so the phone's back button leaves it), custom exercises.
   Compact rows without images: name, main muscle · gear, gear icon on the right
   (`EquipmentIcon`; gear guessed from the name by `equipmentOf` in `src/lib/library.ts`,
-  unit-tested on all 56 core names, no DB column). Exercise page: hero only with art, gear line.
+  unit-tested on all 83 core names, no DB column). Exercise page: hero only with art, gear line.
   Browser-verified signed in: chips/counts, Legs + "squat", picker Core filter.
 - Friends (user asked for it on 2026-11-16, so no longer a future feature). Migrations `friends`
   + `friends_grants`: `profiles.friend_code` (GORILA-XXXX, set by the DB; clients have column

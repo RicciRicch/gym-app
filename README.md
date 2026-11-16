@@ -41,7 +41,7 @@ and watch your top sets climb.
 - **Friends** – add each other with a personal code, an invite link or the QR code on your
   "gym pass"; see each other's streak and badges (never weights), a weekly table of who logged
   the most sets, and nudge a friend who is skipping (their gorilla passes it on).
-- **Exercise library** – 56 popular exercises with form cues, searchable and filterable by
+- **Exercise library** – 83 popular exercises (machines included) with form cues, searchable and filterable by
   muscle group (also when adding an exercise to a day or a workout). Your own exercises on top,
   muscle group tiles, and an icon for the gear each exercise needs.
 - **Muscle map** – a body figure on Progress lights up by how much each muscle was trained

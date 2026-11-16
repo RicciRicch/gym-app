@@ -55,7 +55,9 @@ const KEYWORDS: readonly [RegExp, readonly Region[]][] = [
   [/back|le[dđ]a/, ['lats', 'upperBack']],
   [/quad|kvadri/, ['quads']],
   [/hamstring|zadnja lo[zž]a/, ['hamstrings']],
-  [/glute|gluteus|guz/, ['glutes']],
+  // Inner thigh sits with the quads on the map, outer hip with the glutes.
+  [/adductor|inner thigh|unutra[sš]nj/, ['quads']],
+  [/glute|gluteus|guz|abductor|outer hip/, ['glutes']],
   [/calf|calves|list/, ['calves']],
   [/\blegs?\b|nog[ae]/, ['quads', 'hamstrings', 'glutes']],
   [/\barms?\b|ruke/, ['biceps', 'triceps']],

@@ -1,0 +1,65 @@
+-- Machine exercises for the core library (user_id null: readable by every
+-- signed-in user, writable by nobody through the API). The first muscle listed
+-- is the main one; the library groups by it. Text only, like `more_exercises`.
+insert into public.exercises (user_id, slug, name, muscles, cues) values
+  -- Chest
+  (null, 'incline-machine-press', 'Incline Machine Press', '{Upper chest,Front delts,Triceps}',
+   '{"Seat so the handles line up with your upper chest","Shoulder blades back and down, chest up","Press up and in, slow on the way back"}'),
+  (null, 'decline-machine-press', 'Decline Machine Press', '{Chest,Triceps}',
+   '{"Handles at lower-chest height","Keep your back on the pad","Press out and slightly down, control the return"}'),
+  (null, 'pec-deck', 'Pec Deck (Machine Fly)', '{Chest,Front delts}',
+   '{"Seat so the handles are at chest height","Soft bend in the elbows, keep it fixed","Squeeze the handles together, open slowly to a stretch"}'),
+  (null, 'smith-machine-bench-press', 'Smith Machine Bench Press', '{Chest,Triceps,Front delts}',
+   '{"Bench placed so the bar meets mid-chest","Unrack with a twist of the wrists","Lower under control, press without bouncing"}'),
+  (null, 'smith-machine-incline-press', 'Smith Machine Incline Press', '{Upper chest,Front delts,Triceps}',
+   '{"Bench at 30-45°, bar over the upper chest","Elbows about 45° from the body","Lower to a light touch, press back up"}'),
+  -- Back
+  (null, 'machine-row', 'Seated Machine Row', '{Upper back,Lats,Biceps}',
+   '{"Chest against the pad, arms long","Pull the elbows back, squeeze the shoulder blades","Let the weight pull you forward slowly"}'),
+  (null, 'machine-high-row', 'Machine High Row', '{Lats,Upper back,Biceps}',
+   '{"Thighs locked under the pad","Pull down and back towards the hips","Stretch up at the top of every rep"}'),
+  (null, 'assisted-pull-up', 'Assisted Pull-Up Machine', '{Lats,Biceps,Upper back}',
+   '{"More counterweight = easier","Knees on the pad, start from a dead hang","Chest to the bar, lower all the way"}'),
+  (null, 'machine-pullover', 'Machine Pullover', '{Lats,Chest}',
+   '{"Elbows on the pads, arms relaxed","Drive the elbows down in an arc to the hips","Let the arms rise slowly for a full stretch"}'),
+  (null, 'back-extension-machine', 'Back Extension Machine', '{Lower back,Glutes,Hamstrings}',
+   '{"Pad across the upper back","Extend until the body is straight, no hyperextension","Slow on the way forward"}'),
+  -- Shoulders
+  (null, 'machine-shoulder-press', 'Machine Shoulder Press', '{Shoulders,Triceps}',
+   '{"Handles start at about ear height","Back flat on the pad, core tight","Press up without locking out hard"}'),
+  (null, 'machine-lateral-raise', 'Machine Lateral Raise', '{Side delts}',
+   '{"Shoulders lined up with the machine pivot","Lead with the elbows, not the hands","Stop at shoulder height, lower slowly"}'),
+  (null, 'reverse-pec-deck', 'Reverse Pec Deck', '{Rear delts,Upper back}',
+   '{"Face the pad, handles at shoulder height","Arms almost straight, open out wide","Squeeze the back of the shoulders, return slowly"}'),
+  -- Arms
+  (null, 'machine-preacher-curl', 'Machine Preacher Curl', '{Biceps,Forearms}',
+   '{"Armpits snug against the top of the pad","Curl up without lifting the elbows","All the way down for a full stretch"}'),
+  (null, 'machine-triceps-extension', 'Machine Triceps Extension', '{Triceps}',
+   '{"Elbows on the pad, lined up with the pivot","Push down until the arms are straight","Let the handles come back slowly"}'),
+  (null, 'seated-dip-machine', 'Seated Dip Machine', '{Triceps,Chest}',
+   '{"Sit tall, elbows pointing back","Push down to full lockout","Control the handles back up to 90°"}'),
+  -- Legs
+  (null, 'smith-machine-squat', 'Smith Machine Squat', '{Quads,Glutes}',
+   '{"Feet slightly in front of the bar","Brace, sit down between the heels","Drive up through mid-foot"}'),
+  (null, 'pendulum-squat', 'Pendulum Squat', '{Quads,Glutes}',
+   '{"Back flat on the pad, feet mid-platform","Sink as deep as you control","Push through the whole foot"}'),
+  (null, 'belt-squat', 'Belt Squat', '{Quads,Glutes}',
+   '{"Belt on the hips, hold the handles lightly","Chest up, sit straight down","Drive the hips up, no back strain"}'),
+  (null, 'seated-leg-curl', 'Seated Leg Curl', '{Hamstrings}',
+   '{"Knees lined up with the machine pivot","Thigh pad snug, curl the heels under","Slow on the way up"}'),
+  (null, 'hip-abduction-machine', 'Hip Abduction Machine', '{Glutes,Abductors}',
+   '{"Sit tall, pads on the outside of the knees","Push the knees out wide","Return slowly, do not let the plates touch"}'),
+  (null, 'hip-adduction-machine', 'Hip Adduction Machine', '{Adductors,Quads}',
+   '{"Pads on the inside of the knees","Squeeze the legs together","Open slowly to a comfortable stretch"}'),
+  (null, 'glute-kickback-machine', 'Glute Kickback Machine', '{Glutes,Hamstrings}',
+   '{"Hips square, core braced","Drive the foot back and up with the glute","Do not arch the lower back"}'),
+  (null, 'hip-thrust-machine', 'Hip Thrust Machine', '{Glutes,Hamstrings}',
+   '{"Upper back on the pad, belt across the hips","Drive the hips up, chin tucked","Squeeze the glutes for a second at the top"}'),
+  (null, 'leg-press-calf-raise', 'Leg Press Calf Raise', '{Calves}',
+   '{"Balls of the feet on the bottom edge","Knees straight but not locked","Full stretch down, push up onto the toes"}'),
+  -- Core
+  (null, 'ab-crunch-machine', 'Ab Crunch Machine', '{Core}',
+   '{"Feet hooked, handles by the chest","Curl the ribs towards the hips","Do not pull with the arms"}'),
+  (null, 'rotary-torso-machine', 'Rotary Torso Machine', '{Obliques,Core}',
+   '{"Hips locked, chest against the pad","Rotate with the core, not the arms","Slow back to the middle"}')
+on conflict (slug) where user_id is null do nothing;
