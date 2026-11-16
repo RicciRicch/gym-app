@@ -1,8 +1,17 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { ExerciseImage, Mascot } from '../../components/ExerciseImage'
+import { Mascot } from '../../components/Mascot'
+import { MovementFigure } from '../../components/MovementFigure'
 import { Button } from '../../components/ui'
+
+function GuideFigure({ name }: { name: string }) {
+  return (
+    <span className="grid size-44 place-items-center rounded-3xl border border-line bg-surface p-3">
+      <MovementFigure name={name} className="size-full" />
+    </span>
+  )
+}
 
 interface Step {
   title: string
@@ -20,24 +29,24 @@ const STEPS: Step[] = [
   {
     title: '1. Pick your split',
     body: 'Open Split and start from a preset (Push/Pull/Legs, Upper/Lower, Full Body, Bro Split) or build your own. Choose which weekday each day lands on and set default sets × reps.',
-    art: <ExerciseImage imageKey="bench-press" name="Bench press" className="size-44 rounded-3xl" />,
+    art: <GuideFigure name="Bench Press" />,
     tip: 'Empty weekdays are rest days.',
   },
   {
     title: '2. Train from Today',
     body: 'Today shows what is scheduled. Tap Start workout: weights are prefilled from last time. Enter reps × weight and tap the check to mark a set done.',
-    art: <ExerciseImage imageKey="squat" name="Squat" className="size-44 rounded-3xl" />,
+    art: <GuideFigure name="Back Squat" />,
     tip: 'The rest timer starts by itself after each set.',
   },
   {
     title: '3. Plan the week',
     body: 'Calendar shows your week and month with finished workouts marked. Need to move a day? Swap two days for this week only; your split stays the same.',
-    art: <ExerciseImage imageKey="lat-pulldown" name="Lat pulldown" className="size-44 rounded-3xl" />,
+    art: <GuideFigure name="Pull-Up" />,
   },
   {
     title: '4. Track progress',
     body: 'Progress lists every workout and charts your top set per exercise, with PR badges when you beat your best. Library has form cues for each lift.',
-    art: <ExerciseImage imageKey="overhead-press" name="Overhead press" className="size-44 rounded-3xl" />,
+    art: <GuideFigure name="Overhead Press" />,
     tip: 'You can reopen this guide from your profile.',
   },
 ]

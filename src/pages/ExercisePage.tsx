@@ -1,11 +1,12 @@
 import { Link, useParams } from 'react-router-dom'
-import { ExerciseImage } from '../components/ExerciseImage'
+import { MovementFigure } from '../components/MovementFigure'
 import { PageLoader } from '../components/ui'
 import { EquipmentIcon } from '../features/library/EquipmentIcon'
 import { MaxCard } from '../features/progress/MaxCard'
 import { useLoggedSets } from '../features/progress/api'
 import { useExercises } from '../features/split/api'
 import { EQUIPMENT_LABEL, equipmentOf } from '../lib/library'
+import { movementOf } from '../lib/movement'
 import { exerciseProgress, formatTopSet } from '../lib/progress'
 
 /** Library detail: image, target muscles, form cues and a link to progress. */
@@ -32,6 +33,7 @@ export function ExercisePage() {
   }
 
   const equipment = equipmentOf(exercise.name)
+  const hasFigure = movementOf(exercise.name) !== null
   const exerciseSets = sets.data?.filter((s) => s.exerciseId === exercise.id) ?? []
   const progress = exerciseProgress(exerciseSets)
 
@@ -44,11 +46,13 @@ export function ExercisePage() {
         Library
       </Link>
 
-      {exercise.image_key && (
-        <ExerciseImage imageKey={exercise.image_key} name={exercise.name} className="mt-2 aspect-square w-full rounded-3xl" />
+      {hasFigure && (
+        <div className="mt-2 rounded-3xl border border-line bg-surface p-3">
+          <MovementFigure name={exercise.name} className="mx-auto block h-52 w-full" />
+        </div>
       )}
 
-      <h1 className={`${exercise.image_key ? 'mt-5' : 'mt-2'} text-3xl font-black tracking-tight`}>{exercise.name}</h1>
+      <h1 className={`${hasFigure ? 'mt-5' : 'mt-2'} text-3xl font-black tracking-tight`}>{exercise.name}</h1>
       {equipment && (
         <p className="mt-2 flex items-center gap-2 font-semibold text-muted">
           <EquipmentIcon equipment={equipment} className="size-5 text-accent" />

@@ -38,7 +38,7 @@ Avatars and the mascot use the same clay/lighting/background wording without the
 
 Prompts below are the subject part; the suffix above follows each exercise prompt.
 
-### Exercises (`public/assets/exercises/`)
+### Exercises (`public/assets/exercises/`, removed on 2026-11-16: replaced by code-drawn movement figures)
 
 | File | Job (final) | Attempts | Subject prompt |
 |---|---|---|---|

@@ -57,7 +57,7 @@ npm test           # vitest (schedule logic etc.)
   per-exercise chart (lazy-loaded Recharts; first session is baseline, PR = strictly heavier
   top set, or more reps for bodyweight). Browser-verified at 375px with seeded sample
   workouts (since deleted). Images fall back to a gradient icon until M1 assets land in
-  `public/assets/exercises/<slug>.webp`, `public/assets/mascot.webp`.
+  `public/assets/mascot.webp` (the exercise images were later replaced by movement figures).
 - M6 (partial, while waiting for M1 art): every route except Today/Auth is lazy-loaded
   (main chunk ~285 kB, no size warning); `.github/workflows/deploy.yml` builds (lint, test,
   build) and deploys to Pages, reading `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`
@@ -269,6 +269,17 @@ npm test           # vitest (schedule logic etc.)
   The progress page has "Top set / Est. 1RM" text tabs over one chart (`ProgressChart` takes a
   `ChartSeries`, built in `src/features/progress/series.ts`). Browser-verified at 375px with a
   temporary October bench workout on the user's account (deleted, badge "seen" state restored).
+- Movement figures (user's pick on 2026-11-16, replacing the 12 clay exercise images, which were
+  removed from `public/assets/exercises/`): `src/lib/movement.ts` (unit-tested) maps every exercise
+  name to one of 25 patterns (`movementOf`, all 83 core names + Serbian words; unknown -> null) and
+  builds two poses (start / end) from joint angles with fixed limb lengths, side or front view,
+  plus scenery (bench, seat, bar) and gear props from `equipmentOf` (plate, dumbbells, cable).
+  `MovementFigure` (`src/components/`) animates between the poses with SMIL `points` animations
+  (dots are zero-length round-capped lines so they never drift from the limbs); reduced motion
+  shows the still glyph pose. Used as the exercise page hero, as `MovementGlyph` in the Progress
+  exercise list and in the first-run guide. The mascot moved to `src/components/Mascot.tsx`.
+  Playground: `/dev/celebration?figures=1` (animated), `?figures=still` (both frames).
+  The `exercises.image_key` column is now unused.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL

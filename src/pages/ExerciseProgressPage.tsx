@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Mascot } from '../components/ExerciseImage'
+import { Mascot } from '../components/Mascot'
 import { PrBadge } from '../components/PrBadge'
 import { PageLoader } from '../components/ui'
 import { useLoggedSets } from '../features/progress/api'

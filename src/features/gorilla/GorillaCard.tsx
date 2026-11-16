@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Mascot } from '../../components/ExerciseImage'
+import { Mascot } from '../../components/Mascot'
 import { gorillaSays, liftedLessThanLastTime, missedDay, type GorillaMood, type GorillaSays } from '../../lib/gorilla'
 import { formatTopSet, progressByExercise, prsByWorkout, topSet } from '../../lib/progress'
 import { addDays, toISODate, type ISODate, type Override, type PlanDay } from '../../lib/schedule'

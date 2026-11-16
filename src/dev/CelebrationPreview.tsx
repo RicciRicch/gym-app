@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Flame } from '../components/Flame'
+import { Figure } from '../components/MovementFigure'
 import { BadgeShelf } from '../features/badges/BadgeShelf'
 import { FistBump } from '../features/friends/FistBump'
 import { FuelCheck } from '../features/fuel/FuelCheck'
@@ -8,6 +9,8 @@ import { UnlockOverlay, type MedalRect } from '../features/badges/BadgeUnlock'
 import { Medal } from '../features/badges/Medal'
 import { MuscleMapView } from '../features/muscles/MuscleMapCard'
 import { BADGES, type BadgeState } from '../lib/badges'
+import { EQUIPMENT } from '../lib/library'
+import { PATTERN_NAMES, patternFrames } from '../lib/movement'
 import { REGIONS, type MuscleLoad } from '../lib/muscles'
 import { GorillaBubble } from '../features/gorilla/GorillaCard'
 import { StreakCard } from '../features/streak/StreakCard'
@@ -19,7 +22,8 @@ import type { WorkoutSummary } from '../lib/summary'
 // post-workout celebration and the streak flame. ?prs=2 opens the summary
 // straight away (handy for headless screenshots), ?badge=1|2 the badge unlock screen,
 // ?shelf=1 the badge shelf with two medals flying in, ?fuel=1 the pre-workout cards,
-// ?muscles=1 the muscle map, ?bump=1 the new-friend fist bump.
+// ?muscles=1 the muscle map, ?bump=1 the new-friend fist bump, ?figures=1 every movement
+// figure (animated, then still glyphs; ?figures=still for both frames side by side).
 
 const prs: WorkoutSummary['prs'] = [
   { exerciseId: 'a', name: 'Back Squat', metric: 'weight', top: { weight: 105, reps: 3 }, previous: { weight: 102.5, reps: 2 } },
@@ -69,6 +73,36 @@ export function CelebrationPreview() {
         <PreWorkoutCard dayName="Push" plannedSets={14} now={new Date(2026, 10, 15, 13)} />
         <PreWorkoutCard dayName="Arms" plannedSets={6} now={new Date(2026, 10, 15, 20)} />
         <FuelCheck workoutId="preview" />
+      </div>
+    )
+  }
+  const figures = new URLSearchParams(window.location.search).get('figures')
+  if (figures !== null) {
+    return (
+      <div className="grid grid-cols-3 gap-2 p-3 sm:grid-cols-5">
+        {PATTERN_NAMES.flatMap((pattern) => {
+          const movement = patternFrames(pattern, null)
+          const { glyph } = movement
+          return [
+            <figure key={pattern} className="rounded-2xl border border-line bg-surface p-1">
+              <Figure movement={movement} still={figures === 'still' ? 0 : null} />
+              <figcaption className="text-center text-xs text-muted">{pattern}</figcaption>
+            </figure>,
+            figures === 'still' && (
+              <figure key={`${pattern}-1`} className="rounded-2xl border border-line bg-surface p-1">
+                <Figure movement={movement} still={1} />
+                <figcaption className="text-center text-xs text-muted">{pattern} end{glyph === 1 ? ' (glyph)' : ''}</figcaption>
+              </figure>
+            ),
+          ]
+        })}
+        {figures === 'gear' &&
+          EQUIPMENT.map((gear) => (
+            <figure key={gear} className="rounded-2xl border border-line bg-surface p-1">
+              <Figure movement={patternFrames('curl', gear)} still={null} />
+              <figcaption className="text-center text-xs text-muted">curl · {gear}</figcaption>
+            </figure>
+          ))}
       </div>
     )
   }

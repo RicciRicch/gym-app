@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { Mascot } from '../components/ExerciseImage'
+import { Mascot } from '../components/Mascot'
 import { Flame } from '../components/Flame'
 import { Avatar, Button, Field, PageLoader } from '../components/ui'
 import { avatarPhotoUrl } from '../features/avatar/api'
