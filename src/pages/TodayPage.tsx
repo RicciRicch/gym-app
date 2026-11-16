@@ -8,9 +8,8 @@ import { FreezeControl } from '../features/streak/FreezeControl'
 import { StreakCard } from '../features/streak/StreakCard'
 import { useActiveSplit, type SplitDay } from '../features/split/api'
 import { useStartWorkout } from '../features/workout/api'
-import { savePartnerIds, saveRestSeconds, usePartnerIds, useRestSeconds } from '../features/workout/draft-store'
+import { savePartnerIds, usePartnerIds } from '../features/workout/draft-store'
 import { PartnerPicker } from '../features/friends/Partners'
-import { RestPicker } from '../features/workout/RestPicker'
 import { useWorkoutDraft } from '../features/workout/draft-store'
 import { WEEKDAY_LONG, WEEKDAY_SHORT, addDays, fromISODate, resolveDay, toISODate, weekDates, weekdayOf } from '../lib/schedule'
 
@@ -27,7 +26,6 @@ export function TodayPage() {
   const navigate = useNavigate()
   const { draft } = useWorkoutDraft()
   const start = useStartWorkout()
-  const restSeconds = useRestSeconds()
   const partnerIds = usePartnerIds()
   const split = useActiveSplit()
   // One week back as well, so the coach can see what was planned on the last few days.
@@ -143,7 +141,6 @@ export function TodayPage() {
                   <li className="py-2.5 text-muted">No default exercises yet. You can add them as you go.</li>
                 )}
               </ul>
-              <RestPicker className="mt-4 border-t border-line pt-4" value={restSeconds} onChange={saveRestSeconds} />
               <PartnerPicker className="mt-4 border-t border-line pt-4" value={partnerIds} onChange={savePartnerIds} />
               <button
                 disabled={start.isPending}

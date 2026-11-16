@@ -243,8 +243,8 @@ npm test           # vitest (schedule logic etc.)
   two real accounts, the user's own account (the pane was signed out).
 - Rest before a workout: `RestPicker` (`src/features/workout/RestPicker.tsx`: −/+ in 15 s steps
   from 15 s to 10 min via `stepRest`, plus quick picks 45s-3:00; `formatRest` in
-  `src/lib/workout.ts`, unit-tested) sits on Today's workout card above Start, on the /workout
-  start screen, and in the running workout's "Rest" sheet. The value lives in localStorage
+  `src/lib/workout.ts`, unit-tested) sits on the /workout start screen and in the running
+  workout's "Rest" sheet (removed from Today's card by the user on 2026-11-16: too big). The value lives in localStorage
   (`useRestSeconds`, re-renders on change) and a new workout copies it into the draft.
   Browser-verified at 375px with a throwaway account (deleted): pick 2:00 on Today -> workout
   shows "Rest 2 min", change to 1:45 mid-workout -> the timer counts 1:45 after a set.
@@ -252,7 +252,7 @@ npm test           # vitest (schedule logic etc.)
   `workout_partners`: workout_id, user_id, friend_id, day; RLS: both sides read, insert only on
   your own workout with its real date and only an accepted friend, delete own; narrow grants).
   `PartnerPicker` (`src/features/friends/Partners.tsx`, hidden without friends) on Today's
-  workout card and the /workout start screen; the pick lives in memory (`usePartnerIds` in
+  workout card (above Start) and the /workout start screen; the pick lives in memory (`usePartnerIds` in
   draft-store) and is copied into the draft (`partnerIds`) at start. In the workout:
   `PartnerChip` (small avatars + "with Ana", or "+ Buddy") next to the Rest button opens a
   sheet to change it. Finish inserts one row per partner (never fatal). `workoutsTogether`
