@@ -20,6 +20,7 @@ export type Database = {
           display_name: string
           avatar_key: string
           avatar_path: string | null
+          friend_code: string
           created_at: string
         }
         Insert: {
@@ -239,9 +240,106 @@ export type Database = {
           Rel<'workout_sets_workout_id_fkey', 'workout_id', 'workouts'>,
         ]
       }
+      friendships: {
+        Row: {
+          id: string
+          requester_id: string
+          addressee_id: string
+          status: 'pending' | 'accepted'
+          created_at: string
+          accepted_at: string | null
+        }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
+      nudges: {
+        Row: {
+          id: string
+          from_id: string
+          to_id: string
+          day: string
+          created_at: string
+          seen_at: string | null
+        }
+        Insert: {
+          to_id: string
+          day: string
+        }
+        Update: {
+          seen_at?: string | null
+        }
+        Relationships: []
+      }
+      friend_stats: {
+        Row: {
+          user_id: string
+          streak_weeks: number
+          streak_week: string
+          badge_ids: string[]
+          pr_count: number
+          updated_at: string
+        }
+        Insert: {
+          user_id?: string
+          streak_weeks: number
+          streak_week: string
+          badge_ids: string[]
+          pr_count: number
+          updated_at?: string
+        }
+        Update: {
+          streak_weeks?: number
+          streak_week?: string
+          badge_ids?: string[]
+          pr_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: { [_ in never]: never }
-    Functions: { [_ in never]: never }
+    Functions: {
+      friend_preview: {
+        Args: { p_code: string }
+        Returns: {
+          id: string
+          display_name: string
+          avatar_key: string
+          avatar_path: string | null
+          relation: 'self' | 'friends' | 'sent' | 'received' | 'none'
+        }[]
+      }
+      send_friend_request: {
+        Args: { p_code: string }
+        Returns: 'sent' | 'accepted' | 'friends'
+      }
+      accept_friend_request: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
+      friends_overview: {
+        Args: { p_week_start: string }
+        Returns: {
+          friendship_id: string
+          user_id: string
+          display_name: string
+          avatar_key: string
+          avatar_path: string | null
+          status: 'accepted' | 'incoming' | 'outgoing'
+          since: string
+          last_workout_date: string | null
+          last_workout_day: string | null
+          week_days: number | null
+          week_sets: number | null
+          recent_dates: string[] | null
+          streak_weeks: number | null
+          streak_week: string | null
+          badge_ids: string[] | null
+          pr_count: number | null
+        }[]
+      }
+    }
     Enums: { [_ in never]: never }
     CompositeTypes: { [_ in never]: never }
   }

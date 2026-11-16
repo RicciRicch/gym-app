@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../features/auth/auth-context'
 import { useProfile } from '../features/auth/useProfile'
@@ -7,6 +8,7 @@ import { Sheet } from '../components/Sheet'
 import { openGuide } from '../features/guide/guide-store'
 import { AvatarPicker } from '../features/avatar/AvatarPicker'
 import { BadgeShelfCard } from '../features/badges/BadgeShelfCard'
+import { useFriends } from '../features/friends/api'
 import { avatarPhotoUrl, choiceFromProfile, useUpdateAvatar, type AvatarChoice } from '../features/avatar/api'
 import type { Database } from '../lib/database.types'
 
@@ -17,7 +19,10 @@ export function ProfilePage() {
   const { data: profile } = useProfile()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [editAvatar, setEditAvatar] = useState(false)
+  const friends = useFriends().data
   if (!profile) return null
+  const friendCount = friends?.filter((f) => f.status === 'accepted').length ?? 0
+  const requestCount = friends?.filter((f) => f.status === 'incoming').length ?? 0
 
   return (
     <div className="flex animate-fade-up flex-col items-center pt-6 text-center">
@@ -39,6 +44,24 @@ export function ProfilePage() {
       <p className="text-muted">@{profile.username}</p>
       <p className="mt-1 text-sm text-muted">{user?.email}</p>
       <BadgeShelfCard className="mt-6" />
+      <Link
+        to="/friends"
+        className="mt-3 flex w-full items-center gap-3 rounded-3xl border border-line bg-surface px-4 py-3.5 text-left transition active:scale-[0.98]"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="font-bold">Friends</p>
+          <p className="text-sm text-muted">
+            {friendCount === 0 ? 'Add a gym buddy with your pass' : `${friendCount} ${friendCount === 1 ? 'friend' : 'friends'}`}
+          </p>
+        </div>
+        {requestCount > 0 && (
+          <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-black text-accent-ink">{requestCount} new</span>
+        )}
+        <span className="font-mono text-sm font-bold tracking-widest text-muted">{profile.friend_code}</span>
+        <svg viewBox="0 0 24 24" className="size-5 shrink-0 text-muted" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="m9 6 6 6-6 6" />
+        </svg>
+      </Link>
       <Button variant="secondary" className="mt-3 w-full" onClick={() => user && openGuide(user.id)}>
         How to use the app
       </Button>

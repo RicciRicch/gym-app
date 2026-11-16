@@ -6,6 +6,7 @@ import { App } from './App'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { reloadForNewVersion } from './lib/lazy-page'
 import { AuthProvider } from './features/auth/AuthProvider'
+import { captureInviteFromUrl } from './features/friends/invite-store'
 import { persistQueryCache, restoreQueryCache } from './features/offline/query-cache'
 import './index.css'
 
@@ -18,6 +19,9 @@ const queryClient = new QueryClient({
   },
 })
 restoreQueryCache(queryClient)
+
+// An invite link (?add=CODE): remember the code until the user is signed in.
+captureInviteFromUrl()
 
 // A chunk from an older deploy failed to load: reload once to get the new version.
 window.addEventListener('vite:preloadError', (event) => {

@@ -38,6 +38,9 @@ and watch your top sets climb.
 - **Pre-workout coach** – under today's workout the gorilla tells you what to eat and drink
   before it (half-joking, sane underneath: "One coffee. Maybe two. Not a bathtub."). Log what
   you had after the session and it finds out what actually works for you.
+- **Friends** – add each other with a personal code, an invite link or the QR code on your
+  "gym pass"; see each other's streak and badges (never weights), a weekly table of who logged
+  the most sets, and nudge a friend who is skipping (their gorilla passes it on).
 - **Exercise library** – 56 popular exercises with form cues, searchable and filterable by
   muscle group (also when adding an exercise to a day or a workout). Your own exercises on top,
   muscle group tiles, and an icon for the gear each exercise needs.

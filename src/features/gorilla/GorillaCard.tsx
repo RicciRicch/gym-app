@@ -4,6 +4,7 @@ import { gorillaSays, liftedLessThanLastTime, missedDay, type GorillaMood, type 
 import { formatTopSet, progressByExercise, prsByWorkout, topSet } from '../../lib/progress'
 import { addDays, toISODate, type ISODate, type Override, type PlanDay } from '../../lib/schedule'
 import type { Streak } from '../../lib/streak'
+import { useNudgeLine } from '../friends/api'
 import { useLoggedSets, useWorkoutHistory } from '../progress/api'
 import { useStreakFreezes, useWorkoutDates } from '../streak/api'
 
@@ -38,6 +39,7 @@ export function GorillaCard({
   const freezes = useStreakFreezes()
   const history = useWorkoutHistory()
   const sets = useLoggedSets()
+  const nudge = useNudgeLine()
 
   const says = useMemo(() => {
     if (!dates.data) return null
@@ -71,6 +73,8 @@ export function GorillaCard({
     })
   }, [dates.data, freezes.data, history.data, sets.data, today, days, overrides, planSince, plannedToday, inProgress, doneToday, streak])
 
+  // A friend's nudge wins until today's workout is started.
+  if (says && nudge && !doneToday && !inProgress) return <GorillaBubble says={{ mood: 'sad', line: nudge }} className={className} />
   return says && <GorillaBubble says={says} className={className} />
 }
 

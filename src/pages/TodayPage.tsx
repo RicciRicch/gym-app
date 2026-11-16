@@ -3,6 +3,7 @@ import { PageLoader, Spinner } from '../components/ui'
 import { useProfile } from '../features/auth/useProfile'
 import { useCompletedWorkouts, useOverrides } from '../features/schedule/api'
 import { PreWorkoutCard } from '../features/fuel/PreWorkoutCard'
+import { WeeklyTable } from '../features/friends/WeeklyTable'
 import { GorillaCard } from '../features/gorilla/GorillaCard'
 import { useStreak } from '../features/streak/api'
 import { FreezeControl } from '../features/streak/FreezeControl'
@@ -184,6 +185,8 @@ export function TodayPage() {
               </div>
             </section>
           )}
+
+          <WeeklyTable limit={3} linked className="mt-3" />
         </>
       )}
     </div>

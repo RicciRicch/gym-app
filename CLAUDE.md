@@ -205,6 +205,30 @@ npm test           # vitest (schedule logic etc.)
   (`EquipmentIcon`; gear guessed from the name by `equipmentOf` in `src/lib/library.ts`,
   unit-tested on all 56 core names, no DB column). Exercise page: hero only with art, gear line.
   Browser-verified signed in: chips/counts, Legs + "squat", picker Core filter.
+- Friends (user asked for it on 2026-11-16, so no longer a future feature). Migrations `friends`
+  + `friends_grants`: `profiles.friend_code` (GORILA-XXXX, set by the DB; clients have column
+  grants only), `friendships` (pending/accepted, one row per pair, select/delete via RLS,
+  created/accepted only through functions), `nudges` (one per friend per day; insert
+  (to_id, day), receiver updates seen_at only), `friend_stats` (streak, badge ids, PR count,
+  published by the owner's app from `usePublishFriendStats` in AppLayout; friends may read).
+  Cross-user reads go through SECURITY DEFINER functions in the unexposed `private` schema with
+  SECURITY INVOKER wrappers in `public` (`friend_preview`, `send_friend_request`,
+  `accept_friend_request`, `friends_overview`), so the advisors stay clean and nobody can list
+  profiles. New public tables get ALL for anon/authenticated by default: revoke first, then grant.
+  Friends never see weights. Client: `src/lib/friends.ts` (unit-tested: code parsing, invite
+  link, stale streak, weekly table, gorilla lines), `src/features/friends/` (`GymPass` card with
+  QR via `qrcode-generator`, the one new dependency; `AddFriendPrompt` in AppLayout for
+  `?add=CODE` links, kept in localStorage across sign-in by `invite-store.ts`; `FistBump`
+  overlay when two users become friends; `WeeklyTable` by sets since Monday, also on Today;
+  `NudgeButton`), pages `/friends` and `/friends/:id` (lazy), header icon with a request count,
+  Profile card. A received nudge makes the Today gorilla say "X says get off the couch" until
+  the workout starts (only shown when the user has a split). AppLayout now scrolls to the top on
+  every non-back navigation. Playground: `?bump=1`.
+  Browser-verified at 375px with two throwaway accounts (since deleted): link while signed out
+  -> sign in -> prompt, own code, request sent, incoming request + header count, accept ->
+  fist bump, table, friend page, nudge both ways, remove, typed code. RLS/grants checked with
+  SQL as friend / stranger / anon. Not exercised: the share sheet and QR scan on a real phone,
+  two real accounts, the user's own account (the pane was signed out).
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL
@@ -215,8 +239,7 @@ npm test           # vitest (schedule logic etc.)
 
 ## Future features (NOT in MVP — do not build yet)
 
-- Friends (requests, friend list)
 - Feed (friends' finished workouts)
-- Privacy settings (per-profile / per-workout visibility)
+- Privacy settings (per-profile / per-workout visibility; friends see no weights until then)
 - Rolling cycle (split not tied to weekdays)
 - Optimal schedule suggestion

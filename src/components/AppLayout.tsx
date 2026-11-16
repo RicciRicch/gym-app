@@ -1,10 +1,12 @@
-import { Suspense, type ReactNode } from 'react'
+import { Suspense, useEffect, type ReactNode } from 'react'
 import { useIsFetching, useIsMutating } from '@tanstack/react-query'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigationType } from 'react-router-dom'
 import { ErrorBoundary } from './ErrorBoundary'
 import { useAuth } from '../features/auth/auth-context'
 import { useProfile } from '../features/auth/useProfile'
 import { BadgeUnlock } from '../features/badges/BadgeUnlock'
+import { AddFriendPrompt } from '../features/friends/AddFriendPrompt'
+import { useFriends, usePublishFriendStats } from '../features/friends/api'
 import { GuideOverlay } from '../features/guide/GuideOverlay'
 import { closeGuide, useGuideOpen } from '../features/guide/guide-store'
 import { useActiveSplit } from '../features/split/api'
@@ -47,14 +49,40 @@ export function AppLayout() {
   const busy = useIsFetching() + useIsMutating() > 0
   const online = useOnline()
   const { pathname } = useLocation()
+  const requests = useFriends().data?.filter((f) => f.status === 'incoming').length ?? 0
+  usePublishFriendStats()
+  // A new page starts at the top; going back keeps where the browser puts you.
+  const navigation = useNavigationType()
+  useEffect(() => {
+    if (navigation !== 'POP') window.scrollTo({ top: 0 })
+  }, [pathname, navigation])
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
       <TopProgressBar active={busy && online} />
       <header className="sticky top-0 z-10 flex items-center justify-between bg-bg/85 px-5 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 backdrop-blur">
         <Wordmark className="text-lg" />
-        <Link to="/profile" aria-label="Profile" className="grid size-11 place-items-center rounded-full transition active:scale-95">
-          {profile && <Avatar avatarKey={profile.avatar_key} photoUrl={avatarPhotoUrl(profile.avatar_path)} className="size-9 ring-2 ring-line" />}
-        </Link>
+        <div className="flex items-center gap-1">
+          <Link
+            to="/friends"
+            aria-label={requests > 0 ? `Friends, ${requests} new ${requests === 1 ? 'request' : 'requests'}` : 'Friends'}
+            className={`relative grid size-11 place-items-center rounded-full transition active:scale-95 ${pathname.startsWith('/friends') ? 'text-accent' : 'text-muted'}`}
+          >
+            {icon(
+              <>
+                <circle cx="9" cy="8" r="3.5" />
+                <path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.9c1.7.8 2.7 2.5 3 5.1" />
+              </>,
+            )}
+            {requests > 0 && (
+              <span className="absolute top-1 right-0.5 grid min-w-5 place-items-center rounded-full border-2 border-bg bg-accent px-1 text-[11px] leading-4 font-black text-accent-ink">
+                {requests}
+              </span>
+            )}
+          </Link>
+          <Link to="/profile" aria-label="Profile" className="grid size-11 place-items-center rounded-full transition active:scale-95">
+            {profile && <Avatar avatarKey={profile.avatar_key} photoUrl={avatarPhotoUrl(profile.avatar_path)} className="size-9 ring-2 ring-line" />}
+          </Link>
+        </div>
       </header>
       {!online && (
         <p role="status" className="mx-5 mb-3 flex items-center gap-2 rounded-2xl border border-line bg-surface px-4 py-2.5 text-sm text-muted">
@@ -96,6 +124,7 @@ export function AppLayout() {
 
       {guideOpen && user && <GuideOverlay hasSplit={!!split.data} onClose={() => closeGuide(user.id)} />}
       {!guideOpen && <BadgeUnlock />}
+      {!guideOpen && pathname !== '/workout' && <AddFriendPrompt />}
     </div>
   )
 }

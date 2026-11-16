@@ -555,3 +555,80 @@ body {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------- friends */
+/* The gym pass: a membership card with a lime sheen. */
+.gym-pass {
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgb(200 255 46 / 0.16), transparent 60%),
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.025) 0 2px, transparent 2px 9px),
+    linear-gradient(160deg, #1b222b, #0f1318);
+  box-shadow: 0 18px 40px -22px rgb(200 255 46 / 0.45);
+}
+/* Fist bump: both sides charge in, meet in the middle and recoil. */
+.fist-left {
+  animation: fist-left 0.95s cubic-bezier(0.5, 0, 0.9, 0.6) both;
+}
+.fist-right {
+  animation: fist-right 0.95s cubic-bezier(0.5, 0, 0.9, 0.6) both;
+}
+@keyframes fist-left {
+  0% {
+    transform: translateX(-110vw) rotate(-12deg);
+  }
+  60% {
+    transform: translateX(14px) rotate(0deg);
+    animation-timing-function: cubic-bezier(0.2, 1.4, 0.4, 1);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+@keyframes fist-right {
+  0% {
+    transform: translateX(110vw) rotate(12deg);
+  }
+  60% {
+    transform: translateX(-14px) rotate(0deg);
+    animation-timing-function: cubic-bezier(0.2, 1.4, 0.4, 1);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+.fist-wave {
+  opacity: 0;
+  animation: shockwave 1s cubic-bezier(0.1, 0.7, 0.3, 1) 0.56s both;
+}
+.fist-shake {
+  animation: screen-shake 0.4s linear 0.56s both;
+}
+.fist-text {
+  animation: rise-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.8s both;
+}
+/* The crown on the weekly table bobs. */
+.crown-bob {
+  display: inline-block;
+  animation: crown-bob 2.4s ease-in-out infinite;
+}
+@keyframes crown-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-8deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(6deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fist-left,
+  .fist-right,
+  .fist-shake,
+  .fist-text,
+  .crown-bob {
+    animation: none;
+  }
+  .fist-wave {
+    display: none;
+  }
+}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Flame } from '../components/Flame'
 import { BadgeShelf } from '../features/badges/BadgeShelf'
+import { FistBump } from '../features/friends/FistBump'
 import { FuelCheck } from '../features/fuel/FuelCheck'
 import { PreWorkoutCard } from '../features/fuel/PreWorkoutCard'
 import { UnlockOverlay, type MedalRect } from '../features/badges/BadgeUnlock'
@@ -18,7 +19,7 @@ import type { WorkoutSummary } from '../lib/summary'
 // post-workout celebration and the streak flame. ?prs=2 opens the summary
 // straight away (handy for headless screenshots), ?badge=1|2 the badge unlock screen,
 // ?shelf=1 the badge shelf with two medals flying in, ?fuel=1 the pre-workout cards,
-// ?muscles=1 the muscle map.
+// ?muscles=1 the muscle map, ?bump=1 the new-friend fist bump.
 
 const prs: WorkoutSummary['prs'] = [
   { exerciseId: 'a', name: 'Back Squat', metric: 'weight', top: { weight: 105, reps: 3 }, previous: { weight: 102.5, reps: 2 } },
@@ -70,6 +71,9 @@ export function CelebrationPreview() {
         <FuelCheck workoutId="preview" />
       </div>
     )
+  }
+  if (new URLSearchParams(window.location.search).has('bump')) {
+    return <FistBump buddy={{ name: 'Marko', avatarKey: 'avatar-2', avatarPath: null }} onClose={() => {}} />
   }
   if (new URLSearchParams(window.location.search).has('muscles')) {
     const upper = muscleLoads({ chest: 12, shoulders: 7.5, triceps: 6, lats: 9, upperBack: 4.5, biceps: 5.5, core: 1.5, forearms: 1 })
