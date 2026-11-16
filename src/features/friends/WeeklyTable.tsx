@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
 import { Avatar } from '../../components/ui'
 import { tableLine, weeklyTable, type TableRow } from '../../lib/friends'
 import { startOfWeek, toISODate } from '../../lib/schedule'
@@ -39,26 +38,20 @@ function useWeeklyTable(): { rows: Row[]; line: string } | null {
   }, [user, profile, friends.data, sets.data, today])
 }
 
-/**
- * The weekly table: who logged the most sets since Monday. `limit` shortens it for
- * Today (the user's own row always stays); `linked` makes the card open Friends.
- */
-export function WeeklyTable({ limit, linked = false, className = '' }: { limit?: number; linked?: boolean; className?: string }) {
+/** The weekly table on Friends: who logged the most sets since Monday. */
+export function WeeklyTable({ className = '' }: { className?: string }) {
   const table = useWeeklyTable()
   if (!table) return null
-  const top = limit ? table.rows.slice(0, limit) : table.rows
-  // Cut short and the user fell off the end: their row replaces the last one shown.
-  const shown = top.some((r) => r.me) ? top : [...top.slice(0, -1), table.rows.find((r) => r.me)!]
 
-  const body = (
-    <>
+  return (
+    <section className={`rounded-3xl border border-line bg-surface p-4 ${className}`}>
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="font-bold">This week</h2>
         <span className="text-xs font-semibold tracking-widest text-muted uppercase">Sets</span>
       </div>
       {table.line && <p className="mt-1 text-sm text-muted">🦍 {table.line}</p>}
       <ol className="mt-3 flex flex-col gap-1.5">
-        {shown.map((r) => (
+        {table.rows.map((r) => (
           <li
             key={r.id}
             className={`flex min-h-12 items-center gap-3 rounded-2xl px-3 ${r.me ? 'border border-accent/40 bg-accent/10' : 'bg-surface-2'}`}
@@ -81,15 +74,6 @@ export function WeeklyTable({ limit, linked = false, className = '' }: { limit?:
           </li>
         ))}
       </ol>
-    </>
-  )
-
-  const box = `block rounded-3xl border border-line bg-surface p-4 ${className}`
-  return linked ? (
-    <Link to="/friends" className={`${box} transition active:scale-[0.98]`} aria-label="Friends: this week's table">
-      {body}
-    </Link>
-  ) : (
-    <section className={box}>{body}</section>
+    </section>
   )
 }
