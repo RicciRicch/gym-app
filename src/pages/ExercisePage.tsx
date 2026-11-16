@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ExerciseImage } from '../components/ExerciseImage'
 import { PageLoader } from '../components/ui'
 import { EquipmentIcon } from '../features/library/EquipmentIcon'
+import { MaxCard } from '../features/progress/MaxCard'
 import { useLoggedSets } from '../features/progress/api'
 import { useExercises } from '../features/split/api'
 import { EQUIPMENT_LABEL, equipmentOf } from '../lib/library'
@@ -31,7 +32,8 @@ export function ExercisePage() {
   }
 
   const equipment = equipmentOf(exercise.name)
-  const progress = exerciseProgress(sets.data?.filter((s) => s.exerciseId === exercise.id) ?? [])
+  const exerciseSets = sets.data?.filter((s) => s.exerciseId === exercise.id) ?? []
+  const progress = exerciseProgress(exerciseSets)
 
   return (
     <div className="animate-fade-up pt-2">
@@ -79,20 +81,24 @@ export function ExercisePage() {
         <p className="mt-4 text-muted">Custom exercise.</p>
       )}
 
-      <Link
-        to={`/progress/${exercise.id}`}
-        className="mt-6 flex min-h-16 items-center justify-between rounded-3xl border border-line bg-surface px-5 transition active:scale-[0.98]"
-      >
-        <span>
-          <span className="block font-bold">Your progress</span>
-          <span className="block text-sm text-muted">
-            {progress.best ? `Best: ${formatTopSet(progress.best)} · ${progress.points.length} sessions` : 'No sessions logged yet'}
+      {progress.metric === 'weight' && progress.points.length > 0 ? (
+        <MaxCard className="mt-6" exerciseId={exercise.id} sets={exerciseSets} progress={progress} />
+      ) : (
+        <Link
+          to={`/progress/${exercise.id}`}
+          className="mt-6 flex min-h-16 items-center justify-between rounded-3xl border border-line bg-surface px-5 transition active:scale-[0.98]"
+        >
+          <span>
+            <span className="block font-bold">Your progress</span>
+            <span className="block text-sm text-muted">
+              {progress.best ? `Best: ${formatTopSet(progress.best)} · ${progress.points.length} sessions` : 'No sessions logged yet'}
+            </span>
           </span>
-        </span>
-        <svg viewBox="0 0 24 24" className="size-5 text-muted" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m9 6 6 6-6 6" />
-        </svg>
-      </Link>
+          <svg viewBox="0 0 24 24" className="size-5 text-muted" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m9 6 6 6-6 6" />
+          </svg>
+        </Link>
+      )}
     </div>
   )
 }

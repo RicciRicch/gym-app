@@ -261,6 +261,14 @@ npm test           # vitest (schedule logic etc.)
   together") and the Friends list ("🤝 3 together"). Browser-verified at 375px with two
   throwaway accounts (deleted): pick on Today, chip + sheet in the workout, summary, both
   sides see the count; the friend cannot insert a fake row or delete the owner's.
+- Estimated 1RM (`src/lib/one-rep-max.ts`, unit-tested): Epley, a single = its weight, sets over
+  10 reps ignored, best estimate per workout (`maxProgress`, PR = strictly higher estimate).
+  `MaxCard` on the exercise page (weighted exercises with sessions; replaces the plain "Your
+  progress" link and keeps it as its footer): best estimate rounded to 0.5 kg, the set it came
+  from, growth vs the best 30+ days ago, 95-60% table rounded to 2.5 kg (1 kg under a 30 kg max).
+  The progress page has "Top set / Est. 1RM" text tabs over one chart (`ProgressChart` takes a
+  `ChartSeries`, built in `src/features/progress/series.ts`). Browser-verified at 375px with a
+  temporary October bench workout on the user's account (deleted, badge "seen" state restored).
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL

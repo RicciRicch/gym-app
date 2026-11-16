@@ -1,10 +1,13 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Mascot } from '../components/ExerciseImage'
 import { PrBadge } from '../components/PrBadge'
 import { PageLoader } from '../components/ui'
 import { useLoggedSets } from '../features/progress/api'
 import { ProgressChart } from '../features/progress/ProgressChart'
+import { topSetSeries, type ChartSeries } from '../features/progress/series'
 import { useExercises } from '../features/split/api'
+import { displayMax, maxProgress } from '../lib/one-rep-max'
 import { exerciseProgress, formatTopSet } from '../lib/progress'
 import { fromISODate } from '../lib/schedule'
 
@@ -14,6 +17,7 @@ export default function ExerciseProgressPage() {
   const exercises = useExercises()
   const sets = useLoggedSets()
   const exercise = exercises.data?.find((e) => e.id === exerciseId)
+  const [view, setView] = useState<'top' | 'max'>('top')
 
   if (exercises.isPending || sets.isPending) {
     return (
@@ -21,7 +25,27 @@ export default function ExerciseProgressPage() {
     )
   }
 
-  const progress = exerciseProgress(sets.data?.filter((s) => s.exerciseId === exerciseId) ?? [])
+  const exerciseSets = sets.data?.filter((s) => s.exerciseId === exerciseId) ?? []
+  const progress = exerciseProgress(exerciseSets)
+  // The estimated max as a second view of the same chart, once there are two points to draw.
+  const maxPoints = progress.metric === 'weight' ? maxProgress(exerciseSets) : []
+  const maxSeries: ChartSeries | null =
+    maxPoints.length > 1
+      ? {
+          caption: 'Estimated 1RM (kg) per workout',
+          name: 'estimated one-rep max',
+          step: 5,
+          points: maxPoints.map((p) => ({
+            workoutId: p.workoutId,
+            date: p.date,
+            value: displayMax(p.estimate),
+            isPR: p.isPR,
+            title: `≈ ${displayMax(p.estimate)} kg`,
+            detail: `from ${Number(p.weight.toFixed(2))} kg × ${p.reps}`,
+          })),
+        }
+      : null
+  const series = view === 'max' && maxSeries ? maxSeries : topSetSeries(progress)
   const sessions = [...progress.points].reverse()
   const prCount = progress.points.filter((p) => p.isPR).length
 
@@ -50,8 +74,28 @@ export default function ExerciseProgressPage() {
           </div>
 
           <div className="mt-4">
+            {maxSeries && (
+              <div className="mb-2 flex gap-5 px-1" role="tablist" aria-label="Chart">
+                {(
+                  [
+                    ['top', 'Top set'],
+                    ['max', 'Est. 1RM'],
+                  ] as const
+                ).map(([id, label]) => (
+                  <button
+                    key={id}
+                    role="tab"
+                    aria-selected={view === id}
+                    onClick={() => setView(id)}
+                    className={`min-h-11 border-b-2 text-sm font-bold transition ${view === id ? 'border-accent text-text' : 'border-transparent text-muted'}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
             {progress.points.length > 1 ? (
-              <ProgressChart progress={progress} />
+              <ProgressChart series={series} />
             ) : (
               <p className="rounded-3xl border border-line bg-surface p-5 text-muted">
                 One session logged. The chart appears after your next one.
