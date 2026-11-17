@@ -265,10 +265,14 @@ npm test           # vitest (schedule logic etc.)
   iris shutter + flash + vibration, the shot drops in as a `Polaroid` that develops, then Post /
   Retake / Keep it private; "Post without a photo" -> `StatsCard`; no camera -> file input with
   capture="user" or the gallery; photos centre-cropped to 4:5, <= 1080 px WebP, mirrored like the
-  preview), `FeedPage` at `/feed` (lazy) with `SocialTabs` (Feed | Friends as the page title,
-  also on /friends), `PostCard` (SVG reaction pills, optimistic; the author sees "Ana reacted";
-  delete with a sheet). The header people icon opens /feed: request count, or a lime dot for
-  unseen friends' posts (`gym-app:feed-seen:<uid>`). `useCleanUpOldPosts` (AppLayout) deletes
+  preview), `FeedPage` at `/feed` (lazy, "← Friends" back link, `#post-<id>` jumps to a post),
+  `PostCard` (SVG reaction pills, optimistic; the author sees "Ana reacted";
+  delete with a sheet). The header people icon opens /friends (user's call on 2026-11-17: Friends
+  first): request count, or a lime dot for unseen friends' posts (`gym-app:feed-seen:<uid>`). On
+  /friends, `FeedStrip` (under the title, only with friends) is the way into the feed: a row of
+  tiny tilted prints, each author's newest post (`latestPerAuthor`), unseen ones lifted with a
+  lime dot and an "N new" pill, "See all" + an "All posts" tile; a print opens /feed at that post.
+  `usePostAuthors` (`src/features/feed/authors.ts`) maps you + accepted friends for both. `useCleanUpOldPosts` (AppLayout) deletes
   the user's own 30+ day posts and photos; `delete-account` also empties `workout-photos`.
   Feed reactions are a plain object (the query cache is persisted as JSON). Playground:
   `/dev/celebration?proof=<workout id>[&pr=1]` (posting needs a signed-in owner). Verified in

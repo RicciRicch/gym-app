@@ -69,6 +69,7 @@ and watch your top sets climb.
 - **Feed and proof photo** – after a workout the gorilla asks for proof: a selfie camera with a
   3-2-1 countdown and a shutter, and the shot develops like an instant print. Post it (or just
   the stats) for your friends, who can react; posts show no weights and disappear after 30 days.
+  The newest prints sit in a row at the top of the Friends page; tap one to open the feed.
 - **Exercise library** – 83 popular exercises (machines included) with form cues, searchable and filterable by
   muscle group (also when adding an exercise to a day or a workout). Your own exercises on top,
   muscle group tiles, and an icon for the gear each exercise needs.

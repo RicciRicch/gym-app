@@ -66,7 +66,7 @@ export function AppLayout() {
         <Wordmark className="text-lg" />
         <div className="flex items-center gap-1">
           <Link
-            to="/feed"
+            to="/friends"
             aria-label={
               requests > 0
                 ? `Friends, ${requests} new ${requests === 1 ? 'request' : 'requests'}`

@@ -1,32 +1,22 @@
-import { useEffect, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { Mascot } from '../components/Mascot'
 import { PageLoader } from '../components/ui'
 import { useAuth } from '../features/auth/auth-context'
-import { useProfile } from '../features/auth/useProfile'
-import { avatarPhotoUrl } from '../features/avatar/api'
 import { markFeedSeen, useFeed } from '../features/feed/api'
-import { PostCard, type PostAuthor } from '../features/feed/PostCard'
-import { SocialTabs } from '../features/feed/SocialTabs'
+import { usePostAuthors } from '../features/feed/authors'
+import { PostCard } from '../features/feed/PostCard'
 import { useFriends } from '../features/friends/api'
 import { POST_DAYS } from '../lib/feed'
 
 /** Your friends' posted workouts (and yours) from the last 30 days, newest first. */
 export function FeedPage() {
   const { user } = useAuth()
-  const { data: profile } = useProfile()
   const friends = useFriends()
   const feed = useFeed()
-  const all = friends.data ?? []
-  const incoming = all.filter((f) => f.status === 'incoming')
-  const accepted = all.filter((f) => f.status === 'accepted')
-
-  const authors = useMemo(() => {
-    const map = new Map<string, PostAuthor>()
-    for (const f of accepted) map.set(f.id, { name: f.name, avatarKey: f.avatarKey, photoUrl: avatarPhotoUrl(f.avatarPath) })
-    if (user && profile) map.set(user.id, { name: profile.display_name, avatarKey: profile.avatar_key, photoUrl: avatarPhotoUrl(profile.avatar_path) })
-    return map
-  }, [accepted, user, profile])
+  const authors = usePostAuthors()
+  const { hash } = useLocation()
+  const accepted = (friends.data ?? []).filter((f) => f.status === 'accepted')
 
   // Opening the feed reads it: clears the dot on the header icon.
   const newest = feed.data?.posts[0]?.createdAt
@@ -37,20 +27,23 @@ export function FeedPage() {
   // Posts of people who are no longer friends drop out on the next fetch; hide them meanwhile.
   const posts = (feed.data?.posts ?? []).filter((p) => authors.has(p.userId))
 
+  // Opened from a print on the Friends page: jump to that post (after the layout's scroll to top).
+  const ready = posts.length > 0
+  useEffect(() => {
+    if (!ready || !hash.startsWith('#post-')) return
+    const timer = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' }), 60)
+    return () => clearTimeout(timer)
+  }, [ready, hash])
+
   return (
     <div className="animate-fade-up">
-      <SocialTabs active="feed" requests={incoming.length} />
-
-      {incoming.length > 0 && (
-        <Link to="/friends" className="mt-4 flex min-h-14 items-center gap-3 rounded-2xl bg-accent/10 px-4 font-semibold transition active:scale-[0.98]">
-          <span className="min-w-0 flex-1 truncate">
-            {incoming.length === 1 ? `${incoming[0].name} wants to train with you` : `${incoming.length} friend requests`}
-          </span>
-          <svg viewBox="0 0 24 24" className="size-5 shrink-0 text-accent" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="m9 6 6 6-6 6" />
-          </svg>
-        </Link>
-      )}
+      <Link to="/friends" className="-ml-1 inline-flex min-h-11 items-center gap-1 pt-2 font-semibold text-muted">
+        <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="m15 6-6 6 6 6" />
+        </svg>
+        Friends
+      </Link>
+      <h1 className="text-3xl font-black tracking-tight">Feed</h1>
 
       {feed.isPending || friends.isPending ? (
         <PageLoader label="Loading the feed" />
@@ -74,7 +67,7 @@ export function FeedPage() {
         <>
           <ul className="mt-6 flex flex-col gap-10">
             {posts.map((post, i) => (
-              <li key={post.id}>
+              <li key={post.id} id={`post-${post.id}`} className="scroll-mt-24">
                 <PostCard
                   post={post}
                   author={authors.get(post.userId)!}

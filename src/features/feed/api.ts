@@ -189,16 +189,22 @@ export function markFeedSeen(userId: string) {
   listeners.forEach((fn) => fn())
 }
 
-/** Friends' posts since the feed was last opened (light query for the header). */
-export function useUnseenPosts(): number {
+/** When the feed was last opened (null before the first visit). */
+export function useFeedSeenAt(): string | null {
   const { user } = useAuth()
-  const seenAt = useSyncExternalStore(
+  return useSyncExternalStore(
     (fn) => {
       listeners.add(fn)
       return () => listeners.delete(fn)
     },
     () => readSeen(user?.id),
   )
+}
+
+/** Friends' posts since the feed was last opened (light query for the header). */
+export function useUnseenPosts(): number {
+  const { user } = useAuth()
+  const seenAt = useFeedSeenAt()
   const latest = useQuery({
     queryKey: [...feedKey(user?.id), 'latest'],
     enabled: !!user,

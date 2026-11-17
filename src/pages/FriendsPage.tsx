@@ -5,7 +5,9 @@ import { Flame } from '../components/Flame'
 import { Avatar, Button, Field, PageLoader } from '../components/ui'
 import { avatarPhotoUrl } from '../features/avatar/api'
 import { useAcceptFriendRequest, useFriends, useRemoveFriendship, useTogether, type Friend } from '../features/friends/api'
-import { SocialTabs } from '../features/feed/SocialTabs'
+import { usePostAuthors } from '../features/feed/authors'
+import { FeedStrip } from '../features/feed/FeedStrip'
+import { useAuth } from '../features/auth/auth-context'
 import { FistBump, type Buddy } from '../features/friends/FistBump'
 import { GymPass } from '../features/friends/GymPass'
 import { openInvite } from '../features/friends/invite-store'
@@ -23,10 +25,12 @@ export function FriendsPage() {
   const outgoing = all.filter((f) => f.status === 'outgoing')
   const accepted = all.filter((f) => f.status === 'accepted')
   const { active, quiet } = splitQuiet(accepted, toISODate(new Date()))
+  const { user } = useAuth()
+  const authors = usePostAuthors()
 
   return (
     <div className="animate-fade-up">
-      <SocialTabs active="friends" />
+      <h1 className="pt-2 text-3xl font-black tracking-tight">Friends</h1>
 
       {incoming.length > 0 && (
         <section className="mt-5">
@@ -38,6 +42,8 @@ export function FriendsPage() {
           </ul>
         </section>
       )}
+
+      {accepted.length > 0 && <FeedStrip authors={authors} me={user?.id} className="mt-5" />}
 
       <GymPass className="mt-5" />
       <AddByCode />

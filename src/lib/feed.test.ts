@@ -4,6 +4,7 @@ import {
   durationLabel,
   groupReactions,
   isExpired,
+  latestPerAuthor,
   photoSize,
   postAgo,
   prLine,
@@ -109,5 +110,17 @@ describe('unseen posts', () => {
   })
   it('shows nothing before the feed was ever opened', () => {
     expect(unseenCount(posts, 'me', null)).toBe(0)
+  })
+})
+
+describe('latest per author', () => {
+  it('keeps each author’s newest post in feed order', () => {
+    const posts = [
+      { id: 1, userId: 'ana' },
+      { id: 2, userId: 'me' },
+      { id: 3, userId: 'ana' },
+      { id: 4, userId: 'marko' },
+    ]
+    expect(latestPerAuthor(posts).map((p) => p.id)).toEqual([1, 2, 4])
   })
 })

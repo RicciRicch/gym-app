@@ -123,3 +123,9 @@ export function durationLabel(seconds: number): string {
   if (minutes < 60) return `${minutes} min`
   return `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, '0')} min`
 }
+
+/** Each author's newest post, newest first (the strip on the Friends page). Expects posts newest first. */
+export function latestPerAuthor<T extends { userId: string }>(posts: readonly T[]): T[] {
+  const seen = new Set<string>()
+  return posts.filter((p) => !seen.has(p.userId) && seen.add(p.userId))
+}
