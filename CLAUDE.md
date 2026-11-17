@@ -108,7 +108,8 @@ npm test           # vitest (schedule logic etc.)
 - Streak (user asked for it, so no longer a future feature): weekly, `src/lib/streak.ts`
   (unit-tested). A week counts when days trained >= the split's training days; the running
   week counts once met and never breaks the streak early. `Flame` (CSS-animated SVG, levels
-  0-3) + `StreakCard` on Today and on the summary. `useWorkoutDates` feeds it.
+  0-3) + `StreakCard` on Today (`variant="bare"`: no frame, straight on the page, lit by a soft
+  glow behind the flame; user's pick on 2026-11-17) and on the summary (framed card). `useWorkoutDates` feeds it.
 - Dev playground: `/dev/celebration` (dev server only, no sign-in; `?prs=0|1|2` opens the
   summary directly). The Browser pane is often hidden, where requestAnimationFrame does not
   run, so check canvas/RAF animations with headless Chrome over CDP instead.

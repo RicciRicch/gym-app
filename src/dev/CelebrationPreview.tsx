@@ -155,6 +155,8 @@ export function CelebrationPreview() {
       <GorillaBubble says={{ mood: 'sad', line: 'Skipped legs again? 🦵🐔' }} />
       <GorillaBubble says={{ mood: 'sleepy', line: 'Rest day. Recovery is part of the plan. Zzz.' }} />
       <StreakCard streak={{ ...streak(3, 1, 2), frozen: true }} action={<span className="grid size-12 place-items-center rounded-2xl border border-sky-300/60 bg-sky-400/20 text-2xl">🧊</span>} />
+      <StreakCard variant="bare" streak={streak(0, 1, 1)} />
+      <StreakCard variant="bare" streak={{ ...streak(3, 1, 2), frozen: true }} />
       <StreakCard streak={streak(0, 0, 0)} />
       <StreakCard streak={streak(0, 1, 1)} />
       <StreakCard streak={streak(3, 2, 2)} />

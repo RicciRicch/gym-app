@@ -102,7 +102,7 @@ export function TodayPage() {
             })}
           </ul>
 
-          {streak && <StreakCard streak={streak} action={<FreezeControl streak={streak} />} className="mt-3" />}
+          {streak && <StreakCard streak={streak} variant="bare" action={<FreezeControl streak={streak} />} className="mt-4" />}
 
           {draft ? (
             <section className="mt-5 rounded-3xl border border-accent/40 bg-accent/10 p-6">
