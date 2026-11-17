@@ -1,6 +1,6 @@
 // Deletes the calling user's account. Every table references auth.users with
 // `on delete cascade`, so this removes all of their data too. Storage files do
-// not cascade, so their profile photos are removed first.
+// not cascade, so their profile and workout photos are removed first.
 // Runs with the service role (never exposed to the client); the caller is
 // identified only by the JWT they send.
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -29,11 +29,13 @@ Deno.serve(async (req) => {
   if (error || !data.user) return json({ error: 'Not signed in' }, 401)
 
   const userId = data.user.id
-  const avatars = admin.storage.from('avatars')
-  const { data: files } = await avatars.list(userId, { limit: 1000 })
-  if (files?.length) {
-    const { error: removeError } = await avatars.remove(files.map((f) => `${userId}/${f.name}`))
-    if (removeError) return json({ error: 'Could not delete the account' }, 500)
+  for (const bucket of ['avatars', 'workout-photos']) {
+    const store = admin.storage.from(bucket)
+    const { data: files } = await store.list(userId, { limit: 1000 })
+    if (files?.length) {
+      const { error: removeError } = await store.remove(files.map((f) => `${userId}/${f.name}`))
+      if (removeError) return json({ error: 'Could not delete the account' }, 500)
+    }
   }
 
   const { error: deleteError } = await admin.auth.admin.deleteUser(userId)

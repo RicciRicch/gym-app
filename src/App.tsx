@@ -21,6 +21,7 @@ const LibraryPage = lazyPage(() => import('./pages/LibraryPage'), 'LibraryPage')
 const ExercisePage = lazyPage(() => import('./pages/ExercisePage'), 'ExercisePage')
 const ProfilePage = lazyPage(() => import('./pages/ProfilePage'), 'ProfilePage')
 const BadgesPage = lazyPage(() => import('./pages/BadgesPage'), 'BadgesPage')
+const FeedPage = lazyPage(() => import('./pages/FeedPage'), 'FeedPage')
 const FriendsPage = lazyPage(() => import('./pages/FriendsPage'), 'FriendsPage')
 const FriendPage = lazyPage(() => import('./pages/FriendPage'), 'FriendPage')
 // Dev-only playground for the celebration screen; dropped from production builds.
@@ -77,6 +78,7 @@ export function App() {
         <Route path="library/:exerciseId" element={<ExercisePage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="badges" element={<BadgesPage />} />
+        <Route path="feed" element={<FeedPage />} />
         <Route path="friends" element={<FriendsPage />} />
         <Route path="friends/:friendId" element={<FriendPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

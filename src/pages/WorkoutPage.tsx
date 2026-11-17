@@ -14,6 +14,8 @@ import { PartnerChip, PartnerPicker, TrainedWith } from '../features/friends/Par
 import { RestPicker } from '../features/workout/RestPicker'
 import { CoachTip } from '../features/workout/CoachTip'
 import { FuelCheck } from '../features/fuel/FuelCheck'
+import { ProofCamera } from '../features/feed/ProofCamera'
+import { useFriends } from '../features/friends/api'
 import { RestTimer } from '../features/workout/RestTimer'
 import { voiceSupported } from '../features/workout/voice'
 import { VoiceSheet } from '../features/workout/VoiceSheet'
@@ -78,8 +80,26 @@ export function WorkoutPage() {
   const finish = useFinishWorkout()
   const updateDefault = useUpdateDayDefault()
   const { data: library } = useExercises()
+  // The photo step only makes sense with someone to show it to.
+  const hasFriends = useFriends().data?.some((f) => f.status === 'accepted') ?? false
+  const [proof, setProof] = useState(false)
 
   const clearRest = useCallback(() => setDraft((d) => ({ ...d, restEndsAt: null })), [setDraft])
+
+  if (finished && proof) {
+    return (
+      <ProofCamera
+        workoutId={finished.workoutId}
+        summary={finished.summary}
+        onDone={() => {
+          if (finished.askDefault) setAskDefault(finished.askDefault)
+          else navigate('/', { replace: true })
+          setFinished(null)
+          setProof(false)
+        }}
+      />
+    )
+  }
 
   if (finished) {
     return (
@@ -93,6 +113,7 @@ export function WorkoutPage() {
           </>
         )}
         onDone={() => {
+          if (hasFriends) return setProof(true)
           if (finished.askDefault) setAskDefault(finished.askDefault)
           else navigate('/', { replace: true })
           setFinished(null)

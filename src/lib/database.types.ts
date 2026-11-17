@@ -263,6 +263,47 @@ export type Database = {
         Update: never
         Relationships: []
       }
+      workout_posts: {
+        Row: {
+          id: string
+          user_id: string
+          workout_id: string
+          day_name: string
+          duration_seconds: number
+          sets: number
+          exercises: number
+          pr_names: string[]
+          photo_path: string | null
+          created_at: string
+        }
+        Insert: {
+          workout_id: string
+          day_name: string
+          duration_seconds: number
+          sets: number
+          exercises: number
+          pr_names?: string[]
+          photo_path?: string | null
+        }
+        Update: Record<string, never>
+        Relationships: []
+      }
+      post_reactions: {
+        Row: {
+          post_id: string
+          user_id: string
+          kind: string
+          created_at: string
+        }
+        Insert: {
+          post_id: string
+          kind: string
+        }
+        Update: {
+          kind?: string
+        }
+        Relationships: []
+      }
       workout_partners: {
         Row: {
           workout_id: string

@@ -5,6 +5,7 @@ import { Flame } from '../components/Flame'
 import { Avatar, Button, Field, PageLoader } from '../components/ui'
 import { avatarPhotoUrl } from '../features/avatar/api'
 import { useAcceptFriendRequest, useFriends, useRemoveFriendship, useTogether, type Friend } from '../features/friends/api'
+import { SocialTabs } from '../features/feed/SocialTabs'
 import { FistBump, type Buddy } from '../features/friends/FistBump'
 import { GymPass } from '../features/friends/GymPass'
 import { openInvite } from '../features/friends/invite-store'
@@ -24,14 +25,8 @@ export function FriendsPage() {
   const { active, quiet } = splitQuiet(accepted, toISODate(new Date()))
 
   return (
-    <div className="animate-fade-up pt-2">
-      <Link to="/profile" className="-ml-1 inline-flex min-h-11 items-center gap-1 font-semibold text-muted">
-        <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="m15 6-6 6 6 6" />
-        </svg>
-        Profile
-      </Link>
-      <h1 className="text-3xl font-black tracking-tight">Friends</h1>
+    <div className="animate-fade-up">
+      <SocialTabs active="friends" />
 
       {incoming.length > 0 && (
         <section className="mt-5">

@@ -3,6 +3,7 @@ import { Flame } from '../components/Flame'
 import { Figure } from '../components/MovementFigure'
 import { BadgeShelf } from '../features/badges/BadgeShelf'
 import { FistBump } from '../features/friends/FistBump'
+import { ProofCamera } from '../features/feed/ProofCamera'
 import { FuelCheck } from '../features/fuel/FuelCheck'
 import { PreWorkoutCard } from '../features/fuel/PreWorkoutCard'
 import { UnlockOverlay, type MedalRect } from '../features/badges/BadgeUnlock'
@@ -105,6 +106,12 @@ export function CelebrationPreview() {
           ))}
       </div>
     )
+  }
+  // ?proof=<workout id>[&pr=1]: the photo step; posting works when signed in and the workout is yours.
+  const proof = new URLSearchParams(window.location.search).get('proof')
+  if (proof !== null) {
+    const withPr = new URLSearchParams(window.location.search).has('pr')
+    return <ProofCamera workoutId={proof} summary={summary(withPr ? 1 : 0)} onDone={() => window.location.assign(`${import.meta.env.BASE_URL}feed`)} />
   }
   if (new URLSearchParams(window.location.search).has('bump')) {
     return <FistBump buddy={{ name: 'Marko', avatarKey: 'avatar-2', avatarPath: null }} onClose={() => {}} />

@@ -2,7 +2,7 @@ import { avatarEdge, squareCrop } from '../../lib/avatar'
 
 export class AvatarPhotoError extends Error {}
 
-async function decode(file: File): Promise<CanvasImageSource & { width: number; height: number }> {
+export async function decodeImage(file: File): Promise<CanvasImageSource & { width: number; height: number }> {
   try {
     return await createImageBitmap(file, { imageOrientation: 'from-image' })
   } catch {
@@ -28,9 +28,9 @@ const toBlob = (canvas: HTMLCanvasElement, type: string) =>
  */
 export async function avatarFromFile(file: File): Promise<Blob> {
   if (!file.type.startsWith('image/')) throw new AvatarPhotoError('That file is not a photo.')
-  let image: Awaited<ReturnType<typeof decode>>
+  let image: Awaited<ReturnType<typeof decodeImage>>
   try {
-    image = await decode(file)
+    image = await decodeImage(file)
   } catch {
     throw new AvatarPhotoError('Could not read that photo. Try a JPG or PNG.')
   }

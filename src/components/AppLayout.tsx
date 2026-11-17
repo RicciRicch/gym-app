@@ -6,6 +6,7 @@ import { useAuth } from '../features/auth/auth-context'
 import { useProfile } from '../features/auth/useProfile'
 import { BadgeUnlock } from '../features/badges/BadgeUnlock'
 import { AddFriendPrompt } from '../features/friends/AddFriendPrompt'
+import { useCleanUpOldPosts, useUnseenPosts } from '../features/feed/api'
 import { useFriends, usePublishFriendStats } from '../features/friends/api'
 import { GuideOverlay } from '../features/guide/GuideOverlay'
 import { closeGuide, useGuideOpen } from '../features/guide/guide-store'
@@ -50,7 +51,9 @@ export function AppLayout() {
   const online = useOnline()
   const { pathname } = useLocation()
   const requests = useFriends().data?.filter((f) => f.status === 'incoming').length ?? 0
+  const unseen = useUnseenPosts()
   usePublishFriendStats()
+  useCleanUpOldPosts()
   // A new page starts at the top; going back keeps where the browser puts you.
   const navigation = useNavigationType()
   useEffect(() => {
@@ -63,9 +66,15 @@ export function AppLayout() {
         <Wordmark className="text-lg" />
         <div className="flex items-center gap-1">
           <Link
-            to="/friends"
-            aria-label={requests > 0 ? `Friends, ${requests} new ${requests === 1 ? 'request' : 'requests'}` : 'Friends'}
-            className={`relative grid size-11 place-items-center rounded-full transition active:scale-95 ${pathname.startsWith('/friends') ? 'text-accent' : 'text-muted'}`}
+            to="/feed"
+            aria-label={
+              requests > 0
+                ? `Friends, ${requests} new ${requests === 1 ? 'request' : 'requests'}`
+                : unseen > 0
+                  ? `Friends, ${unseen} new ${unseen === 1 ? 'post' : 'posts'}`
+                  : 'Friends'
+            }
+            className={`relative grid size-11 place-items-center rounded-full transition active:scale-95 ${/^\/(feed|friends)/.test(pathname) ? 'text-accent' : 'text-muted'}`}
           >
             {icon(
               <>
@@ -77,6 +86,9 @@ export function AppLayout() {
               <span className="absolute top-1 right-0.5 grid min-w-5 place-items-center rounded-full border-2 border-bg bg-accent px-1 text-[11px] leading-4 font-black text-accent-ink">
                 {requests}
               </span>
+            )}
+            {requests === 0 && unseen > 0 && (
+              <span aria-hidden="true" className="absolute top-2 right-2 size-3 rounded-full border-2 border-bg bg-accent" />
             )}
           </Link>
           <Link to="/profile" aria-label="Profile" className="grid size-11 place-items-center rounded-full transition active:scale-95">

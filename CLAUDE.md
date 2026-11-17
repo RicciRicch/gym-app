@@ -251,6 +251,32 @@ npm test           # vitest (schedule logic etc.)
   collapsed "Quiet lately · N" section (most recent first, same rows with the nudge button; open
   at start when nobody is active). The weekly table still lists everyone. Verified in headless
   Brave with throwaway accounts (deleted).
+- Feed + proof photo (user asked on 2026-11-17, picked: nothing posts without "Post to friends",
+  the camera is offered after every workout (only with at least one friend), posts and photos
+  last 30 days, no volume/weights). Migration `workout_posts`: `workout_posts` (snapshot: day
+  name, duration, sets, exercises, PR exercise names, photo_path; select own or friends' < 30 days
+  via `private.are_friends`, insert only your own workout finished in the last 2 days, one post
+  per workout, delete own), `post_reactions` (fire / bump / crown, one per user per post, never
+  on your own post, visible to whoever sees the post), private bucket `workout-photos` (600 KB,
+  webp/jpeg; owner-folder writes; read = own folder or a photo on a post you can see; served as
+  signed URLs). `src/lib/feed.ts` (unit-tested: 4:5 crop, size, expiry, post age, PR line,
+  reactions, unseen count, gorilla lines). `src/features/feed/`: `ProofCamera` after the summary
+  (live selfie camera via getUserMedia, viewfinder brackets snap in, 3-2-1 with a draining ring,
+  iris shutter + flash + vibration, the shot drops in as a `Polaroid` that develops, then Post /
+  Retake / Keep it private; "Post without a photo" -> `StatsCard`; no camera -> file input with
+  capture="user" or the gallery; photos centre-cropped to 4:5, <= 1080 px WebP, mirrored like the
+  preview), `FeedPage` at `/feed` (lazy) with `SocialTabs` (Feed | Friends as the page title,
+  also on /friends), `PostCard` (SVG reaction pills, optimistic; the author sees "Ana reacted";
+  delete with a sheet). The header people icon opens /feed: request count, or a lime dot for
+  unseen friends' posts (`gym-app:feed-seen:<uid>`). `useCleanUpOldPosts` (AppLayout) deletes
+  the user's own 30+ day posts and photos; `delete-account` also empties `workout-photos`.
+  Feed reactions are a plain object (the query cache is persisted as JSON). Playground:
+  `/dev/celebration?proof=<workout id>[&pr=1]` (posting needs a signed-in owner). Verified in
+  headless Brave with a fake camera (`--use-fake-device-for-media-stream --use-fake-ui-for-media-stream
+  --use-file-for-fake-video-capture=<y4m>`) and three throwaway accounts (deleted): shoot, post,
+  delete, friend sees the photo and reacts, author sees "Ana reacted", stranger sees nothing, RLS
+  checks via SQL, 30-day expiry + cleanup, delete-account removes the photo. Not exercised: the
+  photo step from a real finished workout, a real phone camera (iOS Safari / PWA).
 - Rest before a workout: `RestPicker` (`src/features/workout/RestPicker.tsx`: −/+ in 15 s steps
   from 15 s to 10 min via `stepRest`, plus quick picks 45s-3:00; `formatRest` in
   `src/lib/workout.ts`, unit-tested) sits on the /workout start screen and in the running
@@ -337,6 +363,5 @@ npm test           # vitest (schedule logic etc.)
 
 ## Future features (NOT in MVP — do not build yet)
 
-- Feed (friends' finished workouts)
-- Privacy settings (per-profile / per-workout visibility; friends see no weights until then)
+- Privacy settings (per-profile visibility; friends see no weights until then; posting is already per workout)
 - Optimal schedule suggestion

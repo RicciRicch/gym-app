@@ -675,3 +675,130 @@ body {
     display: none;
   }
 }
+
+/* ---------------------------------------------------------- proof photo */
+/* Viewfinder corners snap in from the screen edges. --dx/--dy point outward. */
+.bracket-in {
+  animation: bracket-in 0.55s cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+}
+@keyframes bracket-in {
+  0% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(1.6);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* Countdown digit: slams in big, shrinks away. */
+.count-pop {
+  animation: count-pop 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes count-pop {
+  0% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+/* The ring around the shutter fills during each second. */
+.count-ring {
+  animation: count-ring 0.7s linear both;
+}
+@keyframes count-ring {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 302;
+  }
+}
+/* Shutter: the frame closes like an iris and opens again. */
+.shutter-iris {
+  width: 160%;
+  animation: shutter-iris 0.36s ease-in-out both;
+}
+/* A hole in a black sheet (huge spread shadow) shrinks to nothing and opens again. */
+@keyframes shutter-iris {
+  0%,
+  100% {
+    width: 160%;
+  }
+  50% {
+    width: 0%;
+  }
+}
+.shutter-flash {
+  opacity: 0;
+  animation: impact-flash 0.6s ease-out 0.18s both;
+}
+/* Polaroid: drops in tilted, then the picture develops from white. */
+.polaroid-drop {
+  animation: polaroid-drop 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@keyframes polaroid-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-40px) scale(1.15) rotate(6deg);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-2deg);
+  }
+}
+.photo-develop {
+  animation: photo-develop 2.2s ease-out 0.3s both;
+}
+@keyframes photo-develop {
+  0% {
+    filter: brightness(2.6) saturate(0) contrast(0.6) blur(3px);
+  }
+  60% {
+    filter: brightness(1.2) saturate(0.6) contrast(0.9) blur(0.5px);
+  }
+  100% {
+    filter: none;
+  }
+}
+/* Posted: the polaroid flies up and away, into the feed. */
+.polaroid-fly {
+  animation: polaroid-fly 0.75s cubic-bezier(0.5, 0, 0.75, 0) both;
+}
+@keyframes polaroid-fly {
+  0% {
+    transform: rotate(-2deg);
+  }
+  25% {
+    transform: translateY(24px) rotate(-4deg) scale(0.97);
+  }
+  100% {
+    opacity: 0.4;
+    transform: translateY(-120vh) rotate(14deg) scale(0.6);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bracket-in,
+  .count-pop,
+  .count-ring,
+  .polaroid-drop,
+  .photo-develop,
+  .polaroid-fly {
+    animation: none;
+  }
+  .shutter-flash,
+  .shutter-iris {
+    display: none;
+  }
+}
