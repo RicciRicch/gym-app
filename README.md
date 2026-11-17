@@ -5,7 +5,28 @@ and watch your top sets climb.
 
 **Live:** https://ricciricch.github.io/gym-app/
 
-<!-- Screenshots: added once the generated art set (M1) lands. -->
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/today.webp" width="195" alt="Today: the gorilla coach, week strip, streak and today's workout"><br><sub>Today</sub></td>
+    <td align="center"><img src="docs/screenshots/workout.webp" width="195" alt="A workout in progress with coach tips and last session's sets"><br><sub>Workout</sub></td>
+    <td align="center"><img src="docs/screenshots/summary.webp" width="195" alt="Workout summary with a new PR"><br><sub>New PR</sub></td>
+    <td align="center"><img src="docs/screenshots/progress.webp" width="195" alt="Muscle map of the week"><br><sub>Muscle map</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/max.webp" width="195" alt="Estimated one-rep max and strength level"><br><sub>1RM + strength level</sub></td>
+    <td align="center"><img src="docs/screenshots/chart.webp" width="195" alt="Top set chart with PR markers"><br><sub>Progress chart</sub></td>
+    <td align="center"><img src="docs/screenshots/friends.webp" width="195" alt="Friends: gym pass with QR code and the weekly table"><br><sub>Friends</sub></td>
+    <td align="center"><img src="docs/screenshots/badges.webp" width="195" alt="Badge shelf"><br><sub>Badges</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/calendar.webp" width="195" alt="Week calendar"><br><sub>Calendar</sub></td>
+    <td align="center"><img src="docs/screenshots/library.webp" width="195" alt="Exercise library with muscle groups"><br><sub>Library</sub></td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
+
+<sub>Screens from a demo account with made-up workouts, at phone size.</sub>
 
 ## Features
 
@@ -35,9 +56,9 @@ and watch your top sets climb.
 - **Coach tips and your ghost** – during a workout the coach suggests the next step from
   your last session ("80 kg × 8 on every set. Too easy. Try 82.5 kg.", one tap to apply), and
   every set shows what you did last time so you can race your past self.
-- **Pre-workout coach** – under today's workout the gorilla tells you what to eat and drink
-  before it (half-joking, sane underneath: "One coffee. Maybe two. Not a bathtub."). Log what
-  you had after the session and it finds out what actually works for you.
+- **Fuel check** – after a workout, tap what you had before it (coffee, carbs, an energy drink,
+  nothing). After a few sessions the gorilla tells you what actually works for you ("With coffee
+  you lift 8% more").
 - **Friends** – add each other with a personal code, an invite link or the QR code on your
   "gym pass"; see each other's streak and badges (never weights), a weekly table of who logged
   the most sets, and nudge a friend who is skipping (their gorilla passes it on).
@@ -56,8 +77,16 @@ and watch your top sets climb.
   after a workout, and a year-to-date total (grand pianos, blue whales, Eiffel Towers…).
 - **Voice input** – tap the mic and say "sto kila puta pet" (or "100 kilos times 5"): the
   next set is filled in and ticked off. Serbian, Croatian and English.
-- **Exercise library** – 12 core lifts with target muscles and three form cues each,
-  plus your own custom exercises.
+- **Movement figures** – every exercise has a small animated line figure showing the movement
+  (drawn in code from joint angles, no images), on the exercise page and in the lists.
+- **Estimated 1RM** – the exercise page estimates your one-rep max from your best set, shows
+  how much it grew in 30 days and a 60-95% table for planning sets; the chart can switch
+  between top set and estimated max.
+- **Strength levels** – add your body weight (only you see it) and bench, squat, deadlift
+  and overhead press are placed on a Beginner to Elite scale, with the kilos left to the next
+  level and your weakest lift.
+- **Training together** – mark a friend you trained with; both of you see how many workouts
+  you have done together.
 - **Your look** – pick a character avatar or upload your own photo (cropped and shrunk on
   the phone before upload); change it any time from your profile.
 
@@ -105,6 +134,7 @@ Built with [Claude Code](https://claude.com/claude-code) as a pair, milestone by
 4. **Verify in a real browser.** Every milestone was clicked through at a 375 px phone
    viewport before committing. That's how a `position: fixed` bug inside a transformed
    page wrapper turned up (fixed by portalling sheets and the rest timer to `<body>`).
-5. **Art direction.** Exercise images, avatars, the icon and the mascot are generated with
-   Higgsfield from a single chosen style, checked for form and anatomy, and stored locally
-   as WebP. Prompts are logged in [`docs/prompts.md`](docs/prompts.md).
+5. **Art direction.** The mascot and the avatars are generated with Higgsfield from a single
+   chosen style and stored locally as WebP (prompts in [`docs/prompts.md`](docs/prompts.md)).
+   Generated exercise images were later replaced by animated figures drawn in code, which
+   cover all 83 exercises and always show the right form.

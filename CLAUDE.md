@@ -65,7 +65,10 @@ npm test           # vitest (schedule logic etc.)
   rename / delete day and add / remove exercise browser-verified (net-zero on the user's split).
   Repo variables set and Pages source = GitHub Actions (user approved); first deploy green,
   live at https://ricciricch.github.io/gym-app/ (deep links work via 404.html, served with
-  HTTP 404 status, which is expected). Still to do: README screenshots. PWA manifest + icons done. The icon (favicon + PWA) is
+  HTTP 404 status, which is expected). README screenshots done (2026-11-17): 10 WebP shots in
+  `docs/screenshots/` (585 px wide), taken in headless Chrome over CDP at 390x844 from a seeded
+  throwaway demo account (deleted afterwards); the summary shot is the `/dev/celebration` playground.
+  In Git Bash run such scripts with `MSYS_NO_PATHCONV=1`, or "/progress" turns into a Windows path. PWA manifest + icons done. The icon (favicon + PWA) is
   the flat lime `DumbbellMark` on the app's dark, drawn by `python scripts/make-icons.py` (user
   found the clay icon too playful on 2026-11-16).
 - Auth extras: "Keep me logged in" checkbox (default on) picks localStorage vs sessionStorage
