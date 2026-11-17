@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   canNudge,
+  daysQuiet,
+  splitQuiet,
   inviteLink,
   lastWorkoutLabel,
   liveStreak,
@@ -130,5 +132,32 @@ describe('training together', () => {
     expect(togetherLine('Ana', 1)).toMatch(/^First workout with Ana/)
     expect(togetherLine('Ana', 5)).toBe('Workout #5 with Ana.')
     expect(togetherLine('Ana', 20)).toMatch(/#20 with Ana.*buddy/)
+  })
+})
+
+describe('quiet friends', () => {
+  const today = '2026-11-17'
+  const since = '2026-01-10T12:00:00Z'
+
+  it('counts days since the last workout, or since becoming friends', () => {
+    expect(daysQuiet('2026-11-17', since, today)).toBe(0)
+    expect(daysQuiet('2026-11-07', since, today)).toBe(10)
+    expect(daysQuiet(null, '2026-11-15T09:00:00Z', today)).toBe(2)
+    // Old workouts from before the friendship do not make a new friend look quiet.
+    expect(daysQuiet('2026-10-01', '2026-11-16T09:00:00Z', today)).toBe(1)
+  })
+
+  it('moves friends quiet for 10+ days aside, most recent first', () => {
+    const friends = [
+      { name: 'Ana', lastDate: '2026-11-16', since },
+      { name: 'Marko', lastDate: '2026-10-01', since },
+      { name: 'Luka', lastDate: '2026-11-08', since },
+      { name: 'Iva', lastDate: '2026-11-07', since },
+      { name: 'Nina', lastDate: null, since: '2026-11-12T08:00:00Z' },
+      { name: 'Pera', lastDate: null, since },
+    ]
+    const { active, quiet } = splitQuiet(friends, today)
+    expect(active.map((f) => f.name)).toEqual(['Ana', 'Luka', 'Nina'])
+    expect(quiet.map((f) => f.name)).toEqual(['Iva', 'Marko', 'Pera'])
   })
 })

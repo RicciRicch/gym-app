@@ -245,6 +245,12 @@ npm test           # vitest (schedule logic etc.)
   fist bump, table, friend page, nudge both ways, remove, typed code. RLS/grants checked with
   SQL as friend / stranger / anon. Not exercised: the share sheet and QR scan on a real phone,
   two real accounts, the user's own account (the pane was signed out).
+- Quiet friends (user's idea, 2026-11-17): /friends folds friends without a workout for 10+ days
+  (`QUIET_DAYS`, `daysQuiet` / `splitQuiet` in `src/lib/friends.ts`, unit-tested; counted from the
+  last workout, or from becoming friends if that is later, so new friends get a fair start) into a
+  collapsed "Quiet lately · N" section (most recent first, same rows with the nudge button; open
+  at start when nobody is active). The weekly table still lists everyone. Verified in headless
+  Brave with throwaway accounts (deleted).
 - Rest before a workout: `RestPicker` (`src/features/workout/RestPicker.tsx`: −/+ in 15 s steps
   from 15 s to 10 min via `stepRest`, plus quick picks 45s-3:00; `formatRest` in
   `src/lib/workout.ts`, unit-tested) sits on the /workout start screen and in the running

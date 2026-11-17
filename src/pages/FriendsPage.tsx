@@ -10,7 +10,7 @@ import { GymPass } from '../features/friends/GymPass'
 import { openInvite } from '../features/friends/invite-store'
 import { NudgeButton } from '../features/friends/NudgeButton'
 import { WeeklyTable } from '../features/friends/WeeklyTable'
-import { lastWorkoutLabel, liveStreak, parseFriendCode } from '../lib/friends'
+import { QUIET_DAYS, lastWorkoutLabel, liveStreak, parseFriendCode, splitQuiet } from '../lib/friends'
 import { toISODate } from '../lib/schedule'
 
 /** Friends: your gym pass, adding by code, requests, the weekly table and the list. */
@@ -21,6 +21,7 @@ export function FriendsPage() {
   const incoming = all.filter((f) => f.status === 'incoming')
   const outgoing = all.filter((f) => f.status === 'outgoing')
   const accepted = all.filter((f) => f.status === 'accepted')
+  const { active, quiet } = splitQuiet(accepted, toISODate(new Date()))
 
   return (
     <div className="animate-fade-up pt-2">
@@ -60,14 +61,19 @@ export function FriendsPage() {
           <WeeklyTable className="mt-6" />
 
           {accepted.length > 0 ? (
-            <section className="mt-6">
-              <h2 className="text-sm font-semibold tracking-widest text-muted uppercase">Your friends · {accepted.length}</h2>
-              <ul className="mt-2 flex flex-col gap-2">
-                {accepted.map((f) => (
-                  <FriendRow key={f.id} friend={f} />
-                ))}
-              </ul>
-            </section>
+            <>
+              {active.length > 0 && (
+                <section className="mt-6">
+                  <h2 className="text-sm font-semibold tracking-widest text-muted uppercase">Your friends · {active.length}</h2>
+                  <ul className="mt-2 flex flex-col gap-2">
+                    {active.map((f) => (
+                      <FriendRow key={f.id} friend={f} />
+                    ))}
+                  </ul>
+                </section>
+              )}
+              {quiet.length > 0 && <QuietFriends friends={quiet} openAtStart={active.length === 0} />}
+            </>
           ) : (
             <div className="mt-8 flex flex-col items-center text-center">
               <Mascot pose="sad" className="h-28" />
@@ -171,6 +177,45 @@ function PendingRow({ friend }: { friend: Friend }) {
         Cancel
       </button>
     </li>
+  )
+}
+
+/** Friends without a workout for QUIET_DAYS+, folded away so the list shows who is training. */
+function QuietFriends({ friends, openAtStart }: { friends: Friend[]; openAtStart: boolean }) {
+  const [open, setOpen] = useState(openAtStart)
+  return (
+    <section className="mt-6">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="-mx-1 flex min-h-11 w-[calc(100%+0.5rem)] items-center gap-2 px-1 text-left"
+      >
+        <span className="flex-1 text-sm font-semibold tracking-widest text-muted uppercase">Quiet lately · {friends.length}</span>
+        <svg
+          viewBox="0 0 24 24"
+          className={`size-5 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <>
+          <p className="text-sm text-muted">No workout in {QUIET_DAYS}+ days. A nudge might get them moving.</p>
+          <ul className="mt-2 flex flex-col gap-2">
+            {friends.map((f) => (
+              <FriendRow key={f.id} friend={f} />
+            ))}
+          </ul>
+        </>
+      )}
+    </section>
   )
 }
 

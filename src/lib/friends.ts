@@ -2,7 +2,7 @@
 // the weekly table and the gorilla's lines.
 
 import { pick } from './gorilla'
-import { addDays, fromISODate, startOfWeek, type ISODate } from './schedule'
+import { addDays, fromISODate, startOfWeek, toISODate, type ISODate } from './schedule'
 
 const CODE = /^GORILA-[A-HJ-NP-Z2-9]{4}$/
 
@@ -51,6 +51,35 @@ export function lastWorkoutLabel(date: ISODate | null, dayName: string | null, t
           ? `${days} days ago`
           : fromISODate(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
   return dayName ? `${dayName} · ${when}` : when
+}
+
+/** A friend counts as quiet after this many days without a workout. */
+export const QUIET_DAYS = 10
+
+/**
+ * Days since a friend last showed up: their last workout, or the day you became
+ * friends if they never trained (so a new friend gets a fair start).
+ */
+export function daysQuiet(lastDate: ISODate | null, since: string, today: ISODate): number {
+  const sinceDay = toISODate(new Date(since))
+  const last = lastDate && lastDate > sinceDay ? lastDate : sinceDay
+  return Math.max(0, daysBetween(last, today))
+}
+
+/** Splits friends into active ones and quiet ones (QUIET_DAYS+), the quiet ones most recent first. */
+export function splitQuiet<T extends { lastDate: ISODate | null; since: string }>(
+  friends: readonly T[],
+  today: ISODate,
+): { active: T[]; quiet: T[] } {
+  const active: T[] = []
+  const quiet: { friend: T; days: number }[] = []
+  for (const friend of friends) {
+    const days = daysQuiet(friend.lastDate, friend.since, today)
+    if (days >= QUIET_DAYS) quiet.push({ friend, days })
+    else active.push(friend)
+  }
+  quiet.sort((a, b) => a.days - b.days)
+  return { active, quiet: quiet.map((q) => q.friend) }
 }
 
 export interface TableEntry {
