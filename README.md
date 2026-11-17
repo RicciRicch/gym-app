@@ -92,6 +92,8 @@ and watch your top sets climb.
   you have done together.
 - **Your look** – pick a character avatar or upload your own photo (cropped and shrunk on
   the phone before upload); change it any time from your profile.
+- **Themes** – five accent colors (Lime, Ember, Electric blue, Violet, Gold) on the same dark
+  app, picked on your profile and applied before the first paint, so there is no flash.
 
 ## Stack
 

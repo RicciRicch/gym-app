@@ -1,12 +1,13 @@
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps } from 'recharts'
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { fromISODate } from '../../lib/schedule'
+import { useTheme } from '../theme/theme-store'
 import type { ChartPoint, ChartSeries } from './series'
 
-// Single series, so no legend: the page title names it. Brand lime passes 3:1
-// contrast on the surface. PRs are never color-only: larger marker + "PR" label.
+// Single series, so no legend: the page title names it. Every theme accent passes
+// 3:1 contrast on the surface (theme.test.ts). PRs are never color-only: larger
+// marker + "PR" label.
 
-const ACCENT = '#c8ff2e'
 const SURFACE = '#14181d'
 const GRID = '#2a313a'
 const MUTED = '#8b96a3'
@@ -19,6 +20,7 @@ interface Datum extends ChartPoint {
 
 export function ProgressChart({ series }: { series: ChartSeries }) {
   const { points, step } = series
+  const accent = useTheme().accent
   const data: Datum[] = points.map((p, i) => ({
     ...p,
     // Two sessions on one day still get distinct x positions.
@@ -65,11 +67,11 @@ export function ProgressChart({ series }: { series: ChartSeries }) {
             <Line
               type="monotone"
               dataKey="value"
-              stroke={ACCENT}
+              stroke={accent}
               strokeWidth={2}
               isAnimationActive={data.length < 60}
-              dot={(props) => <PointDot key={props.index} {...(props as DotProps)} />}
-              activeDot={{ r: 6, fill: ACCENT, stroke: SURFACE, strokeWidth: 2 }}
+              dot={(props) => <PointDot key={props.index} {...(props as DotProps)} accent={accent} />}
+              activeDot={{ r: 6, fill: accent, stroke: SURFACE, strokeWidth: 2 }}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -85,12 +87,12 @@ interface DotProps {
   payload?: Datum
 }
 
-function PointDot({ cx, cy, payload }: DotProps) {
+function PointDot({ cx, cy, payload, accent }: DotProps & { accent: string }) {
   if (cx === undefined || cy === undefined || !payload) return null
-  if (!payload.isPR) return <circle cx={cx} cy={cy} r={4} fill={ACCENT} stroke={SURFACE} strokeWidth={2} />
+  if (!payload.isPR) return <circle cx={cx} cy={cy} r={4} fill={accent} stroke={SURFACE} strokeWidth={2} />
   return (
     <g>
-      <circle cx={cx} cy={cy} r={6.5} fill={ACCENT} stroke={SURFACE} strokeWidth={2} />
+      <circle cx={cx} cy={cy} r={6.5} fill={accent} stroke={SURFACE} strokeWidth={2} />
       <text x={cx} y={cy - 12} textAnchor="middle" fill="#f2f5f7" fontSize={10} fontWeight={800}>
         PR
       </text>

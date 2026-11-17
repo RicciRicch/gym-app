@@ -1,11 +1,17 @@
 import { useEffect, useRef } from 'react'
+import { currentTheme } from '../features/theme/theme-store'
 import { prefersReducedMotion } from '../lib/motion'
 
 // Canvas confetti, no dependencies. 'big' is the PR celebration: cannons from
 // both bottom corners, a burst behind the headline, a second volley and a
 // shower from the top. 'small' is a single pair of cannons.
 
-const COLORS = ['#c8ff2e', '#ffffff', '#ffd23f', '#ff7a1a', '#3ee6ff', '#ff4fa3']
+// The first color is the theme accent.
+const OTHER_COLORS = ['#ffffff', '#ffd23f', '#ff7a1a', '#3ee6ff', '#ff4fa3']
+const pickColor = () => {
+  const i = Math.floor(Math.random() * (OTHER_COLORS.length + 1))
+  return i === 0 ? currentTheme().accent : OTHER_COLORS[i - 1]
+}
 const GRAVITY = 900
 const DRAG = 3
 
@@ -38,7 +44,7 @@ function particle(x: number, y: number, angle: number, speed: number): Particle 
     vy: Math.sin(angle) * speed,
     size: rand(6, 12),
     shape: Math.random() < 0.6 ? 0 : Math.random() < 0.5 ? 1 : 2,
-    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    color: pickColor(),
     rot: rand(0, Math.PI * 2),
     vr: rand(-8, 8),
     flip: rand(0, Math.PI * 2),

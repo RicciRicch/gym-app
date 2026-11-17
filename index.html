@@ -11,6 +11,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Gym App</title>
+    <script>
+      // Apply the saved accent color before the first paint (see src/lib/theme.ts).
+      try {
+        var t = JSON.parse(localStorage.getItem('gym-app:theme') || 'null')
+        var hex = /^#[0-9a-f]{6}$/i
+        if (t && hex.test(t.accent) && hex.test(t.dim)) {
+          document.documentElement.style.setProperty('--color-accent', t.accent)
+          document.documentElement.style.setProperty('--color-accent-dim', t.dim)
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

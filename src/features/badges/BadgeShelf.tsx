@@ -10,7 +10,7 @@ import { Medal } from './Medal'
 const SLOT = 76
 /** Flying medals are drawn at this size and scaled down, so they stay sharp. */
 const FLY = 176
-const SPARK_COLORS = ['#ffd23f', '#c8ff2e', '#ffffff', '#ff7a1a']
+const SPARK_COLORS = ['#ffd23f', 'var(--color-accent)', '#ffffff', '#ff7a1a']
 
 const earnedDate = (iso: string) =>
   fromISODate(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })

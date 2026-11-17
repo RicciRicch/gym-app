@@ -8,7 +8,10 @@ import { reloadForNewVersion } from './lib/lazy-page'
 import { AuthProvider } from './features/auth/AuthProvider'
 import { captureInviteFromUrl } from './features/friends/invite-store'
 import { persistQueryCache, restoreQueryCache } from './features/offline/query-cache'
+import { initTheme } from './features/theme/theme-store'
 import './index.css'
+
+initTheme()
 
 const queryClient = new QueryClient({
   defaultOptions: {

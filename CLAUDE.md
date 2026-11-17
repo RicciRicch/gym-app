@@ -115,7 +115,7 @@ npm test           # vitest (schedule logic etc.)
   glow behind the flame; user's pick on 2026-11-17) and on the summary (framed card). `useWorkoutDates` feeds it.
 - Dev playground: `/dev/celebration` (dev server only, no sign-in; `?prs=0|1|2` opens the
   summary directly). The Browser pane is often hidden, where requestAnimationFrame does not
-  run, so check canvas/RAF animations with headless Chrome over CDP instead.
+  run, so check canvas/RAF animations with headless Brave over CDP instead (never Google Chrome; profile dir only as an absolute path in %TEMP%).
   Browser-verified end to end: finish with a heavier squat -> "NEW PR!", gain, stats, streak
   card on Today (test rows deleted). Not exercised: vibration, a real phone.
 - Profile photos: onboarding and Profile (tap the avatar -> "Change avatar" sheet) offer the 4
@@ -312,6 +312,15 @@ npm test           # vitest (schedule logic etc.)
   Browser-verified at 375px with a throwaway account (deleted): switch, rest/order edits saved,
   Today next-up and waiting line, sad gorilla, another day, finish -> calendar projection,
   rotating preset, switch back to weekly.
+- Themes (user asked on 2026-11-17): five accents in `src/lib/theme.ts` (Lime default, Ember,
+  Electric blue, Violet, Gold; no red, it means errors), unit-tested for contrast (accent and dim
+  vs button ink >= 4.5, accent vs surface >= 3). Saved per device in localStorage `gym-app:theme`
+  as JSON {id, accent, dim}; the inline script in `index.html` sets `--color-accent` /
+  `--color-accent-dim` on <html> before the first paint, `initTheme` / `setTheme` / `useTheme`
+  (`src/features/theme/theme-store.ts`) keep it in sync. CSS uses `color-mix(... var(--color-accent))`
+  instead of hardcoded lime; canvas/Recharts read `currentTheme()` / `useTheme()`. `ThemeRow` +
+  sheet on Profile. Stay lime on purpose: gorilla images, app icon, legendary medal tier.
+  Verified all five in headless Brave (Today, sheet, chart, PR summary).
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL

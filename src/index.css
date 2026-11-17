@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-/* Design tokens — dark-first, electric-lime accent. */
+/* Design tokens — dark-first, electric-lime accent (the theme picker swaps the accent). */
 @theme {
   --color-bg: #0b0d10;
   --color-surface: #14181d;
@@ -188,7 +188,7 @@ body {
    ------------------------------------------------------------------------ */
 /* Rotating sunburst behind the mascot. */
 .sunburst {
-  background: repeating-conic-gradient(from 0deg, rgb(200 255 46 / 0.28) 0deg 9deg, transparent 9deg 18deg);
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--color-accent) 28%, transparent) 0deg 9deg, transparent 9deg 18deg);
   -webkit-mask-image: radial-gradient(circle, #000 12%, transparent 68%);
   mask-image: radial-gradient(circle, #000 12%, transparent 68%);
   animation:
@@ -222,7 +222,7 @@ body {
 .pr-stamp {
   animation: pr-stamp 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both;
   text-shadow:
-    0 0 28px rgb(200 255 46 / 0.55),
+    0 0 28px color-mix(in srgb, var(--color-accent) 55%, transparent),
     0 4px 0 rgb(0 0 0 / 0.35);
 }
 @keyframes pr-stamp {
@@ -363,10 +363,10 @@ body {
 @keyframes dot-pr {
   0%,
   100% {
-    filter: drop-shadow(0 0 0 rgb(200 255 46 / 0));
+    filter: drop-shadow(0 0 0 color-mix(in srgb, var(--color-accent) 0%, transparent));
   }
   50% {
-    filter: drop-shadow(0 0 6px rgb(200 255 46 / 0.7));
+    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-accent) 70%, transparent));
   }
 }
 
@@ -603,10 +603,10 @@ body {
 /* The gym pass: a membership card with a lime sheen. */
 .gym-pass {
   background:
-    radial-gradient(120% 90% at 100% 0%, rgb(200 255 46 / 0.16), transparent 60%),
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 60%),
     repeating-linear-gradient(135deg, rgb(255 255 255 / 0.025) 0 2px, transparent 2px 9px),
     linear-gradient(160deg, #1b222b, #0f1318);
-  box-shadow: 0 18px 40px -22px rgb(200 255 46 / 0.45);
+  box-shadow: 0 18px 40px -22px color-mix(in srgb, var(--color-accent) 45%, transparent);
 }
 /* Fist bump: both sides charge in, meet in the middle and recoil. */
 .fist-left {
