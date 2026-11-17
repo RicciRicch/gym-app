@@ -77,6 +77,7 @@ export type Database = {
           name: string
           preset_key: string | null
           is_active: boolean
+          mode: 'weekly' | 'rotating'
           created_at: string
         }
         Insert: {
@@ -85,10 +86,12 @@ export type Database = {
           name: string
           preset_key?: string | null
           is_active?: boolean
+          mode?: 'weekly' | 'rotating'
         }
         Update: {
           name?: string
           is_active?: boolean
+          mode?: 'weekly' | 'rotating'
         }
         Relationships: []
       }
@@ -100,6 +103,7 @@ export type Database = {
           name: string
           weekday: number | null
           position: number
+          rest_after: number
           created_at: string
         }
         Insert: {
@@ -109,11 +113,13 @@ export type Database = {
           name: string
           weekday?: number | null
           position?: number
+          rest_after?: number
         }
         Update: {
           name?: string
           weekday?: number | null
           position?: number
+          rest_after?: number
         }
         Relationships: [Rel<'split_days_split_id_fkey', 'split_id', 'splits'>]
       }

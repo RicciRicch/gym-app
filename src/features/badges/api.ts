@@ -2,9 +2,9 @@ import { useEffect, useMemo, useSyncExternalStore } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { computeBadges, unseenBadges, type BadgeState, type BadgeWorkout } from '../../lib/badges'
-import { trainingDaysPerWeek } from '../../lib/streak'
 import { useAuth } from '../auth/auth-context'
 import { useLoggedSets } from '../progress/api'
+import { weeklyTarget } from '../schedule/plan'
 import { useActiveSplit } from '../split/api'
 import { useStreakFreezes } from '../streak/api'
 
@@ -38,7 +38,7 @@ export function useBadges(): BadgeState[] | null {
         ? computeBadges({
             workouts: workouts.data,
             sets: sets.data,
-            streakTarget: trainingDaysPerWeek(split.data?.split_days ?? []),
+            streakTarget: weeklyTarget(split.data),
             frozenWeeks: freezes.data,
           })
         : null,

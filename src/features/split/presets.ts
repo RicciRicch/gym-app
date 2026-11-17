@@ -1,5 +1,9 @@
 // Split presets. Exercises reference the core library by slug; weekday 0 = Monday.
-// Weekdays without a day are rest days.
+// Weekdays without a day are rest days. Rotating presets loop through their days
+// with `restAfter` rest days after each; their weekdays are used if the user
+// switches to weekly later.
+
+import type { SplitMode } from '../../lib/cycle'
 
 export interface PresetExercise {
   slug: string
@@ -10,6 +14,8 @@ export interface PresetExercise {
 export interface PresetDay {
   name: string
   weekday: number
+  /** Rotating presets: rest days after this day. */
+  restAfter?: number
   exercises: PresetExercise[]
 }
 
@@ -17,6 +23,7 @@ export interface SplitPreset {
   key: string
   name: string
   tagline: string
+  mode?: SplitMode
   days: PresetDay[]
 }
 
@@ -100,6 +107,49 @@ export const SPLIT_PRESETS: SplitPreset[] = [
       { name: 'Shoulders', weekday: 2, exercises: [ex('overhead-press', 4, 8), ex('lateral-raise', 4, 12)] },
       { name: 'Arms', weekday: 3, exercises: [ex('dumbbell-curl', 4, 12), ex('triceps-pushdown', 4, 12)] },
       { name: 'Legs', weekday: 4, exercises: [ex('squat', 4, 8), ex('leg-press', 3, 12), ex('romanian-deadlift', 3, 10)] },
+    ],
+  },
+  {
+    key: 'ppl-rotating',
+    name: 'Push / Pull / Legs rotation',
+    tagline: 'Rotating · 3 on, 1 off, not tied to weekdays',
+    mode: 'rotating',
+    days: [
+      {
+        name: 'Push',
+        weekday: 0,
+        exercises: [ex('bench-press', 4, 8), ex('overhead-press', 3, 8), ex('lateral-raise', 3, 12), ex('triceps-pushdown', 3, 12)],
+      },
+      {
+        name: 'Pull',
+        weekday: 2,
+        exercises: [ex('pull-up', 4, 8), ex('barbell-row', 4, 8), ex('lat-pulldown', 3, 10), ex('dumbbell-curl', 3, 12)],
+      },
+      {
+        name: 'Legs',
+        weekday: 4,
+        restAfter: 1,
+        exercises: [ex('squat', 4, 6), ex('romanian-deadlift', 3, 8), ex('leg-press', 3, 12)],
+      },
+    ],
+  },
+  {
+    key: 'upper-lower-rotating',
+    name: 'Upper / Lower rotation',
+    tagline: 'Rotating · 2 on, 1 off, not tied to weekdays',
+    mode: 'rotating',
+    days: [
+      {
+        name: 'Upper',
+        weekday: 0,
+        exercises: [ex('bench-press', 4, 6), ex('barbell-row', 4, 8), ex('overhead-press', 3, 8), ex('lat-pulldown', 3, 10), ex('dumbbell-curl', 3, 12)],
+      },
+      {
+        name: 'Lower',
+        weekday: 1,
+        restAfter: 1,
+        exercises: [ex('squat', 4, 6), ex('romanian-deadlift', 3, 8), ex('leg-press', 3, 12)],
+      },
     ],
   },
 ]

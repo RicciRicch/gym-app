@@ -32,6 +32,9 @@ and watch your top sets climb.
 
 - **Splits** – start from a preset (Push/Pull/Legs, Upper/Lower, Full Body, Bro Split) or
   from scratch. Move days between weekdays, set default exercises with sets × reps.
+- **Rotating cycle** – not tied to weekdays? Switch the split to rotating (Push, Pull, Legs,
+  rest, repeat). The plan waits for you: skip a day and everything moves one day later instead
+  of being lost, and the streak target follows the cycle's pace.
 - **Calendar** – week and month views, completed workouts marked, swap two days for the
   current week only (stored as overrides, your split stays untouched).
 - **Today** – one big "Start workout" button for whatever is scheduled, or "Train anyway"

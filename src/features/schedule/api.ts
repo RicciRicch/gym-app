@@ -4,11 +4,11 @@ import { buildSwap, type ISODate, type Override, type PlanDay } from '../../lib/
 import { useAuth } from '../auth/auth-context'
 
 /** Per-date overrides of the weekly plan within [from, to]. */
-export function useOverrides(from: ISODate, to: ISODate) {
+export function useOverrides(from: ISODate, to: ISODate, enabled = true) {
   const { user } = useAuth()
   return useQuery({
     queryKey: ['overrides', user?.id, from, to],
-    enabled: !!user,
+    enabled: !!user && enabled,
     queryFn: async (): Promise<Override[]> => {
       const { data, error } = await supabase
         .from('schedule_overrides')

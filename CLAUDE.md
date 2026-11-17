@@ -295,6 +295,23 @@ npm test           # vitest (schedule logic etc.)
   exercise list and in the first-run guide. The mascot moved to `src/components/Mascot.tsx`.
   Playground: `/dev/celebration?figures=1` (animated), `?figures=still` (both frames).
   The `exercises.image_key` column is now unused.
+- Rotating cycle (user asked on 2026-11-17, so no longer a future feature): migration
+  `rotating_cycle` adds `splits.mode` ('weekly' | 'rotating') and `split_days.rest_after` (0-6).
+  Rotating = days loop in `position` order, each followed by `rest_after` rest days; weekdays are
+  kept so switching back restores the week. The plan waits for you: `src/lib/cycle.ts`
+  (unit-tested) projects from the last workout on one of the split's days (`projectCycle`; a
+  skipped day moves everything later, nothing is lost), `cycleWeeklyTarget` = floor(workouts x 7 /
+  length) for the streak, `cycleMissed` for the sad gorilla, `cycleFromWeek` turns the weekly
+  layout into a cycle with the same rhythm on the first switch. `usePlan(from, to)`
+  (`src/features/schedule/plan.ts`) is the one plan for Today, Calendar, the workout start screen
+  and the gorilla in both modes; `weeklyTarget(split)` feeds streak, badges and the summary.
+  Split page: `ModeSwitch`, `CycleSection` (order with up/down, rest stepper, `CycleStrip`);
+  presets "Push / Pull / Legs rotation" and "Upper / Lower rotation". Today: "Next up · day 2 of
+  4", "Planned for Sunday. Your cycle waited for you.", "Do another day instead" (both modes).
+  Calendar: projection for future days, "No workout" for past ones, no swaps in rotating mode.
+  Browser-verified at 375px with a throwaway account (deleted): switch, rest/order edits saved,
+  Today next-up and waiting line, sad gorilla, another day, finish -> calendar projection,
+  rotating preset, switch back to weekly.
 - Fixed overlays: Sheet and RestTimer render via portal into <body>; page wrappers use
   animate-fade-up (a transform), which traps position: fixed.
 - Supabase Auth dashboard (no MCP tool for auth config), set by the user on 2026-11-14: Site URL
@@ -307,5 +324,4 @@ npm test           # vitest (schedule logic etc.)
 
 - Feed (friends' finished workouts)
 - Privacy settings (per-profile / per-workout visibility; friends see no weights until then)
-- Rolling cycle (split not tied to weekdays)
 - Optimal schedule suggestion

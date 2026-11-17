@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageLoader } from '../components/ui'
-import { useCompletedWorkouts, useOverrides, useResetOverrides, useSwapDays } from '../features/schedule/api'
-import { useActiveSplit, type SplitDay } from '../features/split/api'
+import { useCompletedWorkouts, useResetOverrides, useSwapDays } from '../features/schedule/api'
+import { usePlan } from '../features/schedule/plan'
+import { type SplitDay } from '../features/split/api'
 import {
   WEEKDAY_SHORT,
   addDays,
   fromISODate,
   isSameWeek,
   monthGrid,
-  resolveDay,
   toISODate,
   weekDates,
   weekdayOf,
@@ -33,16 +33,18 @@ export function CalendarPage() {
   const from = weeks[0][0]
   const to = weeks.at(-1)![6]
 
-  const split = useActiveSplit()
-  const overrides = useOverrides(from, to)
+  const { isPending, split, plan } = usePlan(from, to)
   const completed = useCompletedWorkouts(from, to)
   const swap = useSwapDays()
   const reset = useResetOverrides()
 
-  const days: SplitDay[] = split.data?.split_days ?? []
-  const overrideList = overrides.data ?? []
-  const planned = (date: ISODate) => resolveDay(date, days, overrideList)
+  const days: SplitDay[] = plan?.days ?? []
+  const overrideList = plan?.overrides ?? []
+  const rotating = plan?.mode === 'rotating'
+  const planned = (date: ISODate) => plan?.planned(date) ?? null
   const doneOn = (date: ISODate) => completed.data?.find((w) => w.date === date)
+  // Rotating: past days only show what was done; the cycle has no plan for them.
+  const missedPast = (date: ISODate) => rotating && date < today && !doneOn(date)
   const isCurrentWeek = view === 'week' && isSameWeek(anchor, today)
   const weekHasOverrides = view === 'week' && overrideList.length > 0
 
@@ -53,19 +55,19 @@ export function CalendarPage() {
   }
 
   function tapWeekDay(date: ISODate) {
-    if (!isCurrentWeek || doneOn(date)) return
+    if (rotating || !isCurrentWeek || doneOn(date)) return
     if (swapFrom === null) return setSwapFrom(date)
     if (swapFrom !== date) swap.mutate({ a: swapFrom, b: date, days, overrides: overrideList })
     setSwapFrom(null)
   }
 
-  if (split.isPending) {
+  if (isPending) {
     return (
       <PageLoader label="Loading your week" />
     )
   }
 
-  if (!split.data) {
+  if (!split) {
     return (
       <div className="animate-fade-up pt-2">
         <h1 className="text-3xl font-black tracking-tight">Calendar</h1>
@@ -147,10 +149,16 @@ export function CalendarPage() {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className={`block truncate font-bold ${day || done ? '' : 'text-muted/60'}`}>
-                        {done?.day_name ?? day?.name ?? 'Rest'}
+                        {done?.day_name ?? day?.name ?? (missedPast(date) ? 'No workout' : 'Rest')}
                       </span>
                       <span className="block text-sm text-muted">
-                        {done ? 'Completed' : day ? `${count} ${count === 1 ? 'exercise' : 'exercises'}` : 'Recover'}
+                        {done
+                          ? 'Completed'
+                          : day
+                            ? `${count} ${count === 1 ? 'exercise' : 'exercises'}${rotating ? ' · in your cycle' : ''}`
+                            : missedPast(date)
+                              ? 'Nothing logged'
+                              : 'Recover'}
                         {overrideList.some((o) => o.date === date) && !done && ' · swapped'}
                       </span>
                     </span>
@@ -162,11 +170,13 @@ export function CalendarPage() {
           </ul>
 
           <p className="mt-4 text-center text-sm text-muted" aria-live="polite">
-            {!isCurrentWeek
-              ? 'Days can be swapped in the current week only.'
-              : swapFrom
-                ? 'Now tap the day to swap it with.'
-                : 'Tap two days to swap them for this week.'}
+            {rotating
+              ? 'Your cycle waits for you: skip a day and the rest of the plan moves one day later.'
+              : !isCurrentWeek
+                ? 'Days can be swapped in the current week only.'
+                : swapFrom
+                  ? 'Now tap the day to swap it with.'
+                  : 'Tap two days to swap them for this week.'}
           </p>
           {swap.isError && (
             <p role="alert" className="mt-2 text-center text-sm text-danger">
@@ -215,7 +225,13 @@ export function CalendarPage() {
               )
             })}
           </div>
-          <SelectedDay date={selected} day={planned(selected)} doneName={doneOn(selected)?.day_name} isToday={selected === today} />
+          <SelectedDay
+            date={selected}
+            day={planned(selected)}
+            doneName={doneOn(selected)?.day_name}
+            isToday={selected === today}
+            past={missedPast(selected)}
+          />
         </>
       )}
     </div>
@@ -227,11 +243,14 @@ function SelectedDay({
   day,
   doneName,
   isToday,
+  past,
 }: {
   date: ISODate
   day: SplitDay | null
   doneName: string | undefined
   isToday: boolean
+  /** Rotating cycle, a past day without a workout. */
+  past: boolean
 }) {
   const label = fromISODate(date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
   return (
@@ -240,7 +259,7 @@ function SelectedDay({
         {label}
         {isToday && <span className="text-accent"> · Today</span>}
       </p>
-      <h2 className="mt-0.5 text-xl font-bold">{doneName ?? day?.name ?? 'Rest day'}</h2>
+      <h2 className="mt-0.5 text-xl font-bold">{doneName ?? day?.name ?? (past ? 'No workout' : 'Rest day')}</h2>
       {doneName ? (
         <p className="mt-1 flex items-center gap-2 text-sm text-accent">
           <DoneBadge small /> Workout completed
@@ -258,7 +277,9 @@ function SelectedDay({
           {day.split_day_exercises.length === 0 && <li>No exercises set for this day yet.</li>}
         </ul>
       ) : (
-        <p className="mt-1 text-sm text-muted">Nothing planned. Recover and come back stronger.</p>
+        <p className="mt-1 text-sm text-muted">
+          {past ? 'Nothing logged on this day.' : 'Nothing planned. Recover and come back stronger.'}
+        </p>
       )}
     </section>
   )

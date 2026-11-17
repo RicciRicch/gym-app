@@ -2,8 +2,9 @@ import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { toISODate, type ISODate } from '../../lib/schedule'
-import { trainingDaysPerWeek, weeklyStreak, type Streak } from '../../lib/streak'
+import { weeklyStreak, type Streak } from '../../lib/streak'
 import { useAuth } from '../auth/auth-context'
+import { weeklyTarget } from '../schedule/plan'
 import { useActiveSplit } from '../split/api'
 
 /** The date of every finished workout. Key starts with ['workouts', userId] so finishing or deleting one refreshes it. */
@@ -50,7 +51,7 @@ export function useFreezeWeek() {
   })
 }
 
-/** The weekly streak against the active split's training days. null while loading. */
+/** The weekly streak against the active split's workouts per week. null while loading. */
 export function useStreak(): Streak | null {
   const dates = useWorkoutDates()
   const freezes = useStreakFreezes()
@@ -59,7 +60,7 @@ export function useStreak(): Streak | null {
   return useMemo(
     () =>
       dates.data && !split.isPending
-        ? weeklyStreak(dates.data, trainingDaysPerWeek(split.data?.split_days ?? []), today, freezes.data ?? [])
+        ? weeklyStreak(dates.data, weeklyTarget(split.data), today, freezes.data ?? [])
         : null,
     [dates.data, freezes.data, split.isPending, split.data, today],
   )

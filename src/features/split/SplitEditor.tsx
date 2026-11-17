@@ -1,7 +1,9 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Button, Field, Loader } from '../../components/ui'
 import { Sheet, SheetOption } from '../../components/Sheet'
+import { cycleSlot } from '../../lib/cycle'
 import { WEEKDAY_LONG, WEEKDAY_SHORT } from '../../lib/schedule'
+import { CycleSection, ModeSwitch } from './CycleEditor'
 import { type MuscleGroup } from '../../lib/muscles'
 import { GroupChips, SearchField } from '../library/ExerciseFilter'
 import { useExerciseFilter } from '../library/filter'
@@ -66,29 +68,35 @@ export function SplitEditor({ split }: { split: Split }) {
         </div>
       </section>
 
-      <section aria-labelledby="week-heading">
-        <h2 id="week-heading" className="text-lg font-bold">
-          Weekly layout
-        </h2>
-        <p className="text-sm text-muted">Tap a weekday to change what you train. Empty days are rest.</p>
-        <ul className="mt-3 overflow-hidden rounded-3xl border border-line bg-surface">
-          {WEEKDAY_LONG.map((label, weekday) => {
-            const day = split.split_days.find((d) => d.weekday === weekday)
-            return (
-              <li key={label} className="border-b border-line last:border-b-0">
-                <button
-                  onClick={() => setSheet({ kind: 'weekday', weekday })}
-                  className="flex min-h-13 w-full items-center gap-4 px-4 text-left transition active:bg-surface-2"
-                >
-                  <span className="w-10 text-sm font-semibold text-muted">{WEEKDAY_SHORT[weekday]}</span>
-                  <span className={`flex-1 font-semibold ${day ? 'text-text' : 'text-muted/60'}`}>{day?.name ?? 'Rest'}</span>
-                  {day && <span className="size-2 rounded-full bg-accent" />}
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      </section>
+      <ModeSwitch split={split} />
+
+      {split.mode === 'rotating' ? (
+        <CycleSection split={split} />
+      ) : (
+        <section aria-labelledby="week-heading">
+          <h2 id="week-heading" className="text-lg font-bold">
+            Weekly layout
+          </h2>
+          <p className="text-sm text-muted">Tap a weekday to change what you train. Empty days are rest.</p>
+          <ul className="mt-3 overflow-hidden rounded-3xl border border-line bg-surface">
+            {WEEKDAY_LONG.map((label, weekday) => {
+              const day = split.split_days.find((d) => d.weekday === weekday)
+              return (
+                <li key={label} className="border-b border-line last:border-b-0">
+                  <button
+                    onClick={() => setSheet({ kind: 'weekday', weekday })}
+                    className="flex min-h-13 w-full items-center gap-4 px-4 text-left transition active:bg-surface-2"
+                  >
+                    <span className="w-10 text-sm font-semibold text-muted">{WEEKDAY_SHORT[weekday]}</span>
+                    <span className={`flex-1 font-semibold ${day ? 'text-text' : 'text-muted/60'}`}>{day?.name ?? 'Rest'}</span>
+                    {day && <span className="size-2 rounded-full bg-accent" />}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
 
       <section aria-labelledby="days-heading">
         <h2 id="days-heading" className="text-lg font-bold">
@@ -96,10 +104,17 @@ export function SplitEditor({ split }: { split: Split }) {
         </h2>
         <p className="text-sm text-muted">Each day&apos;s default exercises and targets.</p>
         <div className="mt-3 flex flex-col gap-3">
-          {split.split_days.map((day) => (
+          {split.split_days.map((day, i) => (
             <DayCard
               key={day.id}
               day={day}
+              when={
+                split.mode === 'rotating'
+                  ? `Day ${cycleSlot(split.split_days, i)} of the cycle`
+                  : day.weekday === null
+                    ? 'Not scheduled'
+                    : WEEKDAY_LONG[day.weekday]
+              }
               open={openDayId === day.id}
               onToggle={() => setOpenDayId(openDayId === day.id ? null : day.id)}
               onRename={() => setSheet({ kind: 'name', target: { dayId: day.id }, initial: day.name })}
@@ -198,6 +213,7 @@ export function SplitEditor({ split }: { split: Split }) {
 
 function DayCard({
   day,
+  when,
   open,
   onToggle,
   onRename,
@@ -205,6 +221,8 @@ function DayCard({
   onAddExercise,
 }: {
   day: SplitDay
+  /** Its weekday, or its place in the cycle. */
+  when: string
   open: boolean
   onToggle: () => void
   onRename: () => void
@@ -218,7 +236,7 @@ function DayCard({
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-lg font-bold">{day.name}</h3>
           <p className="text-sm text-muted">
-            {day.weekday === null ? 'Not scheduled' : WEEKDAY_LONG[day.weekday]} · {count} {count === 1 ? 'exercise' : 'exercises'}
+            {when} · {count} {count === 1 ? 'exercise' : 'exercises'}
           </p>
         </div>
         <svg

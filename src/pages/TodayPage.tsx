@@ -1,17 +1,21 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PageLoader, Spinner } from '../components/ui'
+import { Sheet, SheetOption } from '../components/Sheet'
 import { useProfile } from '../features/auth/useProfile'
-import { useCompletedWorkouts, useOverrides } from '../features/schedule/api'
+import { useCompletedWorkouts } from '../features/schedule/api'
+import { usePlan } from '../features/schedule/plan'
 import { GorillaCard } from '../features/gorilla/GorillaCard'
 import { useStreak } from '../features/streak/api'
 import { FreezeControl } from '../features/streak/FreezeControl'
 import { StreakCard } from '../features/streak/StreakCard'
-import { useActiveSplit, type SplitDay } from '../features/split/api'
+import { type SplitDay } from '../features/split/api'
 import { useStartWorkout } from '../features/workout/api'
 import { savePartnerIds, usePartnerIds } from '../features/workout/draft-store'
 import { PartnerPicker } from '../features/friends/Partners'
 import { useWorkoutDraft } from '../features/workout/draft-store'
-import { WEEKDAY_LONG, WEEKDAY_SHORT, addDays, fromISODate, resolveDay, toISODate, weekDates, weekdayOf } from '../lib/schedule'
+import { cycleLength } from '../lib/cycle'
+import { WEEKDAY_LONG, WEEKDAY_SHORT, addDays, fromISODate, toISODate, weekDates, weekdayOf } from '../lib/schedule'
 
 const primaryLink =
   'inline-flex w-full items-center justify-center rounded-2xl bg-accent font-bold text-accent-ink shadow-[0_0_32px_-6px] shadow-accent/60 transition active:scale-[0.97]'
@@ -27,14 +31,15 @@ export function TodayPage() {
   const { draft } = useWorkoutDraft()
   const start = useStartWorkout()
   const partnerIds = usePartnerIds()
-  const split = useActiveSplit()
   // One week back as well, so the coach can see what was planned on the last few days.
-  const overrides = useOverrides(addDays(week[0], -7), rangeEnd)
+  const { isPending, split, plan } = usePlan(addDays(week[0], -7), rangeEnd)
   const completed = useCompletedWorkouts(week[0], week[6])
   const streak = useStreak()
+  const [pickingOther, setPickingOther] = useState(false)
 
-  const days: SplitDay[] = split.data?.split_days ?? []
-  const planned = (date: string) => resolveDay(date, days, overrides.data ?? [])
+  const days: SplitDay[] = plan?.days ?? []
+  const planned = (date: string) => plan?.planned(date) ?? null
+  const next = plan?.mode === 'rotating' ? plan.next : null
   const doneOn = (date: string) => completed.data?.find((w) => w.date === date)
 
   const todayDay = planned(today)
@@ -53,9 +58,9 @@ export function TodayPage() {
       <p className="text-sm font-semibold tracking-widest text-accent uppercase">{dateLabel}</p>
       <h1 className="mt-1 text-3xl font-black tracking-tight">Hey, {profile?.display_name}</h1>
 
-      {split.isPending || overrides.isPending ? (
+      {isPending ? (
         <PageLoader label="Loading today" />
-      ) : !split.data ? (
+      ) : !split || !plan ? (
         <section className="mt-6 rounded-3xl border border-line bg-surface p-6">
           <h2 className="text-xl font-bold">No split yet</h2>
           <p className="mt-1 text-muted">Build your weekly split and today&apos;s workout will show up here.</p>
@@ -67,9 +72,8 @@ export function TodayPage() {
         <>
           <GorillaCard
             className="mt-3"
-            days={days}
-            overrides={overrides.data ?? []}
-            planSince={toISODate(new Date(split.data.created_at))}
+            plan={plan}
+            planSince={toISODate(new Date(split.created_at))}
             plannedToday={todayDay?.name ?? null}
             doneToday={!!doneToday}
             inProgress={!!draft}
@@ -126,8 +130,15 @@ export function TodayPage() {
             </section>
           ) : todayDay ? (
             <section className="mt-5 rounded-3xl border border-line bg-surface p-6">
-              <p className="text-sm font-semibold tracking-widest text-muted uppercase">Today&apos;s workout</p>
+              <p className="text-sm font-semibold tracking-widest text-muted uppercase">
+                {next ? `Next up · day ${next.slot} of ${cycleLength(days)}` : 'Today’s workout'}
+              </p>
               <h2 className="mt-1 text-3xl font-black tracking-tight">{todayDay.name}</h2>
+              {next && next.due < today && (
+                <p className="mt-1 text-sm text-muted">
+                  Planned for {WEEKDAY_LONG[weekdayOf(next.due)]}. Your cycle waited for you.
+                </p>
+              )}
               <ul className="mt-4 divide-y divide-line">
                 {todayDay.split_day_exercises.map((e) => (
                   <li key={e.id} className="flex items-center justify-between py-2.5">
@@ -155,10 +166,43 @@ export function TodayPage() {
                   'Start workout'
                 )}
               </button>
+              {days.length > 1 && (
+                <button
+                  onClick={() => setPickingOther(true)}
+                  className="mx-auto mt-2 block min-h-11 px-4 text-sm font-semibold text-muted"
+                >
+                  Do another day instead
+                </button>
+              )}
               {start.isError && (
                 <p role="alert" className="mt-3 text-sm text-danger">
                   Could not start the workout — check your connection and try again
                 </p>
+              )}
+              {pickingOther && (
+                <Sheet title="Train another day" onClose={() => setPickingOther(false)}>
+                  {next && <p className="mb-3 text-muted">Your cycle carries on from the day you pick.</p>}
+                  <div className="flex flex-col gap-1 pb-2">
+                    {days
+                      .filter((d) => d.id !== todayDay.id)
+                      .map((day) => (
+                        <SheetOption
+                          key={day.id}
+                          onClick={() => {
+                            setPickingOther(false)
+                            start.mutate(day, { onSuccess: () => navigate('/workout') })
+                          }}
+                        >
+                          <span>
+                            {day.name}
+                            <span className="block text-sm font-normal text-muted">
+                              {day.split_day_exercises.length} {day.split_day_exercises.length === 1 ? 'exercise' : 'exercises'}
+                            </span>
+                          </span>
+                        </SheetOption>
+                      ))}
+                  </div>
+                </Sheet>
               )}
             </section>
           ) : (
@@ -167,13 +211,19 @@ export function TodayPage() {
               <h2 className="mt-1 text-3xl font-black tracking-tight">Rest day</h2>
               <p className="mt-2 text-muted">
                 {nextSession
-                  ? `Recover. Next up: ${nextSession.day.name} on ${WEEKDAY_LONG[weekdayOf(nextSession.date)]}.`
+                  ? `Recover. Next up: ${nextSession.day.name} ${nextSession.date === addDays(today, 1) ? 'tomorrow' : `on ${WEEKDAY_LONG[weekdayOf(nextSession.date)]}`}.`
                   : 'No training days are scheduled. Put a day on your week to get going.'}
               </p>
               <div className="mt-3 flex flex-wrap gap-x-6">
-                <Link to={nextSession ? '/calendar' : '/split'} className="inline-flex min-h-11 items-center font-bold text-accent">
-                  {nextSession ? 'Swap days this week →' : 'Edit your split →'}
-                </Link>
+                {nextSession && !next ? (
+                  <Link to="/calendar" className="inline-flex min-h-11 items-center font-bold text-accent">
+                    Swap days this week →
+                  </Link>
+                ) : (
+                  <Link to="/split" className="inline-flex min-h-11 items-center font-bold text-accent">
+                    {next ? 'Edit your cycle →' : 'Edit your split →'}
+                  </Link>
+                )}
                 <Link to="/workout" className="inline-flex min-h-11 items-center font-bold text-muted">
                   Train anyway
                 </Link>

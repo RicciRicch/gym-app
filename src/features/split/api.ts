@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import type { Tables } from '../../lib/database.types'
+import { cycleFromWeek, type SplitMode } from '../../lib/cycle'
 import { assignWeekday } from '../../lib/schedule'
 import { useAuth } from '../auth/auth-context'
 import type { SplitPreset } from './presets'
@@ -93,7 +94,7 @@ export function useCreateSplit() {
 
       const created = await supabase
         .from('splits')
-        .insert({ name, preset_key: preset?.key ?? null })
+        .insert({ name, preset_key: preset?.key ?? null, mode: preset?.mode ?? 'weekly' })
         .select()
         .single()
       if (created.error) throw created.error
@@ -101,7 +102,13 @@ export function useCreateSplit() {
 
       try {
         const dayRows = preset
-          ? preset.days.map((d, i) => ({ split_id: splitId, name: d.name, weekday: d.weekday, position: i }))
+          ? preset.days.map((d, i) => ({
+              split_id: splitId,
+              name: d.name,
+              weekday: d.weekday,
+              position: i,
+              rest_after: d.restAfter ?? 0,
+            }))
           : [{ split_id: splitId, name: 'Day 1', weekday: 0, position: 0 }]
         const days = await supabase.from('split_days').insert(dayRows).select()
         if (days.error) throw days.error
@@ -164,6 +171,86 @@ export function useAssignWeekday() {
     },
     onMutate: ({ dayId, weekday }) => ({
       previous: cache.patch((s) => ({ ...s, split_days: assignWeekday(s.split_days, dayId, weekday) })),
+    }),
+    onError: (_e, _v, ctx) => cache.queryClient.setQueryData(cache.key, ctx?.previous),
+    onSettled: cache.refresh,
+  })
+}
+
+const dayRow = (d: SplitDay) => ({
+  id: d.id,
+  split_id: d.split_id,
+  name: d.name,
+  weekday: d.weekday,
+  position: d.position,
+  rest_after: d.rest_after,
+})
+
+/** Days renumbered 0..n-1 in the given order. */
+const renumber = (days: SplitDay[]) => days.map((d, i) => ({ ...d, position: i }))
+
+/**
+ * Weekly or rotating. The first switch to rotating (no rest days set yet) turns
+ * the weekly layout into a cycle with the same rhythm, so nothing jumps around.
+ */
+export function useSetSplitMode() {
+  const cache = useSplitCache()
+  const reshape = (split: Split, mode: SplitMode) =>
+    mode === 'rotating' && split.split_days.every((d) => d.rest_after === 0)
+      ? renumber(cycleFromWeek(split.split_days))
+      : split.split_days
+  return useMutation({
+    mutationFn: async ({ split, mode }: { split: Split; mode: SplitMode }) => {
+      const days = reshape(split, mode)
+      if (days !== split.split_days && days.length > 0) {
+        const { error } = await supabase.from('split_days').upsert(days.map(dayRow), { onConflict: 'id' })
+        if (error) throw error
+      }
+      const { error } = await supabase.from('splits').update({ mode }).eq('id', split.id)
+      if (error) throw error
+    },
+    onMutate: ({ split, mode }) => ({ previous: cache.patch((s) => ({ ...s, mode, split_days: reshape(split, mode) })) }),
+    onError: (_e, _v, ctx) => cache.queryClient.setQueryData(cache.key, ctx?.previous),
+    onSettled: cache.refresh,
+  })
+}
+
+/** Moves a day one place earlier (-1) or later (+1) in the cycle. */
+export function useMoveDay() {
+  const cache = useSplitCache()
+  const moved = (days: SplitDay[], dayId: string, direction: -1 | 1) => {
+    const i = days.findIndex((d) => d.id === dayId)
+    const j = i + direction
+    if (i < 0 || j < 0 || j >= days.length) return null
+    const next = [...days]
+    ;[next[i], next[j]] = [next[j], next[i]]
+    return renumber(next)
+  }
+  return useMutation({
+    mutationFn: async ({ split, dayId, direction }: { split: Split; dayId: string; direction: -1 | 1 }) => {
+      const days = moved(split.split_days, dayId, direction)
+      if (!days) return
+      const { error } = await supabase.from('split_days').upsert(days.map(dayRow), { onConflict: 'id' })
+      if (error) throw error
+    },
+    onMutate: ({ split, dayId, direction }) => ({
+      previous: cache.patch((s) => ({ ...s, split_days: moved(split.split_days, dayId, direction) ?? s.split_days })),
+    }),
+    onError: (_e, _v, ctx) => cache.queryClient.setQueryData(cache.key, ctx?.previous),
+    onSettled: cache.refresh,
+  })
+}
+
+/** Rest days after a day in the cycle (0..6). */
+export function useSetRestAfter() {
+  const cache = useSplitCache()
+  return useMutation({
+    mutationFn: async ({ dayId, restAfter }: { dayId: string; restAfter: number }) => {
+      const { error } = await supabase.from('split_days').update({ rest_after: restAfter }).eq('id', dayId)
+      if (error) throw error
+    },
+    onMutate: ({ dayId, restAfter }) => ({
+      previous: cache.patch((s) => patchDay(s, dayId, (d) => ({ ...d, rest_after: restAfter }))),
     }),
     onError: (_e, _v, ctx) => cache.queryClient.setQueryData(cache.key, ctx?.previous),
     onSettled: cache.refresh,

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button, PageLoader, Spinner } from '../components/ui'
 import { Sheet } from '../components/Sheet'
 import { useLoggedSets } from '../features/progress/api'
-import { useOverrides } from '../features/schedule/api'
+import { usePlan, weeklyTarget } from '../features/schedule/plan'
 import { useStreakFreezes, useWorkoutDates } from '../features/streak/api'
 import { useActiveSplit, type SplitDay } from '../features/split/api'
 import { ExercisePicker } from '../features/split/SplitEditor'
@@ -28,8 +28,8 @@ import {
   type GhostVerdict,
   type PastSet,
 } from '../lib/coach'
-import { resolveDay, toISODate } from '../lib/schedule'
-import { trainingDaysPerWeek, weeklyStreak } from '../lib/streak'
+import { toISODate } from '../lib/schedule'
+import { weeklyStreak } from '../lib/streak'
 import { summarizeWorkout, type WorkoutSummary } from '../lib/summary'
 import type { SpokenSet } from '../lib/voice-set'
 import {
@@ -204,7 +204,7 @@ export function WorkoutPage() {
     const day = split.data?.split_days.find((d) => d.id === current.splitDayId)
     const changed = day && exercisesDiffer(current, day.split_day_exercises.map((e) => e.exercise_id))
     const today = toISODate(new Date())
-    const target = trainingDaysPerWeek(split.data?.split_days ?? [])
+    const target = weeklyTarget(split.data)
     setFinished({
       workoutId,
       partnerIds: current.partnerIds ?? [],
@@ -534,22 +534,29 @@ function Elapsed({ startedAt }: { startedAt: string }) {
 
 /** No workout running: start today's planned day or pick another one. */
 function StartScreen() {
-  const split = useActiveSplit()
   const today = toISODate(new Date())
-  const overrides = useOverrides(today, today)
+  const { isPending, plan } = usePlan(today, today)
   const start = useStartWorkout()
   const navigate = useNavigate()
   const restSeconds = useRestSeconds()
   const partnerIds = usePartnerIds()
 
-  if (split.isPending || overrides.isPending) {
+  if (isPending) {
     return (
       <PageLoader label="Loading your workout" />
     )
   }
 
-  const days = split.data?.split_days ?? []
-  const planned = resolveDay(today, days, overrides.data ?? [])
+  const days = plan?.days ?? []
+  const rotating = plan?.mode === 'rotating'
+  // Rotating: the cycle's next day is offered first, even on a rest day.
+  const planned = rotating ? (plan?.next?.day ?? null) : (plan?.planned(today) ?? null)
+  const plannedLabel = rotating ? 'next in your cycle' : 'planned today'
+  const intro = rotating
+    ? `Next in your cycle: ${planned?.name}.${plan?.next && plan.next.date > today ? ' Today is a rest day, but you can train anyway.' : ''}`
+    : planned
+      ? `Today is ${planned.name}.`
+      : 'Today is a rest day, but you can train anyway.'
 
   return (
     <div className="animate-fade-up pt-2">
@@ -563,7 +570,7 @@ function StartScreen() {
         </div>
       ) : (
         <>
-          <p className="mt-1 text-muted">{planned ? `Today is ${planned.name}.` : 'Today is a rest day, but you can train anyway.'}</p>
+          <p className="mt-1 text-muted">{intro}</p>
           <RestPicker className="mt-4 rounded-3xl border border-line bg-surface p-4" value={restSeconds} onChange={saveRestSeconds} />
           <PartnerPicker className="mt-2 rounded-3xl border border-line bg-surface p-4" value={partnerIds} onChange={savePartnerIds} />
           <ul className="mt-4 flex flex-col gap-2">
@@ -577,7 +584,7 @@ function StartScreen() {
                   <span>
                     <span className="block text-lg font-bold">{day.name}</span>
                     <span className="block text-sm text-muted">
-                      {day.split_day_exercises.length} exercises{day.id === planned?.id && ' · planned today'}
+                      {day.split_day_exercises.length} exercises{day.id === planned?.id && ` · ${plannedLabel}`}
                     </span>
                   </span>
                   <span className="font-bold text-accent">

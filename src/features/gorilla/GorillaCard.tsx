@@ -2,9 +2,11 @@ import { useMemo } from 'react'
 import { Mascot } from '../../components/Mascot'
 import { gorillaSays, liftedLessThanLastTime, missedDay, type GorillaMood, type GorillaSays } from '../../lib/gorilla'
 import { formatTopSet, progressByExercise, prsByWorkout, topSet } from '../../lib/progress'
-import { addDays, toISODate, type ISODate, type Override, type PlanDay } from '../../lib/schedule'
+import { cycleMissed } from '../../lib/cycle'
+import { addDays, toISODate, type ISODate } from '../../lib/schedule'
 import type { Streak } from '../../lib/streak'
 import { useNudgeLine } from '../friends/api'
+import type { Plan } from '../schedule/plan'
 import { useLoggedSets, useWorkoutHistory } from '../progress/api'
 import { useStreakFreezes, useWorkoutDates } from '../streak/api'
 
@@ -15,8 +17,7 @@ const POSE = { coach: 'coach', proud: 'proud', sad: 'sad', sleepy: 'coach' } as 
  * PR, on the couch after a skipped day, dozing on rest days) and says a line.
  */
 export function GorillaCard({
-  days,
-  overrides,
+  plan,
   planSince,
   plannedToday,
   doneToday,
@@ -24,8 +25,7 @@ export function GorillaCard({
   streak,
   className = '',
 }: {
-  days: readonly PlanDay[]
-  overrides: readonly Override[]
+  plan: Plan
   /** Local date the split was created: nothing before it counts as skipped. */
   planSince: ISODate
   plannedToday: string | null
@@ -59,19 +59,25 @@ export function GorillaCard({
       volume: w.workout_sets.reduce((sum, s) => sum + s.reps * Number(s.weight_kg), 0),
     }))
 
+    const trained = new Set(dates.data)
+    const missed =
+      plan.mode === 'rotating'
+        ? cycleMissed(plan.next, today, trained, planSince, freezes.data ?? [])
+        : missedDay(today, plan.days, plan.overrides, trained, planSince, freezes.data ?? [])
+
     return gorillaSays({
       today,
-      hasPlan: days.some((d) => d.weekday !== null),
+      hasPlan: plan.mode === 'rotating' ? plan.days.length > 0 : plan.days.some((d) => d.weekday !== null),
       plannedToday,
       inProgress,
       doneToday,
-      missed: missedDay(today, days, overrides, new Set(dates.data), planSince, freezes.data ?? []),
+      missed,
       recentPr,
       liftedLess: latest?.date === today && liftedLessThanLastTime(volumes),
       weekFrozen: !!streak?.frozen,
       streakWeeks: streak?.weeks ?? 0,
     })
-  }, [dates.data, freezes.data, history.data, sets.data, today, days, overrides, planSince, plannedToday, inProgress, doneToday, streak])
+  }, [dates.data, freezes.data, history.data, sets.data, today, plan, planSince, plannedToday, inProgress, doneToday, streak])
 
   // A friend's nudge wins until today's workout is started.
   if (says && nudge && !doneToday && !inProgress) return <GorillaBubble says={{ mood: 'sad', line: nudge }} className={className} />

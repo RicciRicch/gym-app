@@ -3,6 +3,7 @@ import { Button, Field } from '../../components/ui'
 import { Sheet } from '../../components/Sheet'
 import { WEEKDAY_SHORT } from '../../lib/schedule'
 import { useCreateSplit } from './api'
+import { CycleStrip } from './CycleEditor'
 import { SPLIT_PRESETS, type SplitPreset } from './presets'
 
 /** Pick a preset or start from scratch. Shown when there is no split, and when replacing one. */
@@ -49,7 +50,11 @@ export function SplitSetup({ onDone, replacing }: { onDone?: () => void; replaci
             </div>
             <span className="text-sm font-bold text-accent">{pendingKey === preset.key ? 'Creating…' : 'Use'}</span>
           </div>
-          <WeekPreview preset={preset} />
+          {preset.mode === 'rotating' ? (
+            <CycleStrip className="mt-4" days={preset.days.map((d) => ({ name: d.name, rest_after: d.restAfter ?? 0 }))} />
+          ) : (
+            <WeekPreview preset={preset} />
+          )}
         </button>
       ))}
 
