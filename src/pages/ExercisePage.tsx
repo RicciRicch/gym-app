@@ -7,6 +7,7 @@ import { useLoggedSets } from '../features/progress/api'
 import { useExercises } from '../features/split/api'
 import { EQUIPMENT_LABEL, equipmentOf } from '../lib/library'
 import { movementOf } from '../lib/movement'
+import { liftOf } from '../lib/strength'
 import { exerciseProgress, formatTopSet } from '../lib/progress'
 
 /** Library detail: image, target muscles, form cues and a link to progress. */
@@ -86,7 +87,13 @@ export function ExercisePage() {
       )}
 
       {progress.metric === 'weight' && progress.points.length > 0 ? (
-        <MaxCard className="mt-6" exerciseId={exercise.id} sets={exerciseSets} progress={progress} />
+        <MaxCard
+          className="mt-6"
+          exerciseId={exercise.id}
+          sets={exerciseSets}
+          progress={progress}
+          lift={exercise.user_id ? null : liftOf(exercise.name)}
+        />
       ) : (
         <Link
           to={`/progress/${exercise.id}`}

@@ -21,6 +21,8 @@ export type Database = {
           avatar_key: string
           avatar_path: string | null
           friend_code: string
+          bodyweight_kg: number | null
+          strength_sex: 'male' | 'female' | null
           created_at: string
         }
         Insert: {
@@ -36,6 +38,8 @@ export type Database = {
           display_name?: string
           avatar_key?: string
           avatar_path?: string | null
+          bodyweight_kg?: number | null
+          strength_sex?: 'male' | 'female' | null
         }
         Relationships: []
       }

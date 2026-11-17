@@ -270,6 +270,17 @@ npm test           # vitest (schedule logic etc.)
   The progress page has "Top set / Est. 1RM" text tabs over one chart (`ProgressChart` takes a
   `ChartSeries`, built in `src/features/progress/series.ts`). Browser-verified at 375px with a
   temporary October bench workout on the user's account (deleted, badge "seen" state restored).
+- Strength levels (user's pick on 2026-11-17): migration `body_stats` adds `profiles.bodyweight_kg`
+  (25-350) and `profiles.strength_sex` ('male' / 'female'), both nullable, owner-only (profiles RLS
+  is select-own; column update grant). `src/lib/strength.ts` (unit-tested): `liftOf` matches only the
+  four core lifts by exact name (Bench Press, Back Squat, Deadlift, Overhead Press), `strengthLevel`
+  puts est. 1RM / body weight on rounded common standards (Beginner, Novice, Intermediate,
+  Advanced, Elite; lower for women), `position` 0..5 for the bar, kg to the next level.
+  `src/features/strength/`: `BodyStatsSheet` (weight + Men / Women), `BodyStatsButton` chip,
+  `StrengthBar`, `StrengthCard` on Profile (four lifts + weakest lift line). `MaxCard` shows a
+  "Strength level" section for the four lifts and lost its borders. Design rule from the user:
+  no emojis, no strong borders in new UI. Browser-verified at 375px on the user's account with
+  a temporary 85 kg (reset to null afterwards).
 - Movement figures (user's pick on 2026-11-16, replacing the 12 clay exercise images, which were
   removed from `public/assets/exercises/`): `src/lib/movement.ts` (unit-tested) maps every exercise
   name to one of 25 patterns (`movementOf`, all 83 core names + Serbian words; unknown -> null) and

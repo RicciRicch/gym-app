@@ -8,6 +8,7 @@ import { Sheet } from '../components/Sheet'
 import { openGuide } from '../features/guide/guide-store'
 import { AvatarPicker } from '../features/avatar/AvatarPicker'
 import { BadgeShelfCard } from '../features/badges/BadgeShelfCard'
+import { StrengthCard } from '../features/strength/StrengthCard'
 import { useFriends } from '../features/friends/api'
 import { avatarPhotoUrl, choiceFromProfile, useUpdateAvatar, type AvatarChoice } from '../features/avatar/api'
 import type { Database } from '../lib/database.types'
@@ -44,6 +45,7 @@ export function ProfilePage() {
       <p className="text-muted">@{profile.username}</p>
       <p className="mt-1 text-sm text-muted">{user?.email}</p>
       <BadgeShelfCard className="mt-6" />
+      <StrengthCard className="mt-3" />
       <Link
         to="/friends"
         className="mt-3 flex w-full items-center gap-3 rounded-3xl border border-line bg-surface px-4 py-3.5 text-left transition active:scale-[0.98]"
