@@ -38,18 +38,24 @@ export function FriendPage() {
       <div className="mt-2 flex flex-col items-center text-center">
         <Avatar avatarKey={friend.avatarKey} photoUrl={avatarPhotoUrl(friend.avatarPath)} className="size-28 ring-4 ring-line" />
         <h1 className="mt-4 text-2xl font-black tracking-tight">{friend.name}</h1>
-        <p className="text-muted">{lastWorkoutLabel(friend.lastDate, friend.lastDay, today)}</p>
+        <p className="text-muted">
+          {friend.sharesActivity ? lastWorkoutLabel(friend.lastDate, friend.lastDay, today) : 'Keeps workouts private'}
+        </p>
       </div>
 
       <div className="mt-5 grid grid-cols-3 gap-2">
         <Stat label="week streak">
-          <span className="flex items-center justify-center gap-1">
-            <Flame level={streak >= 4 ? 3 : streak >= 1 ? 2 : friend.weekDays > 0 ? 1 : 0} className="h-6" />
-            {streak}
-          </span>
+          {friend.sharesStreak ? (
+            <span className="flex items-center justify-center gap-1">
+              <Flame level={streak >= 4 ? 3 : streak >= 1 ? 2 : friend.weekDays > 0 ? 1 : 0} className="h-6" />
+              {streak}
+            </span>
+          ) : (
+            <Hidden />
+          )}
         </Stat>
-        <Stat label="sets this week">{friend.weekSets}</Stat>
-        <Stat label="records">{friend.prCount}</Stat>
+        <Stat label="sets this week">{friend.sharesActivity ? friend.weekSets : <Hidden />}</Stat>
+        <Stat label="records">{friend.sharesBadges ? friend.prCount : <Hidden />}</Stat>
       </div>
 
       <section className="mt-3 flex items-center gap-4 rounded-3xl border border-line bg-surface p-4">
@@ -74,17 +80,25 @@ export function FriendPage() {
 
       <section className="mt-3 rounded-3xl border border-line bg-surface p-4">
         <h2 className="font-bold">Last four weeks</h2>
-        <ActivityGrid dates={friend.recentDates} today={today} />
+        {friend.sharesActivity ? (
+          <ActivityGrid dates={friend.recentDates} today={today} />
+        ) : (
+          <p className="mt-2 text-sm text-muted">{friend.name} keeps workouts private.</p>
+        )}
       </section>
 
       <section className="mt-3 rounded-3xl border border-line bg-surface p-4">
         <div className="flex items-baseline justify-between">
           <h2 className="font-bold">Badges</h2>
-          <span className="text-sm text-muted">
-            {earned.length} of {BADGES.length}
-          </span>
+          {friend.sharesBadges && (
+            <span className="text-sm text-muted">
+              {earned.length} of {BADGES.length}
+            </span>
+          )}
         </div>
-        {earned.length > 0 ? (
+        {!friend.sharesBadges ? (
+          <p className="mt-2 text-sm text-muted">{friend.name} keeps badges private.</p>
+        ) : earned.length > 0 ? (
           <ul className="mt-3 grid grid-cols-4 gap-x-2 gap-y-3">
             {earned.map((badge) => (
               <li key={badge.id} className="flex flex-col items-center gap-1 text-center">
@@ -107,6 +121,18 @@ export function FriendPage() {
 
       {removing && <RemoveSheet friend={friend} onClose={() => setRemoving(false)} />}
     </div>
+  )
+}
+
+/** A stat the friend keeps private: a lock instead of a number. */
+function Hidden() {
+  return (
+    <span className="flex h-8 items-center justify-center text-muted" aria-label="Private">
+      <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="5" y="10.5" width="14" height="10" rx="2.5" />
+        <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+      </svg>
+    </span>
   )
 }
 

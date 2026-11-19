@@ -66,6 +66,18 @@ export function ProfilePage() {
           <path d="m9 6 6 6-6 6" />
         </svg>
       </Link>
+      <Link
+        to="/privacy"
+        className="mt-3 flex w-full items-center gap-3 rounded-3xl bg-surface px-4 py-3.5 text-left transition active:scale-[0.98]"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="font-bold">Privacy</p>
+          <p className="text-sm text-muted">{privacySummary(profile)}</p>
+        </div>
+        <svg viewBox="0 0 24 24" className="size-5 shrink-0 text-muted" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="m9 6 6 6-6 6" />
+        </svg>
+      </Link>
       <Button variant="secondary" className="mt-3 w-full" onClick={() => user && openGuide(user.id)}>
         How to use the app
       </Button>
@@ -79,6 +91,14 @@ export function ProfilePage() {
       {confirmDelete && user && <DeleteAccountSheet userId={user.id} onClose={() => setConfirmDelete(false)} />}
     </div>
   )
+}
+
+/** One line under "Privacy": what friends see right now. */
+function privacySummary(profile: Profile): string {
+  const shared = [profile.share_activity && 'workouts', profile.share_streak && 'streak', profile.share_badges && 'badges'].filter(Boolean)
+  if (shared.length === 0) return 'Friends see only your name'
+  if (shared.length === 3) return 'Friends see your workouts, streak and badges'
+  return `Friends see your ${shared.join(' and ')}`
 }
 
 function ChangeAvatarSheet({ profile, onClose }: { profile: Profile; onClose: () => void }) {

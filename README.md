@@ -93,6 +93,9 @@ and watch your top sets climb.
 - **Strength levels** – add your body weight (only you see it) and bench, squat, deadlift
   and overhead press are placed on a Beginner to Elite scale, with the kilos left to the next
   level and your weakest lift.
+- **Privacy** – choose what friends see (when you train, your streak, your badges and records),
+  turn off friend requests or nudges, get a new friend code, or skip the photo step after a
+  workout. Enforced in the database, not just hidden in the app; weights are never shared.
 - **Training together** – mark a friend you trained with; both of you see how many workouts
   you have done together.
 - **Your look** – pick a character avatar or upload your own photo (cropped and shrunk on
@@ -127,6 +130,8 @@ before running the app.
 - Supabase security advisors are run after every schema change.
 - Account deletion runs in an Edge Function with the service role, which never reaches the
   client; it deletes only the user identified by the request's JWT, photos included.
+- Friends see each other only through database functions that respect each user's privacy
+  settings; nobody can list profiles or read another user's workouts directly.
 - Profile photos live in a storage bucket where each user can only write to their own
   folder; only small WebP/JPEG images are accepted.
 

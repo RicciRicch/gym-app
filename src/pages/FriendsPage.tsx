@@ -239,7 +239,7 @@ function FriendRow({ friend }: { friend: Friend }) {
             )}
           </span>
           <span className="block truncate text-sm text-muted">
-            {lastWorkoutLabel(friend.lastDate, friend.lastDay, today)}
+            {friend.sharesActivity ? lastWorkoutLabel(friend.lastDate, friend.lastDay, today) : 'Workouts are private'}
             {together && ` · 🤝 ${together.count} together`}
           </span>
         </span>

@@ -22,7 +22,8 @@ function useWeeklyTable(): { rows: Row[]; line: string } | null {
   const today = toISODate(new Date())
 
   return useMemo(() => {
-    const accepted = friends.data?.filter((f) => f.status === 'accepted') ?? []
+    // Friends who keep their workouts private are left out of the race.
+    const accepted = friends.data?.filter((f) => f.status === 'accepted' && f.sharesActivity) ?? []
     if (!user || !profile || !sets.data || accepted.length === 0) return null
     const weekStart = startOfWeek(today)
     const mine = sets.data.filter((s) => s.date >= weekStart)

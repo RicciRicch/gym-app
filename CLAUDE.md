@@ -370,7 +370,21 @@ npm test           # vitest (schedule logic etc.)
   plan or a refresh).
 - GitHub Actions deploy workflow: `.github/workflows/deploy.yml`, deploys on every push to main.
 
+- Privacy (user asked on 2026-11-19): migration `privacy` adds six profile booleans, all default true
+  (today's behaviour): `share_activity` (last workout, week days/sets, last 4 weeks; off also leaves the
+  weekly table and never counts as "quiet"), `share_streak`, `share_badges` (badges + PR count),
+  `accept_requests` (off: `friend_preview` says 'closed', `send_friend_request` raises "not accepting
+  friend requests", an open request from them can still be accepted), `accept_nudges` (nudges insert
+  policy checks `private.accepts_nudges`), `ask_proof` (off: no photo step after a workout). Enforced
+  in the DB: `friends_overview` returns null for hidden values plus `shares_*` / `accepts_nudges`, and
+  friends can no longer select `friend_stats` directly (own row only). `regenerate_friend_code()` gives
+  a new code (old links and QR stop working, friends stay). Weights and body weight are never shared,
+  so there is no switch. UI: `/privacy` (`src/pages/PrivacyPage.tsx`, lazy, switches with
+  `role="switch"`, "New code" sheet), Profile row with a one-line summary, friend page shows a lock for
+  hidden stats. `src/features/privacy/api.ts`: optimistic `useUpdatePrivacy`, `useRegenerateFriendCode`.
+  Verified with three throwaway accounts (deleted): RLS / function checks via SQL as the friend (both
+  directions), friends list, friend page, closed invite, toggle saved, new code in headless Brave.
+
 ## Future features (NOT in MVP — do not build yet)
 
-- Privacy settings (per-profile visibility; friends see no weights until then; posting is already per workout)
 - Optimal schedule suggestion

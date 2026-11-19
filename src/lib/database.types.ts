@@ -23,6 +23,12 @@ export type Database = {
           friend_code: string
           bodyweight_kg: number | null
           strength_sex: 'male' | 'female' | null
+          share_activity: boolean
+          share_streak: boolean
+          share_badges: boolean
+          accept_requests: boolean
+          accept_nudges: boolean
+          ask_proof: boolean
           created_at: string
         }
         Insert: {
@@ -40,6 +46,12 @@ export type Database = {
           avatar_path?: string | null
           bodyweight_kg?: number | null
           strength_sex?: 'male' | 'female' | null
+          share_activity?: boolean
+          share_streak?: boolean
+          share_badges?: boolean
+          accept_requests?: boolean
+          accept_nudges?: boolean
+          ask_proof?: boolean
         }
         Relationships: []
       }
@@ -374,7 +386,7 @@ export type Database = {
           display_name: string
           avatar_key: string
           avatar_path: string | null
-          relation: 'self' | 'friends' | 'sent' | 'received' | 'none'
+          relation: 'self' | 'friends' | 'sent' | 'received' | 'closed' | 'none'
         }[]
       }
       send_friend_request: {
@@ -404,7 +416,15 @@ export type Database = {
           streak_week: string | null
           badge_ids: string[] | null
           pr_count: number | null
+          shares_activity: boolean
+          shares_streak: boolean
+          shares_badges: boolean
+          accepts_nudges: boolean
         }[]
+      }
+      regenerate_friend_code: {
+        Args: Record<string, never>
+        Returns: string
       }
     }
     Enums: { [_ in never]: never }

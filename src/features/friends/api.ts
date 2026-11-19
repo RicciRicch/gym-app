@@ -28,6 +28,11 @@ export interface Friend {
   streakWeek: ISODate | null
   badgeIds: string[]
   prCount: number
+  /** What the friend lets friends see (hidden values arrive empty). */
+  sharesActivity: boolean
+  sharesStreak: boolean
+  sharesBadges: boolean
+  acceptsNudges: boolean
 }
 
 const friendsKey = (userId: string | undefined) => ['friends', userId] as const
@@ -63,6 +68,10 @@ export function useFriends() {
           streakWeek: r.streak_week,
           badgeIds: r.badge_ids ?? [],
           prCount: r.pr_count ?? 0,
+          sharesActivity: r.shares_activity ?? true,
+          sharesStreak: r.shares_streak ?? true,
+          sharesBadges: r.shares_badges ?? true,
+          acceptsNudges: r.accepts_nudges ?? true,
         }))
         .sort((a, b) => a.name.localeCompare(b.name))
     },

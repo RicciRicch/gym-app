@@ -16,6 +16,7 @@ import { CoachTip } from '../features/workout/CoachTip'
 import { FuelCheck } from '../features/fuel/FuelCheck'
 import { ProofCamera } from '../features/feed/ProofCamera'
 import { useFriends } from '../features/friends/api'
+import { useProfile } from '../features/auth/useProfile'
 import { RestTimer } from '../features/workout/RestTimer'
 import { voiceSupported } from '../features/workout/voice'
 import { VoiceSheet } from '../features/workout/VoiceSheet'
@@ -83,6 +84,8 @@ export function WorkoutPage() {
   // The photo step only makes sense with someone to show it to.
   const hasFriends = useFriends().data?.some((f) => f.status === 'accepted') ?? false
   const [proof, setProof] = useState(false)
+  // Privacy setting: the photo step can be switched off.
+  const askProof = useProfile().data?.ask_proof ?? true
 
   const clearRest = useCallback(() => setDraft((d) => ({ ...d, restEndsAt: null })), [setDraft])
 
@@ -113,7 +116,7 @@ export function WorkoutPage() {
           </>
         )}
         onDone={() => {
-          if (hasFriends) return setProof(true)
+          if (hasFriends && askProof) return setProof(true)
           if (finished.askDefault) setAskDefault(finished.askDefault)
           else navigate('/', { replace: true })
           setFinished(null)

@@ -70,11 +70,14 @@ function InviteSheet({ code, onFriends }: { code: string; onFriends: (buddy: Bud
             <p className="mt-4 font-semibold text-accent">Request sent ✓ {person.display_name} has to accept it.</p>
           )}
           {relation === 'received' && <p className="mt-4 text-muted">{person.display_name} already asked to be your friend.</p>}
+          {relation === 'closed' && <p className="mt-4 text-muted">{person.display_name} is not taking friend requests right now.</p>}
           {relation === 'none' && <p className="mt-4 text-muted">You will see each other&apos;s streak, badges and weekly sets. No weights.</p>}
 
           {send.isError && (
             <p role="alert" className="mt-4 w-full rounded-2xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
-              Could not send the request. Try again.
+              {send.error.message.includes('not accepting')
+                ? `${person.display_name} is not taking friend requests right now.`
+                : 'Could not send the request. Try again.'}
             </p>
           )}
 

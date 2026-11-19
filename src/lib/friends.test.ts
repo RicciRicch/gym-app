@@ -160,4 +160,9 @@ describe('quiet friends', () => {
     expect(active.map((f) => f.name)).toEqual(['Ana', 'Luka', 'Nina'])
     expect(quiet.map((f) => f.name)).toEqual(['Iva', 'Marko', 'Pera'])
   })
+
+  it('never calls a friend with private workouts quiet', () => {
+    const friends = [{ name: 'Mila', lastDate: null, since, sharesActivity: false }]
+    expect(splitQuiet(friends, today).active.map((f) => f.name)).toEqual(['Mila'])
+  })
 })

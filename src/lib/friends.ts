@@ -67,13 +67,18 @@ export function daysQuiet(lastDate: ISODate | null, since: string, today: ISODat
 }
 
 /** Splits friends into active ones and quiet ones (QUIET_DAYS+), the quiet ones most recent first. */
-export function splitQuiet<T extends { lastDate: ISODate | null; since: string }>(
+export function splitQuiet<T extends { lastDate: ISODate | null; since: string; sharesActivity?: boolean }>(
   friends: readonly T[],
   today: ISODate,
 ): { active: T[]; quiet: T[] } {
   const active: T[] = []
   const quiet: { friend: T; days: number }[] = []
   for (const friend of friends) {
+    // Friends who keep their workouts private are never called quiet: we can't tell.
+    if (friend.sharesActivity === false) {
+      active.push(friend)
+      continue
+    }
     const days = daysQuiet(friend.lastDate, friend.since, today)
     if (days >= QUIET_DAYS) quiet.push({ friend, days })
     else active.push(friend)

@@ -12,6 +12,9 @@ export function NudgeButton({ friend, compact = false }: { friend: Friend; compa
   const trained = friend.lastDate === today
   const allowed = canNudge(friend.lastDate, done, today)
 
+  // They turned nudges off in their privacy settings.
+  if (!friend.acceptsNudges) return null
+
   if (compact) {
     return (
       <button
