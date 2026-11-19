@@ -265,7 +265,10 @@ npm test           # vitest (schedule logic etc.)
   iris shutter + flash + vibration, the shot drops in as a `Polaroid` that develops, then Post /
   Retake / Keep it private; "Post without a photo" -> `StatsCard`; no camera -> file input with
   capture="user" or the gallery; photos centre-cropped to 4:5, <= 1080 px WebP, mirrored like the
-  preview), `FeedPage` at `/feed` (lazy, "← Friends" back link, `#post-<id>` jumps to a post),
+  preview; a flip button next to the shutter (only with 2+ cameras) switches to the back camera by
+  facingMode, or by deviceId on laptops that report none; `shouldMirror` in `src/lib/feed.ts`: the
+  back camera is neither shown nor saved mirrored; a failed flip goes back to the previous camera with
+  "Could not switch cameras."), `FeedPage` at `/feed` (lazy, "← Friends" back link, `#post-<id>` jumps to a post),
   `PostCard` (SVG reaction pills, optimistic; the author sees "Ana reacted";
   delete with a sheet). The header people icon opens /friends (user's call on 2026-11-17: Friends
   first): request count, or a lime dot for unseen friends' posts (`gym-app:feed-seen:<uid>`). On
@@ -279,8 +282,10 @@ npm test           # vitest (schedule logic etc.)
   headless Brave with a fake camera (`--use-fake-device-for-media-stream --use-fake-ui-for-media-stream
   --use-file-for-fake-video-capture=<y4m>`) and three throwaway accounts (deleted): shoot, post,
   delete, friend sees the photo and reacts, author sees "Ana reacted", stranger sees nothing, RLS
-  checks via SQL, 30-day expiry + cleanup, delete-account removes the photo. Not exercised: the
-  photo step from a real finished workout, a real phone camera (iOS Safari / PWA).
+  checks via SQL, 30-day expiry + cleanup, delete-account removes the photo. The flip was verified
+  in headless Brave with a mocked phone (front/back) and laptop (two webcams) plus a forced failure.
+  Not exercised: the photo step from a real finished workout, a real phone camera (iOS Safari / PWA),
+  the real back camera.
 - Rest before a workout: `RestPicker` (`src/features/workout/RestPicker.tsx`: −/+ in 15 s steps
   from 15 s to 10 min via `stepRest`, plus quick picks 45s-3:00; `formatRest` in
   `src/lib/workout.ts`, unit-tested) sits on the /workout start screen and in the running

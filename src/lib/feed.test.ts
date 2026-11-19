@@ -10,6 +10,7 @@ import {
   prLine,
   proofLine,
   reactedLine,
+  shouldMirror,
   unseenCount,
   workoutPhotoPath,
 } from './feed'
@@ -122,5 +123,15 @@ describe('latest per author', () => {
       { id: 4, userId: 'marko' },
     ]
     expect(latestPerAuthor(posts).map((p) => p.id)).toEqual([1, 2, 4])
+  })
+})
+
+describe('camera mirroring', () => {
+  it('mirrors selfies, never the back camera', () => {
+    expect(shouldMirror('user', 'environment')).toBe(true)
+    expect(shouldMirror('environment', 'user')).toBe(false)
+    // Laptop webcams report no facing mode.
+    expect(shouldMirror(undefined, 'user')).toBe(true)
+    expect(shouldMirror(undefined, 'environment')).toBe(false)
   })
 })

@@ -66,8 +66,8 @@ and watch your top sets climb.
   "gym pass"; see each other's streak and badges (never weights), a weekly table of who logged
   the most sets, and nudge a friend who is skipping (their gorilla passes it on). Friends
   with no workout for 10+ days fold into a "Quiet lately" section.
-- **Feed and proof photo** – after a workout the gorilla asks for proof: a selfie camera with a
-  3-2-1 countdown and a shutter, and the shot develops like an instant print. Post it (or just
+- **Feed and proof photo** – after a workout the gorilla asks for proof: a camera (selfie or flip to
+  the back one) with a 3-2-1 countdown and a shutter, and the shot develops like an instant print. Post it (or just
   the stats) for your friends, who can react; posts show no weights and disappear after 30 days.
   The newest prints sit in a row at the top of the Friends page; tap one to open the feed.
 - **Exercise library** – 83 popular exercises (machines included) with form cues, searchable and filterable by

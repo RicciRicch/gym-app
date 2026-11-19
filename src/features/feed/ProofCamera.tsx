@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent, type CSSPro
 import { createPortal } from 'react-dom'
 import { Mascot } from '../../components/Mascot'
 import { Button } from '../../components/ui'
-import { proofLine } from '../../lib/feed'
+import { proofLine, shouldMirror, type Facing } from '../../lib/feed'
 import { prefersReducedMotion } from '../../lib/motion'
 import { toISODate } from '../../lib/schedule'
 import type { WorkoutSummary } from '../../lib/summary'
@@ -17,8 +17,8 @@ const STEP_MS = 700
 const canUseCamera = () => typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia
 
 /**
- * After the summary: "proof or it didn't happen". A live selfie camera with a
- * 3-2-1 countdown, an iris shutter and a flash; the shot drops in as a polaroid
+ * After the summary: "proof or it didn't happen". A live camera (selfie first,
+ * flip to the back camera when the phone has one) with a 3-2-1 countdown, an iris shutter and a flash; the shot drops in as a polaroid
  * that develops, and only "Post to friends" publishes it. Skipping is one tap.
  * Without camera access it falls back to the phone's own camera / gallery.
  */
@@ -31,6 +31,15 @@ export function ProofCamera({ workoutId, summary, onDone }: { workoutId: string;
   const [shutter, setShutter] = useState(0)
   const [photo, setPhoto] = useState<{ blob: Blob; url: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // The ref feeds startCamera without re-creating it; the state is for rendering.
+  const facingRef = useRef<Facing>('user')
+  const [facing, setFacing] = useState<Facing>('user')
+  // Laptops report no facing mode: there the flip walks through the cameras by id.
+  const deviceRef = useRef<string | undefined>(undefined)
+  const cameraIdsRef = useRef<string[]>([])
+  const [mirrored, setMirrored] = useState(true)
+  const [canFlip, setCanFlip] = useState(false)
+  const [flipping, setFlipping] = useState(false)
   const publish = usePublishPost()
   const reduced = prefersReducedMotion()
 
@@ -47,11 +56,21 @@ export function ProofCamera({ workoutId, summary, onDone }: { workoutId: string;
     streamRef.current = null
   }, [])
 
-  /** Opens the selfie camera; `isCancelled` stops a stream that arrives after the screen closed. */
-  const startCamera = useCallback((isCancelled: () => boolean = () => false) => {
+  /**
+   * Opens the camera facing `facingRef` (or the exact `deviceRef` camera when one is picked):
+   * exact first so a phone really switches, then looser, then any camera.
+   * `isCancelled` stops a stream that arrives after the screen closed; `onFail` replaces the
+   * "no camera" fallback (a failed flip goes back to the previous camera instead).
+   */
+  const startCamera = useCallback((isCancelled: () => boolean = () => false, onFail?: () => void) => {
     if (!canUseCamera()) return
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: 'user', width: { ideal: 1440 }, height: { ideal: 1440 } }, audio: false })
+    const facing = facingRef.current
+    const deviceId = deviceRef.current
+    const size = { width: { ideal: 1440 }, height: { ideal: 1440 } }
+    const open = (video: MediaTrackConstraints | true) => navigator.mediaDevices.getUserMedia({ video, audio: false })
+    ;(deviceId ? open({ deviceId: { exact: deviceId }, ...size }) : open({ facingMode: { exact: facing }, ...size }))
+      .catch(() => open({ facingMode: facing, ...size }))
+      .catch(() => open(true))
       .then(
         (stream) => {
           if (isCancelled()) return stream.getTracks().forEach((t) => t.stop())
@@ -60,10 +79,27 @@ export function ProofCamera({ workoutId, summary, onDone }: { workoutId: string;
             videoRef.current.srcObject = stream
             void videoRef.current.play().catch(() => {})
           }
+          const reported = stream.getVideoTracks()[0]?.getSettings().facingMode
+          setMirrored(shouldMirror(reported, facing))
+          // A phone that fell back to the other camera: follow what it really opened.
+          if (reported === 'user' || reported === 'environment') {
+            facingRef.current = reported
+            setFacing(reported)
+          }
           setCamera('on')
+          // Offer the flip only when there is a second camera.
+          void navigator.mediaDevices
+            .enumerateDevices()
+            .then((devices) => {
+              cameraIdsRef.current = devices.filter((d) => d.kind === 'videoinput').map((d) => d.deviceId)
+              setCanFlip(cameraIdsRef.current.length > 1)
+            })
+            .catch(() => {})
         },
         () => {
-          if (!isCancelled()) setCamera('off')
+          if (isCancelled()) return
+          if (onFail) onFail()
+          else setCamera('off')
         },
       )
   }, [])
@@ -103,7 +139,7 @@ export function ProofCamera({ workoutId, summary, onDone }: { workoutId: string;
     // Grab the frame while the iris is closed, then show the print.
     await new Promise((r) => setTimeout(r, reduced ? 0 : 180))
     try {
-      const blob = await photoFromVideo(videoRef.current!)
+      const blob = await photoFromVideo(videoRef.current!, mirrored)
       setPhoto({ blob, url: URL.createObjectURL(blob) })
       setTimeout(() => {
         stopCamera()
@@ -113,7 +149,7 @@ export function ProofCamera({ workoutId, summary, onDone }: { workoutId: string;
       setError(e instanceof PostPhotoError ? e.message : 'Could not take the photo.')
       setPhase('live')
     }
-  }, [reduced, stopCamera])
+  }, [reduced, stopCamera, mirrored])
 
   // 3, 2, 1, click.
   useEffect(() => {
@@ -143,6 +179,31 @@ export function ProofCamera({ workoutId, summary, onDone }: { workoutId: string;
     } catch (err) {
       setError(err instanceof PostPhotoError ? err.message : 'Could not read that photo.')
     }
+  }
+
+  function flip() {
+    const previous = { facing, deviceId: deviceRef.current }
+    const settings = streamRef.current?.getVideoTracks()[0]?.getSettings()
+    const next: Facing = facing === 'user' ? 'environment' : 'user'
+    const ids = cameraIdsRef.current
+    deviceRef.current =
+      !settings?.facingMode && settings?.deviceId && ids.length > 1
+        ? ids[(ids.indexOf(settings.deviceId) + 1) % ids.length]
+        : undefined
+    facingRef.current = next
+    setFacing(next)
+    stopCamera()
+    setError(null)
+    setCamera('pending')
+    if (!reduced) setFlipping(true)
+    startCamera(undefined, () => {
+      // The other camera would not open: back to the one that worked.
+      facingRef.current = previous.facing
+      deviceRef.current = previous.deviceId
+      setFacing(previous.facing)
+      setError('Could not switch cameras.')
+      startCamera()
+    })
   }
 
   function retake() {
@@ -193,13 +254,16 @@ export function ProofCamera({ workoutId, summary, onDone }: { workoutId: string;
         {!reviewing ? (
           <>
             <div className="relative mt-5">
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl bg-surface">
+              <div
+                className={`relative aspect-[4/5] w-full overflow-hidden rounded-3xl bg-surface ${flipping ? 'camera-flip' : ''}`}
+                onAnimationEnd={(e) => e.animationName === 'camera-flip' && setFlipping(false)}
+              >
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  className={`size-full -scale-x-100 object-cover transition-opacity duration-500 ${camera === 'on' ? 'opacity-100' : 'opacity-0'}`}
+                  className={`size-full object-cover transition-opacity duration-500 ${mirrored ? '-scale-x-100' : ''} ${camera === 'on' ? 'opacity-100' : 'opacity-0'}`}
                 />
                 {camera === 'off' && <CameraFallback onFile={pickFile} />}
                 {camera === 'pending' && (
@@ -231,8 +295,24 @@ export function ProofCamera({ workoutId, summary, onDone }: { workoutId: string;
             )}
 
             <div className="mt-auto flex flex-col items-center pt-6">
-              {camera === 'on' && (
-                <ShutterButton counting={phase === 'countdown'} count={count} onClick={startCountdown} />
+              {camera !== 'off' && (
+                <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center">
+                  <span />
+                  <ShutterButton counting={phase === 'countdown'} count={count} disabled={camera !== 'on'} onClick={startCountdown} />
+                  {canFlip && (
+                    <button
+                      type="button"
+                      onClick={flip}
+                      disabled={phase === 'countdown'}
+                      aria-label={facing === 'user' ? 'Switch to the back camera' : 'Switch to the selfie camera'}
+                      className="grid size-14 place-items-center justify-self-center rounded-full bg-surface text-text transition active:scale-90 disabled:opacity-40"
+                    >
+                      <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M20 11a8 8 0 0 0-14.3-4.9M4 13a8 8 0 0 0 14.3 4.9M6 2.5v3.8h3.8M18 21.5v-3.8h-3.8" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               )}
               <button type="button" onClick={withoutPhoto} className="mt-3 min-h-11 px-4 text-sm font-semibold text-muted">
                 Post without a photo
@@ -303,14 +383,14 @@ function Brackets() {
 }
 
 /** Big round shutter; during the countdown a ring drains around it each second. */
-function ShutterButton({ counting, count, onClick }: { counting: boolean; count: number; onClick: () => void }) {
+function ShutterButton({ counting, count, disabled, onClick }: { counting: boolean; count: number; disabled: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={counting}
+      disabled={counting || disabled}
       aria-label={counting ? `Taking the photo in ${count}` : 'Take the photo (3 second timer)'}
-      className="relative grid size-24 place-items-center rounded-full transition active:scale-90"
+      className="relative grid size-24 place-items-center rounded-full transition active:scale-90 disabled:opacity-60"
     >
       <svg viewBox="0 0 104 104" className="absolute inset-0 size-full -rotate-90" aria-hidden="true">
         <circle cx="52" cy="52" r="48" fill="none" stroke="var(--color-line)" strokeWidth="5" />

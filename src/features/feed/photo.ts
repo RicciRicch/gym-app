@@ -28,10 +28,10 @@ async function encode(source: CanvasImageSource, width: number, height: number, 
   return blob
 }
 
-/** The current frame of the live selfie camera. */
-export function photoFromVideo(video: HTMLVideoElement): Promise<Blob> {
+/** The current frame of the live camera; `mirror` saves it the way the preview showed it. */
+export function photoFromVideo(video: HTMLVideoElement, mirror: boolean): Promise<Blob> {
   if (!video.videoWidth) throw new PostPhotoError('The camera is not ready yet.')
-  return encode(video, video.videoWidth, video.videoHeight, true)
+  return encode(video, video.videoWidth, video.videoHeight, mirror)
 }
 
 /** A photo picked or taken with the phone's own camera app. */

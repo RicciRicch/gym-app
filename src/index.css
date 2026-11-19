@@ -725,6 +725,15 @@ body {
     stroke-dashoffset: 302;
   }
 }
+/* Switching cameras: the viewfinder turns over like a card. */
+.camera-flip {
+  animation: camera-flip 0.5s ease-in-out;
+}
+@keyframes camera-flip {
+  50% {
+    transform: perspective(900px) rotateY(90deg) scale(0.94);
+  }
+}
 /* Shutter: the frame closes like an iris and opens again. */
 .shutter-iris {
   width: 160%;

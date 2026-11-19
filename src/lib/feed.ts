@@ -129,3 +129,15 @@ export function latestPerAuthor<T extends { userId: string }>(posts: readonly T[
   const seen = new Set<string>()
   return posts.filter((p) => !seen.has(p.userId) && seen.add(p.userId))
 }
+
+export type Facing = 'user' | 'environment'
+
+/**
+ * Whether the live camera is shown (and saved) mirrored: selfies yes, the back
+ * camera no. Trusts what the camera reports; a webcam reports nothing and counts as a selfie.
+ */
+export function shouldMirror(reported: string | undefined, requested: Facing): boolean {
+  if (reported === 'environment') return false
+  if (reported === 'user') return true
+  return requested === 'user'
+}
