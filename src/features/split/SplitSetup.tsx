@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { Button, Field } from '../../components/ui'
 import { Sheet } from '../../components/Sheet'
 import { WEEKDAY_SHORT } from '../../lib/schedule'
@@ -35,6 +36,24 @@ export function SplitSetup({ onDone, replacing }: { onDone?: () => void; replaci
           This replaces your current split. Your workout history stays.
         </p>
       )}
+
+      <Link
+        to="/split/suggest"
+        className="flex items-center gap-4 rounded-3xl bg-accent/10 p-5 text-left transition active:scale-[0.98]"
+      >
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-accent text-accent-ink" aria-hidden="true">
+          <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+          </svg>
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-lg font-bold">Build one for me</span>
+          <span className="block text-sm text-muted">Pick your days, goal and time. Get a split that fits.</span>
+        </span>
+        <svg viewBox="0 0 24 24" className="size-5 shrink-0 text-accent" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="m9 6 6 6-6 6" />
+        </svg>
+      </Link>
 
       {SPLIT_PRESETS.map((preset) => (
         <button

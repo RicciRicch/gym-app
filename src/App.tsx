@@ -25,6 +25,7 @@ const FeedPage = lazyPage(() => import('./pages/FeedPage'), 'FeedPage')
 const FriendsPage = lazyPage(() => import('./pages/FriendsPage'), 'FriendsPage')
 const FriendPage = lazyPage(() => import('./pages/FriendPage'), 'FriendPage')
 const PrivacyPage = lazyPage(() => import('./pages/PrivacyPage'), 'PrivacyPage')
+const SuggestSplitPage = lazyPage(() => import('./pages/SuggestSplitPage'), 'SuggestSplitPage')
 // Dev-only playground for the celebration screen; dropped from production builds.
 const CelebrationPreview = import.meta.env.DEV
   ? lazyPage(() => import('./dev/CelebrationPreview'), 'CelebrationPreview')
@@ -72,6 +73,7 @@ export function App() {
         <Route index element={<TodayPage />} />
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="split" element={<SplitPage />} />
+        <Route path="split/suggest" element={<SuggestSplitPage />} />
         <Route path="workout" element={<WorkoutPage />} />
         <Route path="progress" element={<ProgressPage />} />
         <Route path="progress/:exerciseId" element={<ExerciseProgressPage />} />

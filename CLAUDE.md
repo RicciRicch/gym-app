@@ -385,6 +385,22 @@ npm test           # vitest (schedule logic etc.)
   Verified with three throwaway accounts (deleted): RLS / function checks via SQL as the friend (both
   directions), friends list, friend page, closed invite, toggle saved, new code in headless Brave.
 
+- Split suggestion (user asked on 2026-11-19, was the last future feature): `src/lib/suggest.ts`
+  (unit-tested) builds a weekly split from the weekdays you can train (1-6), a goal (strength / muscle /
+  fit) and session length (45 / 60 / 90 min -> 4 / 5 / 6 exercises). Layout: 1 day full body; 2 days
+  full body, or upper / lower when they touch; 3 days full body A/B/C when no two days touch, else
+  PPL; 4 upper / lower x2; 5 upper, lower, push, pull, legs; 6 PPL x2 (Sunday touches Monday). A test
+  checks all 126 weekday sets: no region except core on two days in a row. Day templates are slots
+  (movement + region + core slugs in preference order, variants for B days); compounds lead, the
+  time budget cuts accessories, and `neglectedRegions` (up to 3 regions with < 2 sets in 30 days, big
+  muscles first, only with 3+ workouts) moves those accessories forward with one extra set. Doses:
+  strength 5x5 / 4x6 / 3x10, muscle 4x8 / 3x12, fit 3x10 / 3x12. Reasons and sets per group per week
+  are shown. UI: `/split/suggest` (`SuggestSplitPage`, lazy; days preset from the current weekly split,
+  result updates live, "Use this split" portalled above the nav at z-20 so sheets cover it, confirm
+  sheet when replacing) and a "Build one for me" card at the top of `SplitSetup`. Saved through
+  `useCreateSplit` as a preset with key `suggested-<layout>`. Browser-verified in headless Brave with a
+  throwaway account (deleted): first split, replace flow, goal / day changes, skipped muscles line.
+
 ## Future features (NOT in MVP — do not build yet)
 
-- Optimal schedule suggestion
+- (none planned right now)

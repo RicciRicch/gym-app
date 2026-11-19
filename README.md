@@ -32,6 +32,9 @@ and watch your top sets climb.
 
 - **Splits** – start from a preset (Push/Pull/Legs, Upper/Lower, Full Body, Bro Split) or
   from scratch. Move days between weekdays, set default exercises with sets × reps.
+- **Build my split** – tap the days you can train, pick a goal (strength, muscle, fitness) and how
+  long a workout may take, and get a split that never trains the same muscle two days in a row,
+  with the reasons spelled out. Muscles you have been skipping get first pick and an extra set.
 - **Rotating cycle** – not tied to weekdays? Switch the split to rotating (Push, Pull, Legs,
   rest, repeat). The plan waits for you: skip a day and everything moves one day later instead
   of being lost, and the streak target follows the cycle's pace.
