@@ -8,5 +8,5 @@ import { serviceWorker } from './scripts/service-worker-plugin.mjs'
 export default defineConfig({
   base: '/gym-app/',
   plugins: [react(), tailwindcss(), serviceWorker()],
-  test: { environment: 'node', include: ['src/**/*.test.ts'] },
+  test: { environment: 'node', include: ['src/**/*.test.ts', 'supabase/functions/**/*.test.ts'] },
 })

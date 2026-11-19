@@ -99,6 +99,9 @@ and watch your top sets climb.
 - **Privacy** – choose what friends see (when you train, your streak, your badges and records),
   turn off friend requests or nudges, get a new friend code, or skip the photo step after a
   workout. Enforced in the database, not just hidden in the app; weights are never shared.
+- **Notifications** – turn them on per phone and hear right away when a friend nudges you,
+  sends or accepts a friend request, or reacts to your post; each kind has its own switch.
+  Built on standard Web Push (on iPhone: add the app to the Home Screen first).
 - **Training together** – mark a friend you trained with; both of you see how many workouts
   you have done together.
 - **Your look** – pick a character avatar or upload your own photo (cropped and shrunk on
@@ -135,6 +138,9 @@ before running the app.
   client; it deletes only the user identified by the request's JWT, photos included.
 - Friends see each other only through database functions that respect each user's privacy
   settings; nobody can list profiles or read another user's workouts directly.
+- Push notifications are sent by an Edge Function that only database triggers can call (a
+  shared secret kept in Supabase Vault, like the private VAPID key). Messages carry a name and
+  a short line, never weights; dead subscriptions are removed automatically.
 - Profile photos live in a storage bucket where each user can only write to their own
   folder; only small WebP/JPEG images are accepted.
 

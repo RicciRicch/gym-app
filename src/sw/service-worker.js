@@ -1,4 +1,4 @@
-/* global self, caches, fetch, URL */
+/* global self, caches, fetch, URL, clients */
 // Offline support. The build (vite.config.ts) prepends VERSION and PRECACHE:
 // every built file plus everything in public/, so the whole app opens with no
 // connection. Supabase API calls are cross-origin and never touched here.
@@ -54,5 +54,41 @@ self.addEventListener('fetch', (event) => {
           return response
         }),
     ),
+  )
+})
+
+// Push notifications (sent by the send-push Edge Function): show them, and open
+// the right screen on a tap. `url` is relative to the app, '' = Today.
+self.addEventListener('push', (event) => {
+  let data = {}
+  try {
+    data = event.data ? event.data.json() : {}
+  } catch {
+    data = { body: event.data ? event.data.text() : '' }
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'Gym App', {
+      body: data.body || '',
+      tag: data.tag,
+      icon: scoped('icon-192.png'),
+      data: { url: data.url || '' },
+    }),
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const target = scoped((event.notification.data && event.notification.data.url) || '')
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((open) => {
+      // Reuse an open window of the app when there is one.
+      const app = open.find((c) => c.url.startsWith(self.registration.scope))
+      if (app)
+        return app
+          .navigate(target)
+          .then((c) => (c || app).focus())
+          .catch(() => clients.openWindow(target))
+      return clients.openWindow(target)
+    }),
   )
 })

@@ -5,7 +5,16 @@ import { useAuth } from '../auth/auth-context'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
-export type PrivacySetting = 'share_activity' | 'share_streak' | 'share_badges' | 'accept_requests' | 'accept_nudges' | 'ask_proof'
+export type PrivacySetting =
+  | 'share_activity'
+  | 'share_streak'
+  | 'share_badges'
+  | 'accept_requests'
+  | 'accept_nudges'
+  | 'ask_proof'
+  | 'notify_nudges'
+  | 'notify_friends'
+  | 'notify_reactions'
 
 /** Flips one privacy switch; the screen updates at once and goes back if saving fails. */
 export function useUpdatePrivacy() {

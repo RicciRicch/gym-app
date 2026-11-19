@@ -401,6 +401,30 @@ npm test           # vitest (schedule logic etc.)
   `useCreateSplit` as a preset with key `suggested-<layout>`. Browser-verified in headless Brave with a
   throwaway account (deleted): first split, replace flow, goal / day changes, skipped muscles line.
 
+- Push notifications, phase 1 (user asked on 2026-11-19): nudges, friend requests (sent / accepted)
+  and reactions. Migrations `push_notifications` + `pg_net_schema` (pg_net lives in `extensions`):
+  `push_subscriptions` (endpoint must be a known push service, select/delete own; written only via
+  `save_push_subscription`, which moves an endpoint from another account and keeps the 10 newest),
+  `profiles.notify_nudges / notify_friends / notify_reactions` (default true), triggers
+  `nudges_push`, `friendships_push` (insert pending, update to accepted), `post_reactions_push`
+  (insert only, deduped 10 min per post + reactor in `private.push_log`) -> `private.queue_push`
+  -> pg_net POST to the `send-push` Edge Function with header `x-push-secret`. Vault secrets (not in
+  the repo): `push_function_url`, `push_webhook_secret`, `vapid_public_key`, `vapid_private_key`,
+  `vapid_subject`; the function reads them via `public.push_config()` (service_role only).
+  `send-push` (verify_jwt OFF, the secret is the guard; 403 without it, 503 if not configured):
+  `webpush.ts` = RFC 8291 aes128gcm + RFC 8292 VAPID with WebCrypto only (tested against the RFC
+  vector), `messages.ts` = texts, checks the recipient's notify_* column, deletes subscriptions on
+  404/410, returns `{sent, statuses}` (see `net._http_response`). Its tests run in vitest
+  (`supabase/functions/**/*.test.ts`; ESLint ignores `supabase/`). Client: `src/lib/push.ts`
+  (public VAPID key, `pushSupport`: iOS only from the Home Screen), `src/features/notifications/push.ts`
+  (`usePushDevice`, `forgetThisDevice` on sign-out), "This phone" + three switches on
+  /privacy (now "Privacy & notifications"); the service worker shows the push and opens `data.url`.
+  Push needs the production service worker: test with `gym-app-preview`. Verified with two throwaway
+  accounts (deleted) and fake FCM endpoints: all four events reach FCM (410 -> row deleted), a
+  switched-off kind is skipped, a quick re-react is not sent twice, the UI in headless Brave (Brave's
+  push service is off by default -> its own error message). Not exercised: a real delivery on a phone.
+  Phase 2 (workout reminders, streak at risk via cron) only when the user asks.
+
 ## Future features (NOT in MVP — do not build yet)
 
 - (none planned right now)

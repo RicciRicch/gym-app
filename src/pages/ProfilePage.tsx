@@ -11,6 +11,7 @@ import { BadgeShelfCard } from '../features/badges/BadgeShelfCard'
 import { StrengthCard } from '../features/strength/StrengthCard'
 import { ThemeRow } from '../features/theme/ThemePicker'
 import { useFriends } from '../features/friends/api'
+import { forgetThisDevice } from '../features/notifications/push'
 import { avatarPhotoUrl, choiceFromProfile, useUpdateAvatar, type AvatarChoice } from '../features/avatar/api'
 import type { Database } from '../lib/database.types'
 
@@ -71,7 +72,7 @@ export function ProfilePage() {
         className="mt-3 flex w-full items-center gap-3 rounded-3xl bg-surface px-4 py-3.5 text-left transition active:scale-[0.98]"
       >
         <div className="min-w-0 flex-1">
-          <p className="font-bold">Privacy</p>
+          <p className="font-bold">Privacy &amp; notifications</p>
           <p className="text-sm text-muted">{privacySummary(profile)}</p>
         </div>
         <svg viewBox="0 0 24 24" className="size-5 shrink-0 text-muted" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -81,7 +82,15 @@ export function ProfilePage() {
       <Button variant="secondary" className="mt-3 w-full" onClick={() => user && openGuide(user.id)}>
         How to use the app
       </Button>
-      <Button variant="ghost" className="mt-2 w-full" onClick={() => supabase.auth.signOut()}>
+      <Button
+        variant="ghost"
+        className="mt-2 w-full"
+        onClick={async () => {
+          // A shared phone should not keep getting this account's notifications.
+          await forgetThisDevice().catch(() => {})
+          await supabase.auth.signOut()
+        }}
+      >
         Log out
       </Button>
       <button onClick={() => setConfirmDelete(true)} className="mt-10 min-h-11 px-4 text-sm font-semibold text-danger/80">

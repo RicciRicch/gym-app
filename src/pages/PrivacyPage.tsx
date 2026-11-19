@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Sheet } from '../components/Sheet'
 import { Button } from '../components/ui'
 import { useProfile } from '../features/auth/useProfile'
+import { usePushDevice, type DeviceState } from '../features/notifications/push'
 import { useRegenerateFriendCode, useUpdatePrivacy, type PrivacySetting } from '../features/privacy/api'
 import { POST_DAYS } from '../lib/feed'
 
@@ -30,13 +31,20 @@ export function PrivacyPage() {
         </svg>
         Profile
       </Link>
-      <h1 className="text-3xl font-black tracking-tight">Privacy</h1>
+      <h1 className="text-3xl font-black tracking-tight">Privacy &amp; notifications</h1>
 
       {update.isError && (
         <p role="alert" className="mt-4 rounded-2xl bg-danger/10 px-4 py-3 text-sm text-danger">
           Could not save that. Check your connection and try again.
         </p>
       )}
+
+      <Group title="Notifications">
+        <ThisDevice />
+        {toggle('notify_nudges', 'Nudges', 'When a friend tells you to get off the couch.')}
+        {toggle('notify_friends', 'Friend requests', 'When someone asks to be friends, or accepts your request.')}
+        {toggle('notify_reactions', 'Reactions', 'When friends react to your posts.')}
+      </Group>
 
       <Group title="What friends see">
         {toggle('share_activity', 'When you train', 'Your last workout, days and sets this week and the last four weeks. Off: you also leave the weekly table.')}
@@ -74,6 +82,45 @@ export function PrivacyPage() {
       </Group>
 
       {newCode && <NewCodeSheet onClose={() => setNewCode(false)} />}
+    </div>
+  )
+}
+
+const DEVICE_TEXT: Record<Exclude<DeviceState, 'loading'>, string> = {
+  on: 'Notifications are on for this phone.',
+  off: 'Turn them on to hear about nudges, friend requests and reactions right away.',
+  denied: 'Notifications are blocked for this app. Allow them in the browser or phone settings, then come back.',
+  install: 'On iPhone, add the app to your Home Screen first (Share, then Add to Home Screen) and open it from there.',
+  unsupported: 'This browser cannot show notifications. Try the app on your phone.',
+}
+
+/** Turns push on or off for the browser in hand; the switches below apply to every device. */
+function ThisDevice() {
+  const device = usePushDevice()
+  const { state } = device
+  return (
+    <div className="py-3">
+      <div className="flex min-h-12 items-center gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="font-bold">This phone</p>
+          <p className="mt-0.5 text-sm text-muted">{state === 'loading' ? 'Checking...' : DEVICE_TEXT[state]}</p>
+        </div>
+        {(state === 'off' || state === 'on') && (
+          <Button
+            variant={state === 'on' ? 'secondary' : 'primary'}
+            className="shrink-0 px-4"
+            loading={device.busy}
+            onClick={state === 'on' ? device.disable : device.enable}
+          >
+            {state === 'on' ? 'Turn off' : 'Turn on'}
+          </Button>
+        )}
+      </div>
+      {device.error && (
+        <p role="alert" className="mt-2 text-sm text-danger">
+          {device.error}
+        </p>
+      )}
     </div>
   )
 }

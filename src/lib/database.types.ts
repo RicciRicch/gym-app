@@ -29,6 +29,9 @@ export type Database = {
           accept_requests: boolean
           accept_nudges: boolean
           ask_proof: boolean
+          notify_nudges: boolean
+          notify_friends: boolean
+          notify_reactions: boolean
           created_at: string
         }
         Insert: {
@@ -52,6 +55,9 @@ export type Database = {
           accept_requests?: boolean
           accept_nudges?: boolean
           ask_proof?: boolean
+          notify_nudges?: boolean
+          notify_friends?: boolean
+          notify_reactions?: boolean
         }
         Relationships: []
       }
@@ -332,6 +338,19 @@ export type Database = {
         Update: Record<string, never>
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          created_at: string
+        }
+        Insert: Record<string, never>
+        Update: Record<string, never>
+        Relationships: []
+      }
       nudges: {
         Row: {
           id: string
@@ -421,6 +440,10 @@ export type Database = {
           shares_badges: boolean
           accepts_nudges: boolean
         }[]
+      }
+      save_push_subscription: {
+        Args: { p_endpoint: string; p_p256dh: string; p_auth: string }
+        Returns: undefined
       }
       regenerate_friend_code: {
         Args: Record<string, never>
