@@ -8,6 +8,7 @@ import { BadgeUnlock } from '../features/badges/BadgeUnlock'
 import { AddFriendPrompt } from '../features/friends/AddFriendPrompt'
 import { useCleanUpOldPosts, useUnseenPosts } from '../features/feed/api'
 import { useFriends, usePublishFriendStats } from '../features/friends/api'
+import { usePublishPushPlan } from '../features/notifications/plan'
 import { GuideOverlay } from '../features/guide/GuideOverlay'
 import { closeGuide, useGuideOpen } from '../features/guide/guide-store'
 import { useActiveSplit } from '../features/split/api'
@@ -53,6 +54,7 @@ export function AppLayout() {
   const requests = useFriends().data?.filter((f) => f.status === 'incoming').length ?? 0
   const unseen = useUnseenPosts()
   usePublishFriendStats()
+  usePublishPushPlan()
   useCleanUpOldPosts()
   // A new page starts at the top; going back keeps where the browser puts you.
   const navigation = useNavigationType()

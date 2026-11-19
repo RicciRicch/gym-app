@@ -15,6 +15,7 @@ export type PrivacySetting =
   | 'notify_nudges'
   | 'notify_friends'
   | 'notify_reactions'
+  | 'notify_streak'
 
 /** Flips one privacy switch; the screen updates at once and goes back if saving fails. */
 export function useUpdatePrivacy() {
@@ -33,6 +34,28 @@ export function useUpdatePrivacy() {
     onMutate: ({ setting, value }) => {
       const before = queryClient.getQueryData<Profile | null>(key)
       if (before) queryClient.setQueryData<Profile>(key, { ...before, [setting]: value })
+      return { before }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.before) queryClient.setQueryData(key, context.before)
+    },
+  })
+}
+
+/** The workout reminder time ('HH:MM' in the phone's time zone), or null to turn it off. */
+export function useUpdateRemindTime() {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const key = ['profile', user?.id]
+  return useMutation({
+    networkMode: 'always',
+    mutationFn: async (time: string | null) => {
+      const { error } = await supabase.from('profiles').update({ remind_time: time }).eq('id', user!.id)
+      if (error) throw error
+    },
+    onMutate: (time) => {
+      const before = queryClient.getQueryData<Profile | null>(key)
+      if (before) queryClient.setQueryData<Profile>(key, { ...before, remind_time: time && `${time}:00` })
       return { before }
     },
     onError: (_err, _vars, context) => {

@@ -423,7 +423,25 @@ npm test           # vitest (schedule logic etc.)
   accounts (deleted) and fake FCM endpoints: all four events reach FCM (410 -> row deleted), a
   switched-off kind is skipped, a quick re-react is not sent twice, the UI in headless Brave (Brave's
   push service is off by default -> its own error message). Not exercised: a real delivery on a phone.
-  Phase 2 (workout reminders, streak at risk via cron) only when the user asks.
+- Push notifications, phase 2 (user asked on 2026-11-20): workout reminder + streak at risk. Migrations
+  `push_reminders` + `push_plans_upsert`: `profiles.remind_time` (time, null = off, whole minutes) and
+  `notify_streak` (default true); `push_plans` (one row per user, own-only RLS: time_zone validated
+  against pg_timezone_names by a trigger, mode, `days` = training days ahead as [{date, name}],
+  weekly_target), published by the app (`usePublishPushPlan` in AppLayout,
+  `src/features/notifications/plan.ts`; `planAhead` etc. in `src/lib/reminders.ts`, unit-tested;
+  14 days, only when it changed). pg_cron job `push-reminders` (*/5) -> `private.push_reminders()` ->
+  `private.due_reminders(p_now)` (pass any time to test the rules in SQL): only users with a
+  subscription, local time within 2 h after remind_time (18:00 for streak warnings alone), nothing
+  trained today, at most one per local day (`private.reminder_log`). Weekly: today in the plan. Rotating:
+  the first planned day has come (at most 7 days ago) and nothing was trained since ("waiting since").
+  Streak at risk = `private.streak_before` (mirrors `weeklyStreak`: frozen weeks bridge) > 0, this week
+  not frozen, target - trained = days left incl. today; it wins over the plain reminder. The function
+  (kinds `reminder` / `streak`, TTL 2 h) words them in `messages.ts`. UI: "Workout reminder" switch +
+  time input (saved 0.7 s after the last change) and "Streak at risk" on /privacy. Verified with a
+  throwaway account (deleted): RLS / bad time zone / seconds, due_reminders at chosen times (window,
+  late, unplanned day, trained today, streak 0/3 vs 1/3, frozen week, rotating waiting / too old /
+  trained since), the real job -> FCM (410 -> row removed) and no second send, the cron run, the UI and
+  the published plan in headless Brave. Not exercised: a real reminder on a phone.
 
 ## Future features (NOT in MVP — do not build yet)
 

@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Sheet } from '../components/Sheet'
 import { Button } from '../components/ui'
 import { useProfile } from '../features/auth/useProfile'
 import { usePushDevice, type DeviceState } from '../features/notifications/push'
-import { useRegenerateFriendCode, useUpdatePrivacy, type PrivacySetting } from '../features/privacy/api'
+import { useRegenerateFriendCode, useUpdatePrivacy, useUpdateRemindTime, type PrivacySetting } from '../features/privacy/api'
 import { POST_DAYS } from '../lib/feed'
+import { DEFAULT_REMIND_TIME, parseTimeInput, toTimeInput } from '../lib/reminders'
 
 /** What friends see, who may reach you, and the photo step after a workout. */
 export function PrivacyPage() {
@@ -41,6 +42,8 @@ export function PrivacyPage() {
 
       <Group title="Notifications">
         <ThisDevice />
+        <Reminder value={profile.remind_time} />
+        {toggle('notify_streak', 'Streak at risk', 'When keeping your streak takes a workout on every day left this week. At your reminder time, or 18:00.')}
         {toggle('notify_nudges', 'Nudges', 'When a friend tells you to get off the couch.')}
         {toggle('notify_friends', 'Friend requests', 'When someone asks to be friends, or accepts your request.')}
         {toggle('notify_reactions', 'Reactions', 'When friends react to your posts.')}
@@ -119,6 +122,52 @@ function ThisDevice() {
       {device.error && (
         <p role="alert" className="mt-2 text-sm text-danger">
           {device.error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** On planned days at a time you pick, unless you already trained. Saved a moment after the last change. */
+function Reminder({ value }: { value: string | null }) {
+  const update = useUpdateRemindTime()
+  const saved = toTimeInput(value)
+  const [draft, setDraft] = useState(saved ?? DEFAULT_REMIND_TIME)
+  const { mutate } = update
+
+  useEffect(() => {
+    const time = parseTimeInput(draft)
+    if (!saved || !time || time === saved) return
+    const timer = setTimeout(() => mutate(time), 700)
+    return () => clearTimeout(timer)
+  }, [draft, saved, mutate])
+
+  return (
+    <div>
+      <Toggle
+        title="Workout reminder"
+        text="On planned days, unless you have already trained."
+        checked={!!saved}
+        onChange={(on) => {
+          if (on) setDraft(saved ?? DEFAULT_REMIND_TIME)
+          mutate(on ? (parseTimeInput(draft) ?? DEFAULT_REMIND_TIME) : null)
+        }}
+      />
+      {saved && (
+        <label className="flex min-h-12 items-center gap-4 pb-3">
+          <span className="flex-1 text-sm text-muted">Remind me at</span>
+          <input
+            type="time"
+            step={300}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            className="min-h-11 rounded-xl bg-surface px-3 font-semibold text-text tabular-nums"
+          />
+        </label>
+      )}
+      {update.isError && (
+        <p role="alert" className="pb-3 text-sm text-danger">
+          Could not save the reminder. Try again.
         </p>
       )}
     </div>

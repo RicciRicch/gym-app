@@ -32,6 +32,9 @@ export type Database = {
           notify_nudges: boolean
           notify_friends: boolean
           notify_reactions: boolean
+          notify_streak: boolean
+          /** Local 'HH:MM:SS'; null = no workout reminder. */
+          remind_time: string | null
           created_at: string
         }
         Insert: {
@@ -58,6 +61,8 @@ export type Database = {
           notify_nudges?: boolean
           notify_friends?: boolean
           notify_reactions?: boolean
+          notify_streak?: boolean
+          remind_time?: string | null
         }
         Relationships: []
       }
@@ -349,6 +354,30 @@ export type Database = {
         }
         Insert: Record<string, never>
         Update: Record<string, never>
+        Relationships: []
+      }
+      push_plans: {
+        Row: {
+          user_id: string
+          time_zone: string
+          mode: 'weekly' | 'rotating'
+          days: { date: string; name: string }[]
+          weekly_target: number
+          updated_at: string
+        }
+        Insert: {
+          user_id?: string
+          time_zone: string
+          mode: 'weekly' | 'rotating'
+          days: { date: string; name: string }[]
+          weekly_target: number
+        }
+        Update: {
+          time_zone?: string
+          mode?: 'weekly' | 'rotating'
+          days?: { date: string; name: string }[]
+          weekly_target?: number
+        }
         Relationships: []
       }
       nudges: {

@@ -101,6 +101,8 @@ and watch your top sets climb.
   workout. Enforced in the database, not just hidden in the app; weights are never shared.
 - **Notifications** – turn them on per phone and hear right away when a friend nudges you,
   sends or accepts a friend request, or reacts to your post; each kind has its own switch.
+  A workout reminder at the time you pick (only on planned days you have not trained yet), and
+  a warning when your streak needs a workout on every day left in the week.
   Built on standard Web Push (on iPhone: add the app to the Home Screen first).
 - **Training together** – mark a friend you trained with; both of you see how many workouts
   you have done together.

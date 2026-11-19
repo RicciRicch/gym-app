@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { friendAcceptedMessage, friendRequestMessage, nudgeMessage, postTopic, reactionMessage, safeEqual } from './messages'
+import {
+  friendAcceptedMessage,
+  friendRequestMessage,
+  nudgeMessage,
+  postTopic,
+  reactionMessage,
+  reminderMessage,
+  safeEqual,
+  streakMessage,
+  weekdayName,
+} from './messages'
 
 describe('push messages', () => {
   it('words nudges and friend requests', () => {
@@ -16,6 +26,25 @@ describe('push messages', () => {
     expect(reactionMessage(['Ana', 'Marko', 'Iva'], 'Legs', id)?.body).toBe('Ana, Marko and 1 other reacted to your Legs workout.')
     expect(reactionMessage(['Ana', 'Marko', 'Iva', 'Luka'], 'Legs', id)?.body).toBe('Ana, Marko and 2 others reacted to your Legs workout.')
     expect(reactionMessage(['Ana'], 'Push', id)).toMatchObject({ url: `feed#post-${id}`, tag: `post-${id}` })
+  })
+
+  it('words workout reminders', () => {
+    expect(reminderMessage('Push', null)).toMatchObject({ title: 'Push day', url: '', tag: 'reminder' })
+    expect(reminderMessage('Push', null).body).toBe('Your Push workout is on today. Tap to start when you are ready.')
+    // 2026-11-17 was a Tuesday.
+    expect(reminderMessage('Legs', '2026-11-17').body).toBe('Your Legs workout has been waiting since Tuesday. Today works.')
+    expect(weekdayName('2026-11-22')).toBe('Sunday')
+  })
+
+  it('warns when the streak needs every day left', () => {
+    expect(streakMessage(5, 1, null)).toMatchObject({
+      title: 'Your streak needs you',
+      body: 'One workout today keeps your 5-week streak alive. Last chance this week.',
+    })
+    expect(streakMessage(3, 2, 'Pull')).toMatchObject({
+      title: 'Pull day: your streak needs it',
+      body: '2 workouts in 2 days keep your 3-week streak alive. Start today.',
+    })
   })
 
   it('makes a valid Topic from a post id', () => {

@@ -1,10 +1,12 @@
 // Sends a push notification for something that just happened in the database.
-// Called only by the triggers in the `push_notifications` migration (through
-// pg_net), which prove themselves with the shared secret kept in Vault; there is
-// no user JWT, so verify_jwt is off and the secret is the gate.
+// Called only by the triggers in the `push_notifications` migration and the
+// reminder job in `push_reminders` (through pg_net), which prove themselves with
+// the shared secret kept in Vault; there is no user JWT, so verify_jwt is off and
+// the secret is the gate.
 //
 // Body: { kind: 'nudge' | 'friend_request' | 'friend_accepted', id } or
-//       { kind: 'reaction', post_id, user_id }
+//       { kind: 'reaction', post_id, user_id } or
+//       { kind: 'reminder' | 'streak', user_id, day_name, waiting_since, streak_weeks, needed, days_left }
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import {
   friendAcceptedMessage,
@@ -12,7 +14,9 @@ import {
   nudgeMessage,
   postTopic,
   reactionMessage,
+  reminderMessage,
   safeEqual,
+  streakMessage,
   type Preference,
   type PushMessage,
 } from './messages.ts'
@@ -20,9 +24,12 @@ import { sendPush, type VapidKeys } from './webpush.ts'
 
 interface Target {
   userId: string
-  preference: Preference
+  /** The recipient's switch for this kind; none when the caller already checked it. */
+  preference?: Preference
   message: PushMessage
   topic?: string
+  /** Seconds a push service keeps it for an offline phone (default a day). */
+  ttl?: number
 }
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -72,6 +79,21 @@ async function resolve(db: SupabaseClient, event: Record<string, unknown>): Prom
       const message = reactionMessage(names, post.day_name, postId)
       return message && { userId: post.user_id, preference: 'notify_reactions', message, topic: postTopic(postId) }
     }
+    // From the reminder job, which already checked the settings, the plan and the time.
+    case 'reminder':
+    case 'streak': {
+      const userId = typeof event.user_id === 'string' ? event.user_id : ''
+      if (!userId) return null
+      const dayName = typeof event.day_name === 'string' && event.day_name ? event.day_name : null
+      const waitingSince = typeof event.waiting_since === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(event.waiting_since) ? event.waiting_since : null
+      // A reminder that arrives hours late (phone off) is noise: let it expire.
+      const ttl = 2 * 3600
+      if (event.kind === 'reminder') return dayName ? { userId, message: reminderMessage(dayName, waitingSince), ttl } : null
+      const weeks = Number(event.streak_weeks)
+      const needed = Number(event.needed)
+      if (!(weeks > 0) || !(needed > 0)) return null
+      return { userId, message: streakMessage(weeks, needed, dayName), ttl }
+    }
     default:
       return null
   }
@@ -104,8 +126,10 @@ Deno.serve(async (req) => {
   const target = await resolve(db, event)
   if (!target) return json({ sent: 0, skipped: 'nothing to send' })
 
-  const { data: profile } = await db.from('profiles').select(target.preference).eq('id', target.userId).maybeSingle()
-  if (!profile || !(profile as Record<string, boolean>)[target.preference]) return json({ sent: 0, skipped: 'turned off' })
+  if (target.preference) {
+    const { data: profile } = await db.from('profiles').select(target.preference).eq('id', target.userId).maybeSingle()
+    if (!profile || !(profile as Record<string, boolean>)[target.preference]) return json({ sent: 0, skipped: 'turned off' })
+  }
 
   const { data: subscriptions } = await db.from('push_subscriptions').select('id, endpoint, p256dh, auth').eq('user_id', target.userId)
   const vapid: VapidKeys = {
@@ -118,7 +142,7 @@ Deno.serve(async (req) => {
   for (const sub of subscriptions ?? []) {
     let status = 0
     try {
-      status = await sendPush(sub, target.message, vapid, { topic: target.topic, urgency: target.preference === 'notify_nudges' ? 'high' : 'normal' })
+      status = await sendPush(sub, target.message, vapid, { topic: target.topic, ttl: target.ttl, urgency: target.preference === 'notify_nudges' ? 'high' : 'normal' })
     } catch {
       status = 0
     }

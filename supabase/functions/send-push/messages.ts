@@ -35,6 +35,41 @@ export function reactionMessage(names: readonly string[], dayName: string, postI
   return { title: 'New reaction', body: `${who} reacted to your ${dayName} workout.`, url: `feed#post-${postId}`, tag: `post-${postId}` }
 }
 
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+/** The weekday of a local YYYY-MM-DD date. */
+export function weekdayName(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  return WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]
+}
+
+/** The planned day has come and nothing is logged yet. `waitingSince`: rotating plan, missed earlier. */
+export function reminderMessage(dayName: string, waitingSince: string | null): PushMessage {
+  return {
+    title: `${dayName} day`,
+    body: waitingSince
+      ? `Your ${dayName} workout has been waiting since ${weekdayName(waitingSince)}. Today works.`
+      : `Your ${dayName} workout is on today. Tap to start when you are ready.`,
+    url: '',
+    tag: 'reminder',
+  }
+}
+
+/** Every day left this week needs a workout (needed = days left), or the streak ends on Sunday. */
+export function streakMessage(weeks: number, needed: number, dayName: string | null): PushMessage {
+  const streak = `${weeks}-week streak`
+  const body =
+    needed <= 1
+      ? `One workout today keeps your ${streak} alive. Last chance this week.`
+      : `${needed} workouts in ${needed} days keep your ${streak} alive. Start today.`
+  return {
+    title: dayName ? `${dayName} day: your streak needs it` : 'Your streak needs you',
+    body,
+    url: '',
+    tag: 'reminder',
+  }
+}
+
 /** A Topic header value for a post: base64url-safe and at most 32 characters. */
 export function postTopic(postId: string): string {
   return postId.replace(/-/g, '').slice(0, 32)
