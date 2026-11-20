@@ -42,6 +42,8 @@ import {
   isLoggable,
   parseReps,
   parseWeight,
+  REST_OFF,
+  restEnd,
   toSetRows,
   type DraftExercise,
   type DraftSet,
@@ -170,7 +172,7 @@ export function WorkoutPage() {
     if (!isLoggable(set)) return
     update((d) => ({
       ...d,
-      restEndsAt: Date.now() + d.restSeconds * 1000,
+      restEndsAt: restEnd(d.restSeconds, Date.now()),
       exercises: d.exercises.map((e, i) =>
         i === exerciseIndex ? { ...e, sets: e.sets.map((s, j) => (j === setIndex ? { ...s, done: true } : s)) } : e,
       ),
@@ -202,7 +204,7 @@ export function WorkoutPage() {
     const filled: DraftSet = { weight, reps: String(spoken.reps), done: true }
     update((d) => ({
       ...d,
-      restEndsAt: Date.now() + d.restSeconds * 1000,
+      restEndsAt: restEnd(d.restSeconds, Date.now()),
       exercises: d.exercises.map((e) => {
         if (e.exerciseId !== exerciseId) return e
         const sets = [...e.sets]
@@ -422,12 +424,12 @@ export function WorkoutPage() {
       )}
 
       {sheet === 'rest' && (
-        <Sheet title="Rest between sets" onClose={() => setSheet(null)}>
+        <Sheet title="Rest timer" onClose={() => setSheet(null)}>
           <RestPicker
             value={draft.restSeconds}
             onChange={(seconds) => {
               saveRestSeconds(seconds)
-              update((d) => ({ ...d, restSeconds: seconds }))
+              update((d) => ({ ...d, restSeconds: seconds, restEndsAt: seconds === REST_OFF ? null : d.restEndsAt }))
             }}
           />
           <Button className="mt-5 mb-2 w-full" onClick={() => setSheet(null)}>

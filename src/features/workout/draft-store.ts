@@ -1,5 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react'
-import { DEFAULT_REST_SECONDS, isWorkoutDraft, type WorkoutDraft } from '../../lib/workout'
+import { DEFAULT_REST_SECONDS, isWorkoutDraft, REST_OFF, type WorkoutDraft } from '../../lib/workout'
 import { useAuth } from '../auth/auth-context'
 
 // The in-progress workout lives in localStorage (one per user) so nothing is
@@ -85,7 +85,9 @@ const REST_EVENT = 'gym-app:rest-seconds'
 /** The user's preferred rest duration, remembered across workouts. */
 export function loadRestSeconds(): number {
   try {
-    const value = Number(localStorage.getItem(REST_KEY))
+    const raw = localStorage.getItem(REST_KEY)
+    const value = Number(raw)
+    if (raw === String(REST_OFF)) return REST_OFF
     return value >= 10 && value <= 900 ? value : DEFAULT_REST_SECONDS
   } catch {
     return DEFAULT_REST_SECONDS

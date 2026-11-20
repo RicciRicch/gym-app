@@ -47,8 +47,17 @@ export function stepRest(seconds: number, direction: -1 | 1): number {
   return Math.min(REST_MAX, Math.max(REST_MIN, snapped * REST_STEP))
 }
 
-/** "45 s", "1:30 min", "3 min". */
+/** Rest 0 = no timer after a set, for people who do not want to time it. */
+export const REST_OFF = 0
+
+/** When the rest after a set just done ends (epoch ms), or null when rest is off. */
+export function restEnd(restSeconds: number, now: number): number | null {
+  return restSeconds > REST_OFF ? now + restSeconds * 1000 : null
+}
+
+/** "off", "45 s", "1:30 min", "3 min". */
 export function formatRest(seconds: number): string {
+  if (seconds <= REST_OFF) return 'off'
   if (seconds < 60) return `${seconds} s`
   return seconds % 60 === 0 ? `${seconds / 60} min` : `${formatClock(seconds)} min`
 }

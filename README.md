@@ -45,8 +45,9 @@ and watch your top sets climb.
 - **Workout logging** – prefilled from your last session, reps × weight, one tap to mark
   a set done, add/remove sets and exercises, and an offer to update the day's defaults
   when you finish. The draft survives reloads (localStorage).
-- **Rest timer** – starts automatically after a set, ±15 s, adjustable default, vibrates
-  when done.
+- **Rest timer** – starts automatically after a set, ±15 s, adjustable default, or switched
+  off if you don't time rest. The phone vibrates when it is over; with notifications allowed
+  it also does with the screen off.
 - **Works offline** – a small hand-written service worker precaches the whole app (the
   file list is generated at build time), and the last loaded data is kept on the phone, so
   the app opens and shows your split and history with no signal. Log the workout

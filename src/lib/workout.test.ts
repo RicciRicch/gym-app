@@ -3,6 +3,7 @@ import {
   exercisesDiffer,
   formatClock,
   formatRest,
+  restEnd,
   isWorkoutDraft,
   parseReps,
   parseWeight,
@@ -142,5 +143,10 @@ describe('rest duration', () => {
     expect(formatRest(45)).toBe('45 s')
     expect(formatRest(90)).toBe('1:30 min')
     expect(formatRest(180)).toBe('3 min')
+    expect(formatRest(0)).toBe('off')
+  })
+  it('starts no timer when rest is off', () => {
+    expect(restEnd(90, 1_000)).toBe(91_000)
+    expect(restEnd(0, 1_000)).toBeNull()
   })
 })

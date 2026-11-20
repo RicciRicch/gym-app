@@ -293,6 +293,17 @@ npm test           # vitest (schedule logic etc.)
   (`useRestSeconds`, re-renders on change) and a new workout copies it into the draft.
   Browser-verified at 375px with a throwaway account (deleted): pick 2:00 on Today -> workout
   shows "Rest 2 min", change to 1:45 mid-workout -> the timer counts 1:45 after a set.
+  Rest off (user asked on 2026-11-20): `REST_OFF` = 0 seconds, a switch at the top of `RestPicker`
+  (turning it on brings back the last duration), `restEnd()` returns null so no timer starts, the
+  button reads "Rest off", the running sheet is titled "Rest timer". Buzz at the end
+  (`src/lib/rest-alert.ts`, unit-tested; `src/features/workout/rest-alert.ts`): `navigator.vibrate`
+  while the app is on screen; in the background (or on iPhone, which has no vibrate API) a
+  "Rest is over" notification through the service worker (tag `rest`, vibrate pattern, opens
+  /workout; closed when the app is visible again), which needs notification permission:
+  `RestAlertHint` under the picker offers "Buzz with the screen off too". Verified in headless
+  Brave with a throwaway account (deleted), mocked vibrate and visibility: off -> no timer, 15 s
+  -> one buzz, hidden -> notification and no buzz, visible again -> notification gone. Not
+  exercised: a real phone with the screen locked (browsers may slow or pause timers there).
 - Training together (user asked on 2026-11-16): table `workout_partners` (migration
   `workout_partners`: workout_id, user_id, friend_id, day; RLS: both sides read, insert only on
   your own workout with its real date and only an accepted friend, delete own; narrow grants).
