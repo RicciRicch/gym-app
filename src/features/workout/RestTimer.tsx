@@ -6,8 +6,8 @@ import { useNow } from './useNow'
 
 /**
  * Rest countdown docked above the bottom nav. Runs off an absolute end time,
- * so it survives reloads and backgrounding. Buzzes when it reaches zero (a
- * notification when the app is in the background, see rest-alert.ts).
+ * so it survives reloads and backgrounding. Buzzes when it reaches zero; with
+ * notifications on, the server sends a push too (see rest-alert.ts, rest-alarm.ts).
  */
 export function RestTimer({
   endsAt,
@@ -29,7 +29,7 @@ export function RestTimer({
     firedFor.current = endsAt
     // Only buzz if it just ended, not when reopening the app long after. In the
     // background timers tick slower, so allow a little lateness.
-    if (remainingMs > -30_000) void restOver().catch(() => {})
+    if (remainingMs > -30_000) void restOver(endsAt).catch(() => {})
     onDone()
   }, [remainingMs, endsAt, onDone])
 

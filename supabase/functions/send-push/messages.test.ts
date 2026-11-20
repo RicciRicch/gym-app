@@ -6,6 +6,7 @@ import {
   postTopic,
   reactionMessage,
   reminderMessage,
+  restMessage,
   safeEqual,
   streakMessage,
   weekdayName,
@@ -45,6 +46,11 @@ describe('push messages', () => {
       title: 'Pull day: your streak needs it',
       body: '2 workouts in 2 days keep your 3-week streak alive. Start today.',
     })
+  })
+
+  it('ends a rest with a buzz that opens the workout', () => {
+    expect(restMessage()).toMatchObject({ title: 'Rest is over', url: 'workout', tag: 'rest' })
+    expect(restMessage().vibrate?.length).toBeGreaterThan(1)
   })
 
   it('makes a valid Topic from a post id', () => {

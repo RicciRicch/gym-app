@@ -304,6 +304,22 @@ npm test           # vitest (schedule logic etc.)
   Brave with a throwaway account (deleted), mocked vibrate and visibility: off -> no timer, 15 s
   -> one buzz, hidden -> notification and no buzz, visible again -> notification gone. Not
   exercised: a real phone with the screen locked (browsers may slow or pause timers there).
+  Server rest alarm (user asked on 2026-11-20, so the alert works on a locked iPhone / sleeping
+  Android): migration `rest_alarms`: `rest_alarms` (one row per user: endpoint, fires_at; RLS own
+  only, the endpoint must be one of your own push_subscriptions, a trigger keeps fires_at within
+  now-5 s .. now+15 min), pg_cron `rest-alarms` every 5 s -> `private.fire_rest_alarms()` (deletes
+  due rows, skips ones over a minute late) -> `queue_push` kind `rest` -> `send-push` sends only to
+  that endpoint (TTL 60, urgency high, topic rest, vibrate pattern). `cron-history-cleanup` (hourly)
+  trims cron.job_run_details. Client: `useRestAlarm` (`src/features/workout/rest-alarm.ts`, in
+  WorkoutPage) upserts the row when a rest starts / moves and deletes it on skip / off / finish
+  (Supabase builders only send when awaited: `.then()` them); `restAlert` picks 'server' when
+  armed, so no local notification. The SW skips a `rest` push on Android while a window is
+  visible (it already buzzed). `RestAlertHint` uses `usePushDevice` (button turns on push for
+  this phone; iPhone: "add to Home Screen"). Precision ~5 s. Verified with throwaway accounts
+  (deleted) and fake FCM endpoints: RLS (other user / other endpoint / 20 min ahead blocked),
+  cron fires -> 410 only for the armed endpoint, and in headless Brave with a mocked
+  subscription: set done -> row, −15 moves it, Skip deletes it, hidden -> no local notification,
+  server push sent. Not exercised: a real iPhone / Android delivery.
 - Training together (user asked on 2026-11-16): table `workout_partners` (migration
   `workout_partners`: workout_id, user_id, friend_id, day; RLS: both sides read, insert only on
   your own workout with its real date and only an accepted friend, delete own; narrow grants).

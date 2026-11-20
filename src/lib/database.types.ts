@@ -356,6 +356,24 @@ export type Database = {
         Update: Record<string, never>
         Relationships: []
       }
+      rest_alarms: {
+        Row: {
+          user_id: string
+          endpoint: string
+          fires_at: string
+          created_at: string
+        }
+        Insert: {
+          user_id?: string
+          endpoint: string
+          fires_at: string
+        }
+        Update: {
+          endpoint?: string
+          fires_at?: string
+        }
+        Relationships: []
+      }
       push_plans: {
         Row: {
           user_id: string

@@ -7,6 +7,15 @@ export interface PushMessage {
   url: string
   /** The service worker replaces a visible notification with the same tag. */
   tag: string
+  /** Vibration pattern (ms) for phones that honour it. */
+  vibrate?: number[]
+}
+
+export const REST_BUZZ = [300, 150, 300, 150, 300]
+
+/** The rest between sets is over (the app left an alarm when the set was done). */
+export function restMessage(): PushMessage {
+  return { title: 'Rest is over', body: 'Time for your next set.', url: 'workout', tag: 'rest', vibrate: REST_BUZZ }
 }
 
 export type Preference = 'notify_nudges' | 'notify_friends' | 'notify_reactions'

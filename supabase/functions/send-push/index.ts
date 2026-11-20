@@ -6,7 +6,8 @@
 //
 // Body: { kind: 'nudge' | 'friend_request' | 'friend_accepted', id } or
 //       { kind: 'reaction', post_id, user_id } or
-//       { kind: 'reminder' | 'streak', user_id, day_name, waiting_since, streak_weeks, needed, days_left }
+//       { kind: 'reminder' | 'streak', user_id, day_name, waiting_since, streak_weeks, needed, days_left } or
+//       { kind: 'rest', user_id, endpoint } (from the `rest_alarms` job)
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import {
   friendAcceptedMessage,
@@ -15,6 +16,7 @@ import {
   postTopic,
   reactionMessage,
   reminderMessage,
+  restMessage,
   safeEqual,
   streakMessage,
   type Preference,
@@ -30,6 +32,9 @@ interface Target {
   topic?: string
   /** Seconds a push service keeps it for an offline phone (default a day). */
   ttl?: number
+  /** Only this one subscription (the phone that left a rest alarm). */
+  endpoint?: string
+  urgent?: boolean
 }
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -94,6 +99,13 @@ async function resolve(db: SupabaseClient, event: Record<string, unknown>): Prom
       if (!(weeks > 0) || !(needed > 0)) return null
       return { userId, message: streakMessage(weeks, needed, dayName), ttl }
     }
+    // From the rest alarm job: to the phone that started the rest, now or never.
+    case 'rest': {
+      const userId = typeof event.user_id === 'string' ? event.user_id : ''
+      const endpoint = typeof event.endpoint === 'string' ? event.endpoint : ''
+      if (!userId || !endpoint) return null
+      return { userId, endpoint, message: restMessage(), ttl: 60, urgent: true, topic: 'rest' }
+    }
     default:
       return null
   }
@@ -131,7 +143,9 @@ Deno.serve(async (req) => {
     if (!profile || !(profile as Record<string, boolean>)[target.preference]) return json({ sent: 0, skipped: 'turned off' })
   }
 
-  const { data: subscriptions } = await db.from('push_subscriptions').select('id, endpoint, p256dh, auth').eq('user_id', target.userId)
+  let query = db.from('push_subscriptions').select('id, endpoint, p256dh, auth').eq('user_id', target.userId)
+  if (target.endpoint) query = query.eq('endpoint', target.endpoint)
+  const { data: subscriptions } = await query
   const vapid: VapidKeys = {
     publicKey: config.vapid_public_key,
     privateKey: config.vapid_private_key,
@@ -142,7 +156,7 @@ Deno.serve(async (req) => {
   for (const sub of subscriptions ?? []) {
     let status = 0
     try {
-      status = await sendPush(sub, target.message, vapid, { topic: target.topic, ttl: target.ttl, urgency: target.preference === 'notify_nudges' ? 'high' : 'normal' })
+      status = await sendPush(sub, target.message, vapid, { topic: target.topic, ttl: target.ttl, urgency: target.urgent || target.preference === 'notify_nudges' ? 'high' : 'normal' })
     } catch {
       status = 0
     }

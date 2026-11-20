@@ -18,6 +18,7 @@ import { ProofCamera } from '../features/feed/ProofCamera'
 import { useFriends } from '../features/friends/api'
 import { useProfile } from '../features/auth/useProfile'
 import { RestTimer } from '../features/workout/RestTimer'
+import { useRestAlarm } from '../features/workout/rest-alarm'
 import { voiceSupported } from '../features/workout/voice'
 import { VoiceSheet } from '../features/workout/VoiceSheet'
 import { WorkoutSummaryScreen, type StreakChange } from '../features/workout/WorkoutSummaryScreen'
@@ -90,6 +91,8 @@ export function WorkoutPage() {
   const askProof = useProfile().data?.ask_proof ?? true
 
   const clearRest = useCallback(() => setDraft((d) => ({ ...d, restEndsAt: null })), [setDraft])
+  // The server push for the end of the rest, for when the phone puts the app to sleep.
+  useRestAlarm(draft?.restEndsAt ?? null)
 
   if (finished && proof) {
     return (

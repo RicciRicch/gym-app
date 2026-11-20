@@ -1,18 +1,20 @@
 import { REST_BUZZ, restAlert, type AlertEnvironment } from '../../lib/rest-alert'
+import { isServerArmed } from './rest-alarm'
 
-/** What this browser can do right now. */
-export function alertEnvironment(): AlertEnvironment {
+/** What this browser can do right now, for the rest ending at `endsAt`. */
+export function alertEnvironment(endsAt: number): AlertEnvironment {
   const notifications = 'Notification' in window && 'serviceWorker' in navigator
   return {
     visible: document.visibilityState === 'visible',
     canVibrate: 'vibrate' in navigator,
     permission: notifications ? Notification.permission : 'unsupported',
+    serverArmed: isServerArmed(endsAt),
   }
 }
 
-/** Rest is over: buzz the phone, or show a notification that buzzes it. */
-export async function restOver(): Promise<void> {
-  const env = alertEnvironment()
+/** Rest is over: buzz the phone, leave it to the server push, or show a notification that buzzes it. */
+export async function restOver(endsAt: number): Promise<void> {
+  const env = alertEnvironment(endsAt)
   const how = restAlert(env)
   if (how === 'vibrate') {
     navigator.vibrate(REST_BUZZ)
@@ -33,11 +35,4 @@ export async function restOver(): Promise<void> {
     // Not in every TypeScript DOM lib yet, supported by Android Chrome.
     ...({ renotify: true, vibrate: REST_BUZZ } as object),
   })
-  // Once the app is back on screen the notification has done its job.
-  const onVisible = () => {
-    if (document.visibilityState !== 'visible') return
-    document.removeEventListener('visibilitychange', onVisible)
-    void registration.getNotifications({ tag: 'rest' }).then((shown) => shown.forEach((n) => n.close()))
-  }
-  document.addEventListener('visibilitychange', onVisible)
 }

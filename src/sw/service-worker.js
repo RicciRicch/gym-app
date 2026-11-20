@@ -67,12 +67,22 @@ self.addEventListener('push', (event) => {
     data = { body: event.data ? event.data.text() : '' }
   }
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Gym App', {
-      body: data.body || '',
-      tag: data.tag,
-      icon: scoped('icon-192.png'),
-      data: { url: data.url || '' },
-    }),
+    (async () => {
+      // "Rest is over": an open app on Android has already buzzed by itself, so
+      // skip a second alert there (Chrome allows that while the site is on
+      // screen). Same rule as showRestPush in src/lib/rest-alert.ts.
+      if (data.tag === 'rest' && /Android/i.test(self.navigator.userAgent)) {
+        const open = await clients.matchAll({ type: 'window', includeUncontrolled: true })
+        if (open.some((c) => c.visibilityState === 'visible')) return
+      }
+      await self.registration.showNotification(data.title || 'Gym App', {
+        body: data.body || '',
+        tag: data.tag,
+        icon: scoped('icon-192.png'),
+        data: { url: data.url || '' },
+        ...(Array.isArray(data.vibrate) ? { vibrate: data.vibrate, renotify: true } : {}),
+      })
+    })(),
   )
 })
 
