@@ -2,6 +2,7 @@
 
 import type { LoggedSet } from './progress'
 import { addDays, type ISODate } from './schedule'
+import { fromKg, type WeightUnit } from './units'
 
 /** Above this many reps the formula guesses too much, so those sets are ignored. */
 export const MAX_ESTIMATE_REPS = 10
@@ -59,8 +60,8 @@ export function roundTo(value: number, step: number): number {
   return Number((Math.round(value / step) * step).toFixed(2))
 }
 
-/** The headline number: half-kilo precision is already more than the formula knows. */
-export const displayMax = (estimate: number) => roundTo(estimate, 0.5)
+/** The headline number, in `unit`: half a kilo (or pound) is already more precision than the formula has. */
+export const displayMax = (estimate: number, unit: WeightUnit = 'kg') => roundTo(fromKg(estimate, unit), 0.5)
 
 export interface MaxSummary {
   /** Best estimate so far (the earliest one on a tie). */
@@ -80,8 +81,12 @@ export function maxSummary(points: readonly MaxPoint[], today: ISODate): MaxSumm
 
 export const PERCENTS = [95, 90, 85, 80, 75, 70, 65, 60] as const
 
-/** Training weights at each percentage, rounded to what you can load: 2.5 kg, or 1 kg for light lifts. */
-export function percentTable(oneRepMax: number): { percent: number; weight: number }[] {
-  const step = oneRepMax < 30 ? 1 : 2.5
-  return PERCENTS.map((percent) => ({ percent, weight: roundTo((oneRepMax * percent) / 100, step) }))
+/**
+ * Training weights at each percentage of a max (kg), in `unit`, rounded to what you can load:
+ * 2.5 kg (1 kg for light lifts), or 5 lb (2.5 lb for light lifts).
+ */
+export function percentTable(oneRepMax: number, unit: WeightUnit = 'kg'): { percent: number; weight: number }[] {
+  const max = fromKg(oneRepMax, unit)
+  const step = unit === 'lb' ? (max < 65 ? 2.5 : 5) : max < 30 ? 1 : 2.5
+  return PERCENTS.map((percent) => ({ percent, weight: roundTo((max * percent) / 100, step) }))
 }

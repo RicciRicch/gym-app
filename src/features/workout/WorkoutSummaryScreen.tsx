@@ -144,8 +144,8 @@ export function WorkoutSummaryScreen({
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-bold">{pr.name}</span>
-                  <span className="block text-2xl leading-tight font-black tabular-nums">{formatTopSet(pr.top)}</span>
-                  <span className="block truncate text-sm text-muted">Was {formatTopSet(pr.previous)}</span>
+                  <span className="block text-2xl leading-tight font-black tabular-nums">{formatTopSet(pr.top, pr.unit)}</span>
+                  <span className="block truncate text-sm text-muted">Was {formatTopSet(pr.previous, pr.unit)}</span>
                 </span>
                 <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-sm font-black text-accent-ink">{formatPrGain(pr)}</span>
               </li>

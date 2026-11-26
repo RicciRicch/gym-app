@@ -40,8 +40,8 @@ describe('summarizeWorkout', () => {
     const history = [logged('squat', 100, 5), logged('squat', 102.5, 2, '2026-10-31'), logged('pullup', 0, 10), logged('curl', 20, 12)]
     const { prs } = summarizeWorkout(draft, '2026-11-14T10:45:00.000Z', history)
     expect(prs).toEqual([
-      { exerciseId: 'squat', name: 'Back Squat', metric: 'weight', top: { weight: 105, reps: 3 }, previous: { weight: 102.5, reps: 2 } },
-      { exerciseId: 'pullup', name: 'Pull-up', metric: 'reps', top: { weight: 0, reps: 12 }, previous: { weight: 0, reps: 10 } },
+      { exerciseId: 'squat', name: 'Back Squat', metric: 'weight', top: { weight: 105, reps: 3 }, previous: { weight: 102.5, reps: 2 }, unit: 'kg' },
+      { exerciseId: 'pullup', name: 'Pull-up', metric: 'reps', top: { weight: 0, reps: 12 }, previous: { weight: 0, reps: 10 }, unit: 'kg' },
     ])
     expect(prs.map(formatPrGain)).toEqual(['+2.5 kg', '+2 reps'])
   })
@@ -49,5 +49,15 @@ describe('summarizeWorkout', () => {
   it('treats a first session as the baseline and reports nothing without history', () => {
     expect(summarizeWorkout(draft, '2026-11-14T10:45:00.000Z', [logged('other', 50, 5)]).prs).toEqual([])
     expect(summarizeWorkout(draft, '2026-11-14T10:45:00.000Z', undefined).prs).toEqual([])
+  })
+
+  it('words the gain in pounds for an lb exercise', () => {
+    const lb: WorkoutDraft = {
+      ...draft,
+      exercises: [{ exerciseId: 'press', name: 'Leg Press', unit: 'lb', sets: [set('235', '8')] }],
+    }
+    const { prs } = summarizeWorkout(lb, '2026-11-14T10:45:00.000Z', [logged('press', 102.06, 8)])
+    expect(prs[0].unit).toBe('lb')
+    expect(prs.map(formatPrGain)).toEqual(['+10 lb'])
   })
 })

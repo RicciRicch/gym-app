@@ -10,6 +10,8 @@ import { useExercises } from '../features/split/api'
 import { displayMax, maxProgress } from '../lib/one-rep-max'
 import { exerciseProgress, formatTopSet } from '../lib/progress'
 import { fromISODate } from '../lib/schedule'
+import { withUnit } from '../lib/units'
+import { useExerciseUnits } from '../features/units/api'
 
 /** One exercise: top-set chart, best set, and every session (the chart's table view). */
 export default function ExerciseProgressPage() {
@@ -18,6 +20,7 @@ export default function ExerciseProgressPage() {
   const sets = useLoggedSets()
   const exercise = exercises.data?.find((e) => e.id === exerciseId)
   const [view, setView] = useState<'top' | 'max'>('top')
+  const unit = useExerciseUnits()(exerciseId ?? '')
 
   if (exercises.isPending || sets.isPending) {
     return (
@@ -32,20 +35,20 @@ export default function ExerciseProgressPage() {
   const maxSeries: ChartSeries | null =
     maxPoints.length > 1
       ? {
-          caption: 'Estimated 1RM (kg) per workout',
+          caption: `Estimated 1RM (${unit}) per workout`,
           name: 'estimated one-rep max',
           step: 5,
           points: maxPoints.map((p) => ({
             workoutId: p.workoutId,
             date: p.date,
-            value: displayMax(p.estimate),
+            value: displayMax(p.estimate, unit),
             isPR: p.isPR,
-            title: `≈ ${displayMax(p.estimate)} kg`,
-            detail: `from ${Number(p.weight.toFixed(2))} kg × ${p.reps}`,
+            title: `≈ ${displayMax(p.estimate, unit)} ${unit}`,
+            detail: `from ${withUnit(p.weight, unit)} × ${p.reps}`,
           })),
         }
       : null
-  const series = view === 'max' && maxSeries ? maxSeries : topSetSeries(progress)
+  const series = view === 'max' && maxSeries ? maxSeries : topSetSeries(progress, unit)
   const sessions = [...progress.points].reverse()
   const prCount = progress.points.filter((p) => p.isPR).length
 
@@ -68,7 +71,7 @@ export default function ExerciseProgressPage() {
       ) : (
         <>
           <div className="mt-4 grid grid-cols-3 gap-2">
-            <Stat label="Best" value={progress.best ? formatTopSet(progress.best) : '–'} />
+            <Stat label="Best" value={progress.best ? formatTopSet(progress.best, unit) : '–'} />
             <Stat label="Sessions" value={String(progress.points.length)} />
             <Stat label="PRs" value={String(prCount)} />
           </div>
@@ -113,7 +116,7 @@ export default function ExerciseProgressPage() {
                   </span>
                   <span className="flex items-center gap-2 font-bold tabular-nums">
                     {p.isPR && <PrBadge />}
-                    {formatTopSet(p)}
+                    {formatTopSet(p, unit)}
                   </span>
                 </li>
               ))}

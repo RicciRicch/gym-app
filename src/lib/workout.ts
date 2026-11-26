@@ -1,6 +1,8 @@
 // Pure workout-logging logic: building the in-progress draft, validating sets,
 // and turning a finished draft into rows.
 
+import { formatIn, isWeightUnit, toKg, type WeightUnit } from './units'
+
 export interface DraftSet {
   /** Raw input text so partial values like "62." survive typing. */
   weight: string
@@ -12,6 +14,8 @@ export interface DraftExercise {
   exerciseId: string
   name: string
   sets: DraftSet[]
+  /** What the weights are typed in (a machine that only shows lb); absent = kg. Stored as kg. */
+  unit?: WeightUnit
 }
 
 export interface WorkoutDraft {
@@ -62,18 +66,21 @@ export function formatRest(seconds: number): string {
   return seconds % 60 === 0 ? `${seconds / 60} min` : `${formatClock(seconds)} min`
 }
 
-const formatWeight = (kg: number) => String(Number(kg.toFixed(2)))
-
 /**
  * Sets for an exercise at the start of a workout, prefilled from the last
  * session. Extra target sets repeat the last logged set; with no history the
  * reps come from the target and the weight is left empty.
  */
-export function prefillSets(targetSets: number, targetReps: number, last: readonly LastSet[]): DraftSet[] {
+export function prefillSets(
+  targetSets: number,
+  targetReps: number,
+  last: readonly LastSet[],
+  unit: WeightUnit = 'kg',
+): DraftSet[] {
   return Array.from({ length: Math.max(1, targetSets) }, (_, i) => {
     const source = last[i] ?? last.at(-1)
     return source
-      ? { weight: formatWeight(source.weight_kg), reps: String(source.reps), done: false }
+      ? { weight: formatIn(source.weight_kg, unit), reps: String(source.reps), done: false }
       : { weight: '', reps: String(targetReps), done: false }
   })
 }
@@ -118,7 +125,7 @@ export function toSetRows(draft: WorkoutDraft): SetRow[] {
         exercise_position: position,
         set_number: i + 1,
         reps: parseReps(set.reps)!,
-        weight_kg: parseWeight(set.weight)!,
+        weight_kg: toKg(parseWeight(set.weight)!, exercise.unit ?? 'kg'),
       }),
     )
     position++
@@ -157,6 +164,7 @@ export function isWorkoutDraft(value: unknown): value is WorkoutDraft {
       (e) =>
         typeof e?.exerciseId === 'string' &&
         typeof e.name === 'string' &&
+        (e.unit === undefined || isWeightUnit(e.unit)) &&
         Array.isArray(e.sets) &&
         e.sets.every((s) => typeof s?.weight === 'string' && typeof s.reps === 'string' && typeof s.done === 'boolean'),
     )

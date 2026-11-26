@@ -59,6 +59,9 @@ describe('parseSpokenSet — English', () => {
     ['eighty two point five by six', set(82.5, 6)],
     ['twelve reps at sixty kilos', set(60, 12)],
     ['bodyweight fifteen reps', set(0, 15)],
+    ['225 lbs for 8', set(225, 8)],
+    ['dvesta funti puta deset', set(200, 10)],
+    ['eight reps at 135 pounds', set(135, 8)],
   ])('%s', (spoken, expected) => {
     expect(parseSpokenSet(spoken)).toEqual(expected)
   })

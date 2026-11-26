@@ -44,7 +44,8 @@ and watch your top sets climb.
   on a rest day.
 - **Workout logging** – prefilled from your last session, reps × weight, one tap to mark
   a set done, add/remove sets and exercises, and an offer to update the day's defaults
-  when you finish. The draft survives reloads (localStorage).
+  when you finish. The draft survives reloads (localStorage). A machine that only shows
+  pounds? Switch that exercise to lb: it stays in lb from then on (stored as kg underneath).
 - **Rest timer** – starts automatically after a set, ±15 s, adjustable default, or switched
   off if you don't time rest. The phone vibrates when it is over; with notifications on, the
   server sends a push at the end of the rest, so it also arrives with the screen locked

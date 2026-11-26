@@ -23,6 +23,7 @@ import { voiceSupported } from '../features/workout/voice'
 import { VoiceSheet } from '../features/workout/VoiceSheet'
 import { WorkoutSummaryScreen, type StreakChange } from '../features/workout/WorkoutSummaryScreen'
 import { useNow } from '../features/workout/useNow'
+import { useExerciseUnits, useSetExerciseUnit } from '../features/units/api'
 import {
   coachTip,
   formatPastSet,
@@ -36,6 +37,7 @@ import { toISODate } from '../lib/schedule'
 import { weeklyStreak } from '../lib/streak'
 import { summarizeWorkout, type WorkoutSummary } from '../lib/summary'
 import type { SpokenSet } from '../lib/voice-set'
+import { convertInput, fromKg, type WeightUnit } from '../lib/units'
 import {
   formatRest,
   exercisesDiffer,
@@ -81,6 +83,9 @@ export function WorkoutPage() {
     return map
   }, [history.data])
   const [tipsApplied, setTipsApplied] = useState<ReadonlySet<string>>(new Set())
+  // Pounds for machines that only show lb, remembered per exercise.
+  const unitOf = useExerciseUnits()
+  const saveUnit = useSetExerciseUnit()
   const finish = useFinishWorkout()
   const updateDefault = useUpdateDayDefault()
   const { data: library } = useExercises()
@@ -182,6 +187,19 @@ export function WorkoutPage() {
     }))
   }
 
+  /** Switches an exercise between kg and lb; the numbers convert so the real weight stays the same. */
+  function switchUnit(exerciseIndex: number) {
+    const exercise = draft!.exercises[exerciseIndex]
+    const from = exercise.unit ?? 'kg'
+    const to: WeightUnit = from === 'kg' ? 'lb' : 'kg'
+    updateExercise(exerciseIndex, (e) => ({
+      ...e,
+      unit: to,
+      sets: e.sets.map((s) => ({ ...s, weight: convertInput(s.weight, from, to) })),
+    }))
+    saveUnit.mutate({ exerciseId: exercise.exerciseId, unit: to })
+  }
+
   /** Writes the coach's suggestion into the sets that are not done yet. */
   function applyTip(exerciseIndex: number, exerciseId: string, target: PastSet) {
     updateExercise(exerciseIndex, (e) => ({
@@ -215,7 +233,7 @@ export function WorkoutPage() {
         return { ...e, sets }
       }),
     }))
-    return `${weight === '' ? 'Bodyweight' : `${weight.replace('.', ',')} kg`} × ${spoken.reps}`
+    return `${weight === '' ? 'Bodyweight' : `${weight.replace('.', ',')} ${exercise.unit ?? 'kg'}`} × ${spoken.reps}`
   }
 
   async function finishWorkout() {
@@ -274,18 +292,21 @@ export function WorkoutPage() {
 
       <div className="mt-3 flex flex-col gap-3">
         {draft.exercises.map((exercise, exerciseIndex) => {
-          const ghost = lastSessions.get(exercise.exerciseId) ?? []
+          const unit = exercise.unit ?? 'kg'
+          // Last session is stored in kg; shown and compared in this exercise's unit.
+          const ghost = (lastSessions.get(exercise.exerciseId) ?? []).map((s) => ({ ...s, weight: fromKg(s.weight, unit) }))
           const doneSets = exercise.sets.map((s) =>
             s.done && isLoggable(s) ? { weight: parseWeight(s.weight)!, reps: parseReps(s.reps)! } : null,
           )
           const anyDone = doneSets.some(Boolean)
           const score = ghostScore(doneSets, ghost)
           // Until the first set is done (or the tip is applied) the coach says what to aim for.
-          const tip = history.data && !anyDone && !tipsApplied.has(exercise.exerciseId) ? coachTip(ghost) : null
+          const tip = history.data && !anyDone && !tipsApplied.has(exercise.exerciseId) ? coachTip(ghost, unit) : null
           return (
           <article key={exercise.exerciseId} className="rounded-3xl border border-line bg-surface px-4 pt-3 pb-4">
             <div className="flex items-center justify-between gap-2">
               <h2 className="min-w-0 flex-1 truncate text-lg font-bold">{exercise.name}</h2>
+              <UnitSwitch unit={unit} name={exercise.name} onClick={() => switchUnit(exerciseIndex)} />
               {canUseVoice && (
                 <button
                   onClick={() => setVoiceFor(exercise.exerciseId)}
@@ -322,7 +343,7 @@ export function WorkoutPage() {
 
             <div className="grid grid-cols-[2rem_1fr_1fr_3rem] items-center gap-2 text-center text-xs font-semibold text-muted">
               <span>Set</span>
-              <span>kg</span>
+              <span>{unit}</span>
               <span>Reps</span>
               <span>Done</span>
             </div>
@@ -333,6 +354,7 @@ export function WorkoutPage() {
                   number={setIndex + 1}
                   set={set}
                   exerciseName={exercise.name}
+                  unit={unit}
                   ghost={ghost[setIndex]}
                   verdict={doneSets[setIndex] && ghost[setIndex] ? ghostVerdict(doneSets[setIndex], ghost[setIndex]) : null}
                   onChange={(patch) => updateSet(exerciseIndex, setIndex, patch)}
@@ -420,7 +442,7 @@ export function WorkoutPage() {
             setSheet(null)
             const exercise = library?.find((e) => e.id === exerciseId)
             if (!exercise) return
-            const block = await buildDraftExercise(exercise)
+            const block = await buildDraftExercise(exercise, unitOf(exercise.id))
             update((d) => (d.exercises.some((e) => e.exerciseId === block.exerciseId) ? d : { ...d, exercises: [...d.exercises, block] }))
           }}
         />
@@ -489,6 +511,7 @@ function SetRow({
   number,
   set,
   exerciseName,
+  unit,
   ghost,
   verdict,
   onChange,
@@ -497,6 +520,7 @@ function SetRow({
   number: number
   set: DraftSet
   exerciseName: string
+  unit: WeightUnit
   /** The same set in the previous session of this exercise. */
   ghost?: PastSet
   verdict: GhostVerdict | null
@@ -512,7 +536,7 @@ function SetRow({
         className={input}
         inputMode="decimal"
         placeholder="BW"
-        aria-label={`${exerciseName} set ${number} weight in kg`}
+        aria-label={`${exerciseName} set ${number} weight in ${unit}`}
         value={set.weight}
         onChange={(e) => onChange({ weight: e.target.value.replace(/[^\d.,]/g, '').slice(0, 7) })}
         onFocus={(e) => e.target.select()}
@@ -548,6 +572,23 @@ function SetRow({
         </p>
       )}
     </li>
+  )
+}
+
+/** kg / lb for one exercise: a machine that only shows pounds. */
+function UnitSwitch({ unit, name, onClick }: { unit: WeightUnit; name: string; onClick: () => void }) {
+  const other = unit === 'kg' ? 'lb' : 'kg'
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`${name} weights in ${unit}. Switch to ${other}`}
+      className="flex min-h-11 shrink-0 items-center gap-1 rounded-full bg-surface-2 px-3 text-sm font-bold tabular-nums active:scale-95"
+    >
+      <span className={unit === 'kg' ? 'text-text' : 'text-muted'}>kg</span>
+      <span className="text-muted/50">/</span>
+      <span className={unit === 'lb' ? 'text-text' : 'text-muted'}>lb</span>
+    </button>
   )
 }
 

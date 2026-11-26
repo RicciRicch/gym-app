@@ -29,7 +29,11 @@ const WORD_VALUES: Record<string, number> = {
   eighty: 80, ninety: 90,
 }
 
-const UNIT = new Set(['kg', 'kila', 'kile', 'kilo', 'kilos', 'kilograma', 'kilogram', 'kilograms', 'kilogrami', 'kgs'])
+// A weight word marks the number as the weight; it is read in the exercise's own unit (kg or lb).
+const UNIT = new Set([
+  'kg', 'kila', 'kile', 'kilo', 'kilos', 'kilograma', 'kilogram', 'kilograms', 'kilogrami', 'kgs',
+  'lb', 'lbs', 'pound', 'pounds', 'funti', 'funta', 'funte',
+])
 const REPS = new Set([
   'ponavljanja', 'ponavljanje', 'ponavljanj', 'ponavljaja', 'rep', 'reps', 'repetitions', 'repeticija',
   'repova', 'repa',

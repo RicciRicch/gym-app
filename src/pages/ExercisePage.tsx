@@ -9,11 +9,13 @@ import { EQUIPMENT_LABEL, equipmentOf } from '../lib/library'
 import { movementOf } from '../lib/movement'
 import { liftOf } from '../lib/strength'
 import { exerciseProgress, formatTopSet } from '../lib/progress'
+import { useExerciseUnits } from '../features/units/api'
 
 /** Library detail: image, target muscles, form cues and a link to progress. */
 export function ExercisePage() {
   const { exerciseId } = useParams()
   const { data: exercises, isPending } = useExercises()
+  const unitOf = useExerciseUnits()
   const sets = useLoggedSets()
   const exercise = exercises?.find((e) => e.id === exerciseId)
 
@@ -93,6 +95,7 @@ export function ExercisePage() {
           sets={exerciseSets}
           progress={progress}
           lift={exercise.user_id ? null : liftOf(exercise.name)}
+          unit={unitOf(exercise.id)}
         />
       ) : (
         <Link
@@ -102,7 +105,7 @@ export function ExercisePage() {
           <span>
             <span className="block font-bold">Your progress</span>
             <span className="block text-sm text-muted">
-              {progress.best ? `Best: ${formatTopSet(progress.best)} · ${progress.points.length} sessions` : 'No sessions logged yet'}
+              {progress.best ? `Best: ${formatTopSet(progress.best, unitOf(exercise.id))} · ${progress.points.length} sessions` : 'No sessions logged yet'}
             </span>
           </span>
           <svg viewBox="0 0 24 24" className="size-5 text-muted" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

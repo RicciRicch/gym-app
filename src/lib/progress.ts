@@ -1,5 +1,7 @@
 // Pure progress logic: top set per workout, progress series and personal records.
 
+import { withUnit, type WeightUnit } from './units'
+
 export interface LoggedSet {
   workoutId: string
   /** Local YYYY-MM-DD of the workout. */
@@ -100,6 +102,7 @@ export function prsByWorkout(progress: ReadonlyMap<string, ExerciseProgress>): M
 }
 
 /** "62.5 kg × 8", or "12 reps" at bodyweight. */
-export function formatTopSet(top: TopSet): string {
-  return top.weight > 0 ? `${Number(top.weight.toFixed(2))} kg × ${top.reps}` : `BW × ${top.reps}`
+/** "80 kg × 8", "176.4 lb × 8" or "BW × 12"; `top.weight` is kg. */
+export function formatTopSet(top: TopSet, unit: WeightUnit = 'kg'): string {
+  return top.weight > 0 ? `${withUnit(top.weight, unit)} × ${top.reps}` : `BW × ${top.reps}`
 }

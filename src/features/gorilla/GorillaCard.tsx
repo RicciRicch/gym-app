@@ -9,6 +9,7 @@ import { useNudgeLine } from '../friends/api'
 import type { Plan } from '../schedule/plan'
 import { useLoggedSets, useWorkoutHistory } from '../progress/api'
 import { useStreakFreezes, useWorkoutDates } from '../streak/api'
+import { useExerciseUnits } from '../units/api'
 
 const POSE = { coach: 'coach', proud: 'proud', sad: 'sad', sleepy: 'coach' } as const satisfies Record<GorillaMood, string>
 
@@ -40,6 +41,7 @@ export function GorillaCard({
   const history = useWorkoutHistory()
   const sets = useLoggedSets()
   const nudge = useNudgeLine()
+  const unitOf = useExerciseUnits()
 
   const says = useMemo(() => {
     if (!dates.data) return null
@@ -51,7 +53,7 @@ export function GorillaCard({
       const prExercise = [...(prsByWorkout(progressByExercise(sets.data)).get(latest.id) ?? [])][0]
       const rows = latest.workout_sets.filter((s) => s.exercise_id === prExercise)
       const top = topSet(rows)
-      if (prExercise && top) recentPr = { exercise: rows[0].exercises.name, label: formatTopSet(top) }
+      if (prExercise && top) recentPr = { exercise: rows[0].exercises.name, label: formatTopSet(top, unitOf(prExercise)) }
     }
 
     const volumes = (history.data ?? []).map((w) => ({
@@ -77,7 +79,7 @@ export function GorillaCard({
       weekFrozen: !!streak?.frozen,
       streakWeeks: streak?.weeks ?? 0,
     })
-  }, [dates.data, freezes.data, history.data, sets.data, today, plan, planSince, plannedToday, inProgress, doneToday, streak])
+  }, [dates.data, freezes.data, history.data, sets.data, today, plan, planSince, plannedToday, inProgress, doneToday, streak, unitOf])
 
   // A friend's nudge wins until today's workout is started.
   if (says && nudge && !doneToday && !inProgress) return <GorillaBubble says={{ mood: 'sad', line: nudge }} className={className} />

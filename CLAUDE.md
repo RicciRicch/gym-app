@@ -11,7 +11,8 @@ Mobile-first workout tracker (Vite + React + TS + Tailwind + Supabase). See `PLA
 - Pure logic (schedule, PRs) lives in `src/lib/*.ts` with unit tests next to it (`*.test.ts`).
 - Server state via TanStack Query hooks; no global state library.
 - Dates are local `YYYY-MM-DD` strings; weekdays are `0 = Monday … 6 = Sunday`.
-- Weights are stored in kg.
+- Weights are stored in kg. An exercise can be shown/typed in lb (`exercise_units`); convert
+  with `src/lib/units.ts` at the edges, never store lb.
 - UI: dark-first, tokens in `src/index.css` (`@theme`), tap targets ≥ 44px.
 - Every schema change = a new file in `supabase/migrations/`, applied via the Supabase MCP,
   followed by the security advisors (fix every warning). RLS on every table.
@@ -320,6 +321,21 @@ npm test           # vitest (schedule logic etc.)
   cron fires -> 410 only for the armed endpoint, and in headless Brave with a mocked
   subscription: set done -> row, −15 moves it, Skip deletes it, hidden -> no local notification,
   server push sent. Not exercised: a real iPhone / Android delivery.
+- Pounds per exercise (user asked on 2026-11-26, for machines that only show lb): migration
+  `exercise_units` (user_id, exercise_id, unit 'kg' | 'lb'; no row = kg; RLS own rows, only exercises
+  you can see: core or your own). `src/lib/units.ts` (unit-tested): `toKg` (2 decimals, as stored),
+  `fromKg` (lb snapped to 0.05 so typed pounds come back exactly: 225 lb -> 102.06 kg -> 225),
+  `convertInput`, `weightStep` (kg 1 / 2.5, lb 2.5 / 5). `DraftExercise.unit` (absent = kg): sets
+  are typed in it and `toSetRows` converts to kg. `UnitSwitch` ("kg / lb" pill next to the mic on
+  each workout card) converts the open numbers and saves the choice (`useSetExerciseUnit`,
+  `src/features/units/api.ts`); `useStartWorkout` / `buildDraftExercise` prefill in the saved unit.
+  Ghost, coach tip (+5 lb), voice ("225 lbs", "funti"), PR summary (`PrHit.unit`, "+5 lb"), the
+  exercise progress page (chart, 1RM tab, sessions), `MaxCard` (1RM, 30-day gain, % table in 5 lb
+  steps), Progress lists and the gorilla's PR line use the exercise's unit; volume, "what you
+  lifted", body weight and strength levels stay kg. Browser-verified in headless Brave with a
+  throwaway account (deleted): 102.06 kg history -> switch -> 225 lb, ghost 225 × 10, tip "Try
+  230 lb", Apply, finish -> "+5 lb" PR, 104.33 kg stored, next workout starts in lb, progress and
+  exercise pages in lb; RLS (other user, someone else's custom exercise, bad unit) via SQL.
 - Training together (user asked on 2026-11-16): table `workout_partners` (migration
   `workout_partners`: workout_id, user_id, friend_id, day; RLS: both sides read, insert only on
   your own workout with its real date and only an accepted friend, delete own; narrow grants).

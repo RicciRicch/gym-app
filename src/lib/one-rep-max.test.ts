@@ -76,4 +76,11 @@ describe('percentTable', () => {
   it('uses 1 kg steps for light lifts', () => {
     expect(percentTable(20).find((r) => r.percent === 85)!.weight).toBe(17)
   })
+  it('works in pounds with 5 lb steps', () => {
+    // 113.4 kg = 250 lb
+    expect(displayMax(113.4, 'lb')).toBe(250)
+    const table = percentTable(113.4, 'lb')
+    expect(table.find((r) => r.percent === 80)).toEqual({ percent: 80, weight: 200 })
+    expect(table[0]).toEqual({ percent: 95, weight: 240 })
+  })
 })

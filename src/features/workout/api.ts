@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { toISODate } from '../../lib/schedule'
+import type { WeightUnit } from '../../lib/units'
 import { prefillSets, toSetRows, type DraftExercise, type LastSet, type WorkoutDraft } from '../../lib/workout'
+import { loadExerciseUnits } from '../units/api'
 import { useAuth } from '../auth/auth-context'
 import type { SplitDay } from '../split/api'
 import { loadPartnerIds, loadRestSeconds, savePartnerIds, useWorkoutDraft } from './draft-store'
@@ -37,8 +39,11 @@ export async function fetchLastSets(exerciseIds: string[]): Promise<Map<string, 
 /** Starts a workout for a split day: default exercises, sets prefilled from the last session. */
 export function useStartWorkout() {
   const { setDraft } = useWorkoutDraft()
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (day: SplitDay) => {
+      const units = await loadExerciseUnits(queryClient, user?.id)
       let last = new Map<string, LastSet[]>()
       try {
         last = await fetchLastSets(day.split_day_exercises.map((e) => e.exercise_id))
@@ -51,11 +56,15 @@ export function useStartWorkout() {
         dayName: day.name,
         date: toISODate(new Date()),
         startedAt: new Date().toISOString(),
-        exercises: day.split_day_exercises.map((e) => ({
-          exerciseId: e.exercise_id,
-          name: e.exercises.name,
-          sets: prefillSets(e.target_sets, e.target_reps, last.get(e.exercise_id) ?? []),
-        })),
+        exercises: day.split_day_exercises.map((e) => {
+          const unit = units[e.exercise_id] ?? 'kg'
+          return {
+            exerciseId: e.exercise_id,
+            name: e.exercises.name,
+            sets: prefillSets(e.target_sets, e.target_reps, last.get(e.exercise_id) ?? [], unit),
+            ...(unit === 'lb' ? { unit } : {}),
+          }
+        }),
         restSeconds: loadRestSeconds(),
         restEndsAt: null,
         partnerIds: [...loadPartnerIds()],
@@ -67,14 +76,19 @@ export function useStartWorkout() {
 }
 
 /** A new exercise block for the running workout, prefilled from its last session. */
-export async function buildDraftExercise(exercise: { id: string; name: string }): Promise<DraftExercise> {
+export async function buildDraftExercise(exercise: { id: string; name: string }, unit: WeightUnit = 'kg'): Promise<DraftExercise> {
   let last: LastSet[] = []
   try {
     last = (await fetchLastSets([exercise.id])).get(exercise.id) ?? []
   } catch {
     // offline: start the exercise empty rather than blocking the workout
   }
-  return { exerciseId: exercise.id, name: exercise.name, sets: prefillSets(Math.max(3, last.length), 10, last) }
+  return {
+    exerciseId: exercise.id,
+    name: exercise.name,
+    sets: prefillSets(Math.max(3, last.length), 10, last, unit),
+    ...(unit === 'lb' ? { unit } : {}),
+  }
 }
 
 /** Saves the finished workout and its completed sets. */

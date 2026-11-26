@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
-import { MAX_ESTIMATE_REPS, displayMax, maxProgress, maxSummary, percentTable } from '../../lib/one-rep-max'
+import { MAX_ESTIMATE_REPS, displayMax, maxProgress, maxSummary, percentTable, roundTo } from '../../lib/one-rep-max'
 import { formatTopSet, type ExerciseProgress, type LoggedSet } from '../../lib/progress'
 import { formatRatio, LEVELS, strengthLevel, type Lift } from '../../lib/strength'
 import { useBodyStats } from '../strength/api'
 import { StrengthBar } from '../strength/StrengthBar'
 import { BodyStatsButton } from '../strength/StrengthCard'
 import { fromISODate, toISODate } from '../../lib/schedule'
+import { formatIn, fromKg, type WeightUnit } from '../../lib/units'
 
 const kg = (n: number) => `${Number(n.toFixed(2))}`
 
@@ -18,6 +19,7 @@ export function MaxCard({
   sets,
   progress,
   lift = null,
+  unit = 'kg',
   className = '',
 }: {
   exerciseId: string
@@ -25,10 +27,13 @@ export function MaxCard({
   progress: ExerciseProgress
   /** One of the four main lifts: adds the strength level. */
   lift?: Lift | null
+  /** The exercise's unit (lb for a machine in pounds); the strength level stays in kg. */
+  unit?: WeightUnit
   className?: string
 }) {
   const summary = maxSummary(maxProgress(sets), toISODate(new Date()))
-  const max = summary ? displayMax(summary.best.estimate) : null
+  const max = summary ? displayMax(summary.best.estimate, unit) : null
+  const change = summary?.change != null ? roundTo(fromKg(summary.change, unit), 0.5) : null
 
   return (
     <section className={`rounded-3xl bg-surface ${className}`} aria-label="Estimated one-rep max">
@@ -38,9 +43,9 @@ export function MaxCard({
             <p className="text-sm font-semibold tracking-widest text-muted uppercase">Estimated 1RM</p>
             <p className="text-xs text-muted">What you could likely lift once</p>
           </div>
-          {summary?.change != null && summary.change > 0 && (
+          {change != null && change > 0 && (
             <p className="shrink-0 rounded-full bg-accent/10 px-2.5 py-1 text-sm font-bold text-accent tabular-nums">
-              ▲ +{kg(summary.change)} kg<span className="font-semibold text-muted"> · 30 d</span>
+              ▲ +{kg(change)} {unit}<span className="font-semibold text-muted"> · 30 d</span>
             </p>
           )}
         </div>
@@ -48,14 +53,14 @@ export function MaxCard({
         {summary && max !== null ? (
           <>
             <p className="mt-2 text-4xl font-black tracking-tight tabular-nums">
-              {kg(max)} <span className="text-2xl text-muted">kg</span>
+              {kg(max)} <span className="text-2xl text-muted">{unit}</span>
             </p>
             <p className="mt-1 text-sm text-muted">
-              from {kg(summary.best.weight)} kg × {summary.best.reps} ·{' '}
+              from {formatIn(summary.best.weight, unit)} {unit} × {summary.best.reps} ·{' '}
               {fromISODate(summary.best.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
             </p>
             <ul className="mt-4 grid grid-cols-4 gap-1.5" aria-label="Training weights by percentage">
-              {percentTable(summary.best.estimate).map(({ percent, weight }) => (
+              {percentTable(summary.best.estimate, unit).map(({ percent, weight }) => (
                 <li key={percent} className="rounded-xl bg-bg/60 px-1 py-2 text-center">
                   <span className="block text-[11px] font-semibold text-muted">{percent}%</span>
                   <span className="block font-bold tabular-nums">{kg(weight)}</span>
@@ -78,7 +83,7 @@ export function MaxCard({
         <span className="min-w-0">
           <span className="block font-bold">Your progress</span>
           <span className="block truncate text-sm text-muted">
-            {progress.best && `Best: ${formatTopSet(progress.best)} · `}
+            {progress.best && `Best: ${formatTopSet(progress.best, unit)} · `}
             {progress.points.length} {progress.points.length === 1 ? 'session' : 'sessions'}
           </span>
         </span>

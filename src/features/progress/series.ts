@@ -1,6 +1,7 @@
 // Series for ProgressChart, kept apart from the component for fast refresh.
 
 import { formatTopSet, type ExerciseProgress } from '../../lib/progress'
+import { fromKg, type WeightUnit } from '../../lib/units'
 
 /** One workout on the chart. */
 export interface ChartPoint {
@@ -25,18 +26,18 @@ export interface ChartSeries {
 }
 
 /** The classic series: the heaviest set of each workout (or reps at bodyweight). */
-export function topSetSeries(progress: ExerciseProgress): ChartSeries {
+export function topSetSeries(progress: ExerciseProgress, unit: WeightUnit = 'kg'): ChartSeries {
   const weight = progress.metric === 'weight'
   return {
-    caption: `Top set ${weight ? 'weight (kg)' : 'reps (bodyweight)'} per workout`,
+    caption: `Top set ${weight ? `weight (${unit})` : 'reps (bodyweight)'} per workout`,
     name: `top set ${progress.metric}`,
     step: weight ? 5 : 2,
     points: progress.points.map((p) => ({
       workoutId: p.workoutId,
       date: p.date,
-      value: weight ? p.weight : p.reps,
+      value: weight ? fromKg(p.weight, unit) : p.reps,
       isPR: p.isPR,
-      title: formatTopSet(p),
+      title: formatTopSet(p, unit),
     })),
   }
 }

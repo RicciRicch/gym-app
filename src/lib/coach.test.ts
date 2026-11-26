@@ -106,4 +106,24 @@ describe('coachTip', () => {
   it('has nothing to apply the first time', () => {
     expect(coachTip([]).apply).toBeNull()
   })
+
+  it('talks in pounds with a 5 lb jump on an lb machine', () => {
+    const tip = coachTip([{ weight: 100, reps: 10 }], 'lb')
+    expect(tip.apply).toEqual({ weight: 105, reps: 10 })
+    expect(tip.text).toContain('100 lb × 10')
+    expect(tip.text).toContain('Try 105 lb')
+  })
+})
+
+describe('lastSessionSets in pounds', () => {
+  it('shows the stored kg as the pounds that were typed', () => {
+    const sets: LoggedSet[] = [
+      { workoutId: 'w', date: '2026-11-20', startedAt: '2026-11-20T10:00:00Z', exerciseId: 'press', setNumber: 1, reps: 10, weight_kg: 45.36 },
+      { workoutId: 'w', date: '2026-11-20', startedAt: '2026-11-20T10:00:00Z', exerciseId: 'press', setNumber: 2, reps: 8, weight_kg: 46.49 },
+    ]
+    expect(lastSessionSets(sets, 'press', 'lb')).toEqual([
+      { weight: 100, reps: 10 },
+      { weight: 102.5, reps: 8 },
+    ])
+  })
 })

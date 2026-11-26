@@ -45,6 +45,10 @@ describe('prefillSets', () => {
   it('never returns zero sets', () => {
     expect(prefillSets(0, 10, [])).toHaveLength(1)
   })
+
+  it('prefills in pounds for an lb exercise', () => {
+    expect(prefillSets(1, 8, [{ reps: 10, weight_kg: 102.06 }], 'lb')).toEqual([{ weight: '225', reps: '10', done: false }])
+  })
 })
 
 describe('parsing', () => {
@@ -88,6 +92,13 @@ describe('toSetRows', () => {
       { exercise_id: 'bench', exercise_position: 0, set_number: 2, reps: 6, weight_kg: 62.5 },
       { exercise_id: 'pullup', exercise_position: 1, set_number: 1, reps: 10, weight_kg: 0 },
     ])
+  })
+
+  it('stores pounds as kg', () => {
+    const rows = toSetRows(
+      draft([{ exerciseId: 'press', name: 'Leg Press', unit: 'lb', sets: [{ weight: '225', reps: '10', done: true }] }]),
+    )
+    expect(rows[0].weight_kg).toBe(102.06)
   })
 
   it('returns nothing when no set was completed', () => {

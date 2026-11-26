@@ -15,6 +15,7 @@ import { formatMass, totalVolume } from '../lib/lifted'
 import { formatTopSet, progressByExercise, prsByWorkout } from '../lib/progress'
 import { fromISODate, toISODate } from '../lib/schedule'
 import { formatClock } from '../lib/workout'
+import { useExerciseUnits } from '../features/units/api'
 
 type Tab = 'history' | 'exercises'
 
@@ -23,6 +24,7 @@ export function ProgressPage() {
   const history = useWorkoutHistory()
   const sets = useLoggedSets()
   const exercises = useExercises()
+  const unitOf = useExerciseUnits()
 
   const progress = useMemo(() => progressByExercise(sets.data ?? []), [sets.data])
   const prs = useMemo(() => prsByWorkout(progress), [progress])
@@ -155,7 +157,7 @@ export function ProgressPage() {
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-bold">{exercise?.name ?? 'Exercise'}</span>
                       <span className="block text-sm text-muted">
-                        Best {p.best ? formatTopSet(p.best) : '–'} · {p.points.length} {p.points.length === 1 ? 'session' : 'sessions'}
+                        Best {p.best ? formatTopSet(p.best, unitOf(id)) : '–'} · {p.points.length} {p.points.length === 1 ? 'session' : 'sessions'}
                       </span>
                     </span>
                     {last?.isPR && <PrBadge />}
@@ -194,6 +196,7 @@ function WorkoutCard({
 }) {
   const [open, setOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const unitOf = useExerciseUnits()
   const groups: { exerciseId: string; name: string; sets: HistoryWorkout['workout_sets'] }[] = []
   for (const s of workout.workout_sets) {
     const last = groups.at(-1)
@@ -252,7 +255,7 @@ function WorkoutCard({
                 {prExercises?.has(g.exerciseId) && <PrBadge />}
               </p>
               <p className="mt-0.5 text-sm text-muted tabular-nums">
-                {g.sets.map((s) => formatTopSet({ weight: Number(s.weight_kg), reps: s.reps })).join('  ·  ')}
+                {g.sets.map((s) => formatTopSet({ weight: Number(s.weight_kg), reps: s.reps }, unitOf(g.exerciseId))).join('  ·  ')}
               </p>
             </div>
           ))}

@@ -1,17 +1,18 @@
 // Pure logic for the in-workout coach tip and the "ghost" of your last session.
 
 import type { LoggedSet } from './progress'
+import { fromKg, weightStep, type WeightUnit } from './units'
 
 export interface PastSet {
-  /** kg; 0 = bodyweight */
+  /** In the exercise's unit (kg unless it is set to lb); 0 = bodyweight */
   weight: number
   reps: number
 }
 
-const kg = (n: number) => String(Number(n.toFixed(2)))
+const num = (n: number) => String(Number(n.toFixed(2)))
 
-/** The sets of the most recent workout that included the exercise, in the order they were done. */
-export function lastSessionSets(history: readonly LoggedSet[], exerciseId: string): PastSet[] {
+/** The sets of the most recent workout that included the exercise, in the order they were done, in `unit`. */
+export function lastSessionSets(history: readonly LoggedSet[], exerciseId: string, unit: WeightUnit = 'kg'): PastSet[] {
   let latest: LoggedSet | null = null
   for (const s of history) {
     if (s.exerciseId !== exerciseId) continue
@@ -22,7 +23,7 @@ export function lastSessionSets(history: readonly LoggedSet[], exerciseId: strin
   return history
     .filter((s) => s.exerciseId === exerciseId && s.workoutId === workoutId)
     .sort((a, b) => (a.setNumber ?? 0) - (b.setNumber ?? 0))
-    .map((s) => ({ weight: s.weight_kg, reps: s.reps }))
+    .map((s) => ({ weight: fromKg(s.weight_kg, unit), reps: s.reps }))
 }
 
 export type GhostVerdict = 'ahead' | 'even' | 'behind'
@@ -48,7 +49,7 @@ export function ghostScore(done: readonly (PastSet | null)[], ghost: readonly Pa
 }
 
 export function formatPastSet(set: PastSet): string {
-  return set.weight > 0 ? `${kg(set.weight)} × ${set.reps}` : `BW × ${set.reps}`
+  return set.weight > 0 ? `${num(set.weight)} × ${set.reps}` : `BW × ${set.reps}`
 }
 
 export interface CoachTip {
@@ -57,16 +58,14 @@ export interface CoachTip {
   apply: PastSet | null
 }
 
-/** Smallest sensible jump: 1 kg for light (dumbbell) work, 2.5 kg otherwise. */
-const step = (weight: number) => (weight < 20 ? 1 : 2.5)
-
 /**
  * What to aim for today, from the last session of the exercise:
  * every set at the top weight held its reps -> add weight;
  * reps dropped off -> same weight, get every set up to the first set's reps;
  * bodyweight -> one more rep.
+ * `last` is in `unit`; the jump is a plate's worth in that unit (2.5 kg or 5 lb).
  */
-export function coachTip(last: readonly PastSet[]): CoachTip {
+export function coachTip(last: readonly PastSet[], unit: WeightUnit = 'kg'): CoachTip {
   if (last.length === 0) {
     return { text: 'First time on this one. Pick a weight you can move cleanly and I will take it from there.', apply: null }
   }
@@ -79,12 +78,12 @@ export function coachTip(last: readonly PastSet[]): CoachTip {
   const first = working[0].reps
   const lowest = Math.min(...working.map((s) => s.reps))
   if (lowest >= first) {
-    const next = top + step(top)
+    const next = top + weightStep(top, unit)
     const sets = working.length > 1 ? ' on every set' : ''
-    return { text: `Last time ${kg(top)} kg × ${first}${sets}. Too easy. Try ${kg(next)} kg.`, apply: { weight: next, reps: first } }
+    return { text: `Last time ${num(top)} ${unit} × ${first}${sets}. Too easy. Try ${num(next)} ${unit}.`, apply: { weight: next, reps: first } }
   }
   return {
-    text: `Last time your reps dropped to ${lowest} at ${kg(top)} kg. Stay there and get every set to ${first}.`,
+    text: `Last time your reps dropped to ${lowest} at ${num(top)} ${unit}. Stay there and get every set to ${first}.`,
     apply: { weight: top, reps: first },
   }
 }

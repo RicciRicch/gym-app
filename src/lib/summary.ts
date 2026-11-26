@@ -2,6 +2,7 @@
 // personal records the workout just set.
 
 import { exerciseProgress, type ExerciseProgress, type LoggedSet, type TopSet } from './progress'
+import { formatIn, type WeightUnit } from './units'
 import { toSetRows, type WorkoutDraft } from './workout'
 
 export interface PrHit {
@@ -11,6 +12,8 @@ export interface PrHit {
   top: TopSet
   /** The best before this workout. */
   previous: TopSet
+  /** How the exercise shows weights (kg in `top` / `previous` either way); absent = kg. */
+  unit?: WeightUnit
 }
 
 export interface WorkoutSummary {
@@ -37,6 +40,7 @@ export function summarizeWorkout(
 ): WorkoutSummary {
   const rows = toSetRows(draft)
   const names = new Map(draft.exercises.map((e) => [e.exerciseId, e.name]))
+  const units = new Map(draft.exercises.map((e) => [e.exerciseId, e.unit ?? 'kg']))
   const exerciseIds = [...new Set(rows.map((r) => r.exercise_id))]
 
   const prs: PrHit[] = []
@@ -68,6 +72,7 @@ export function summarizeWorkout(
         metric: progress.metric,
         top: { weight: point.weight, reps: point.reps },
         previous: { weight: previous.weight, reps: previous.reps },
+        unit: units.get(exerciseId) ?? 'kg',
       })
     }
   }
@@ -83,9 +88,13 @@ export function summarizeWorkout(
   }
 }
 
-/** "+2.5 kg" or "+3 reps": how much a PR beat the previous best by. */
+/** "+2.5 kg", "+5 lb" or "+3 reps": how much a PR beat the previous best by. */
 export function formatPrGain(pr: PrHit): string {
-  if (pr.metric === 'weight') return `+${Number((pr.top.weight - pr.previous.weight).toFixed(2))} kg`
+  if (pr.metric === 'weight') {
+    const unit = pr.unit ?? 'kg'
+    const gain = Number(formatIn(pr.top.weight, unit)) - Number(formatIn(pr.previous.weight, unit))
+    return `+${Number(gain.toFixed(2))} ${unit}`
+  }
   const gain = pr.top.reps - pr.previous.reps
   return `+${gain} ${gain === 1 ? 'rep' : 'reps'}`
 }
